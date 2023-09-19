@@ -1,0 +1,3 @@
+[submodule "Plugins/CkFoundation"]
+	path = Plugins/CkFoundation
+	url = https://github.com/chainkemists/CkFoundation.git
