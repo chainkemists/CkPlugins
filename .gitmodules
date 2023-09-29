@@ -1,3 +1,6 @@
 [submodule "Plugins/CkFoundation"]
 	path = Plugins/CkFoundation
 	url = https://github.com/chainkemists/CkFoundation.git
+[submodule "Plugins/CkGameplayDebugger"]
+	path = Plugins/CkGameplayDebugger
+	url = https://github.com/chainkemists/CkGameplayDebugger.git
