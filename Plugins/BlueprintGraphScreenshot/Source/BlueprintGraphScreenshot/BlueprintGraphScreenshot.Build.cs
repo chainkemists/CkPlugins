@@ -11,7 +11,6 @@ public class BlueprintGraphScreenshot : ModuleRules
 
 		PublicIncludePaths.AddRange(
 			new string[] {
-				"BlueprintGraphScreenshot/Public"
 				// ... add public include paths required here ...
 			}
 			);
@@ -19,7 +18,6 @@ public class BlueprintGraphScreenshot : ModuleRules
 
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"BlueprintGraphScreenshot/Private",
 				// ... add other private include paths required here ...
 			}
 			);
