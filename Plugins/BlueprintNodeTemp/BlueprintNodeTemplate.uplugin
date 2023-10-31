@@ -1,0 +1,33 @@
+{
+	"FileVersion": 3,
+	"Version": 9,
+	"VersionName": "BlueprintNodeTemplate 1.0.6",
+	"FriendlyName": "BlueprintNodeTemplate",
+	"Description": "BlueprintNodeTemplate",
+	"Category": "Other",
+	"CreatedBy": "Alexandr Marchenko",
+	"CreatedByURL": "https://www.unrealengine.com/marketplace/en-US/profile/Alexander+UE4",
+	"DocsURL": "https://drive.google.com/drive/folders/1Le3qMfNGQM6UqWrDRA4uBWvRkdJN_ilr",
+	"MarketplaceURL": "com.epicgames.launcher: //ue/marketplace/content/8190f8cf1dfa44a4b9e5c8accde255f5",
+	"SupportURL": "https://www.unrealengine.com/marketplace/en-US/profile/Alexander+UE4",
+	"EngineVersion": "5.2.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "BlueprintNodeTemplate",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen"
+		},
+		{
+			"Name": "BlueprintNodeTemplateEditor",
+			"Type": "UncookedOnly",
+			"LoadingPhase": "PreDefault",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		}
+	]
+}
