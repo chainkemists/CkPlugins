@@ -103,6 +103,10 @@
 		{
 			"Name": "GameplayAbilities",
 			"Enabled": true
+		},
+		{
+			"Name": "MDMetaDataEditor",
+			"Enabled":  true
 		}
 	]
 }
