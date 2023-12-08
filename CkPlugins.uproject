@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "CK-UE5",
+	"EngineAssociation": "{BA2D4257-4C33-8D3A-FF0A-859613D855F7}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -98,6 +98,10 @@
 		},
 		{
 			"Name": "CommonUI",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
 			"Enabled": true
 		}
 	]
