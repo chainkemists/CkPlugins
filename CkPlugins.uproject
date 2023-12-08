@@ -111,6 +111,14 @@
 		{
 			"Name": "MDMetaDataEditor",
 			"Enabled":  true
+		},
+		{
+			"Name": "AssetHistoryTracker",
+			"Enabled":  true
+		},
+		{
+			"Name": "AssetCreator",
+			"Enabled":  true
 		}
 	]
 }
