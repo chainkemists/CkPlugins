@@ -110,15 +110,17 @@
 		},
 		{
 			"Name": "MDMetaDataEditor",
-			"Enabled":  true
+			"Enabled": true
 		},
 		{
 			"Name": "AssetHistoryTracker",
-			"Enabled":  true
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ef97fd1cc75b483aa01ca839c51b899d"
 		},
 		{
 			"Name": "AssetCreator",
-			"Enabled":  true
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/e70095fa9c33498f9941aa71a2b314fc"
 		}
 	]
 }

@@ -116,6 +116,10 @@ void UBlueprintTaskTemplate::CollectFunctions(const UClass* InClass, TSet<FName>
 		{
 			if (LocFunction->HasAllFunctionFlags(FUNC_BlueprintCallable | FUNC_Public) && //
 				!LocFunction->GetBoolMetaData(FName(TEXT("BlueprintInternalUseOnly"))) && //
+				// ++CK Autocall functions should not display in the list of exec functions since they will
+				// revert to 'None' on save anyway
+				!LocFunction->GetBoolMetaData(FName(TEXT("ExposeAutoCall"))) &&           //
+				// --CK
 				!LocFunction->HasMetaData(FName(TEXT("DeprecatedFunction"))) &&			  //
 				!FObjectEditorUtils::IsFunctionHiddenFromClass(LocFunction, InClass) &&	  //!InClass->IsFunctionHidden(*LocFunction->GetName())
 				!LocFunction->HasAnyFunctionFlags(										  //

@@ -54,6 +54,16 @@ private:
 	UPROPERTY(Transient)
 	UWorld* WorldPrivate = nullptr;
 
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	FName Category = NAME_None;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	FName Tooltip = NAME_None;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	FName MenuDisplayName = NAME_None;
+
 #if WITH_EDITOR
 public:
 	// force refresh all for old/new in-editor params/functions etc

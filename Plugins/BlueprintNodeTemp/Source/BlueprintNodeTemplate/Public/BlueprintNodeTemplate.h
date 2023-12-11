@@ -32,13 +32,13 @@ struct FBlueprintNodeTemplateCustomVersion
 	};
 	// The GUID for this custom version number
 	BLUEPRINTNODETEMPLATE_API const static FGuid GUID;
-	
+
 private:
 	FBlueprintNodeTemplateCustomVersion() {}
 };
 
 // Register the custom version with core
-FCustomVersionRegistration GRegisterBlueprintNodeTemplateVersion(
+inline FCustomVersionRegistration GRegisterBlueprintNodeTemplateVersion(
 	FBlueprintNodeTemplateCustomVersion::GUID,
 	FBlueprintNodeTemplateCustomVersion::LatestVersion,
 	TEXT("BlueprintNodeTemplate"));
