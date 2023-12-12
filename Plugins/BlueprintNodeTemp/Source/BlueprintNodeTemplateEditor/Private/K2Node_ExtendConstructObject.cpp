@@ -1285,6 +1285,9 @@ void UK2Node_ExtendConstructObject::GenerateAutoCallFunctionPins(UClass* InClass
 			CreatePinsForClassFunction(InClass, FnName, true);
 			if (UEdGraphPin* ExecPin = FindPin(FnName, EGPD_Input))
 			{
+				// ++CK Hide all Autocall function input pins by default
+				ExecPin->bHidden = true;
+				// --CK
 				ExecPin->bNotConnectable = true;
 				ExecPin->bDefaultValueIsReadOnly = true;
 				ExecPin->bDefaultValueIsIgnored = true;

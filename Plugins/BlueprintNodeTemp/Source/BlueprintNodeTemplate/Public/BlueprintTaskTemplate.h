@@ -55,13 +55,13 @@ private:
 	UWorld* WorldPrivate = nullptr;
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	UPROPERTY(EditDefaultsOnly, Category = "DisplayOptions")
 	FName Category = NAME_None;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	UPROPERTY(EditDefaultsOnly, Category = "DisplayOptions")
 	FName Tooltip = NAME_None;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Task Node")
+	UPROPERTY(EditDefaultsOnly, Category = "DisplayOptions")
 	FName MenuDisplayName = NAME_None;
 
 #if WITH_EDITOR
