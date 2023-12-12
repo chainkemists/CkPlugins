@@ -42,6 +42,10 @@ public:
 	virtual UWorld* GetWorld() const override { return WorldPrivate; }
 	virtual void BeginDestroy() override;
 
+	// ++CK
+	virtual void OnDestroy();
+	// --CK
+
 	virtual void Serialize(FArchive& Ar) override;
 
 protected:
@@ -49,7 +53,10 @@ protected:
 	void Activate_BP();
 	virtual void Activate_Internal()
 	{
-		if (GetOuter())
+		if (IsBeingDestroyed)
+		{ return; }
+
+		if (IsValid(GetOuter()))
 		{
 			Activate_BP();
 		}
@@ -60,9 +67,13 @@ protected:
 	void Deactivate_BP();
 	virtual void Deactivate_Internal()
 	{
-		if (GetOuter())
+		if (IsBeingDestroyed)
+		{ return; }
+
+		if (IsValid(GetOuter()))
 		{
 			Deactivate_BP();
+			OnDestroy();
 		}
 	}
 	// --CK
@@ -70,6 +81,9 @@ protected:
 private:
 	UPROPERTY(Transient)
 	UWorld* WorldPrivate = nullptr;
+
+	UPROPERTY(Transient)
+	bool IsBeingDestroyed = false;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "DisplayOptions")

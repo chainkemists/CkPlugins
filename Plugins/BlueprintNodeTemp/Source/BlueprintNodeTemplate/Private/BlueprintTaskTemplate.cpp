@@ -39,6 +39,17 @@ void UBlueprintTaskTemplate::BeginDestroy()
 	Super::BeginDestroy();
 }
 
+// ++CK
+auto
+    UBlueprintTaskTemplate::
+    OnDestroy()
+    -> void
+{
+	IsBeingDestroyed = true;
+	MarkAsGarbage();
+}
+// --CK
+
 void UBlueprintTaskTemplate::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
