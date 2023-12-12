@@ -228,6 +228,7 @@ void UBlueprintTaskTemplate::RefreshCollected()
 
 		// ++CK
 		AutoCallFunction.Remove(FName(TEXT("Deactivate")));
+		ExecFunction.AddUnique(FName(TEXT("Deactivate")));
 		// --CK
 	}
 	#endif // WITH_EDITORONLY_DATA
