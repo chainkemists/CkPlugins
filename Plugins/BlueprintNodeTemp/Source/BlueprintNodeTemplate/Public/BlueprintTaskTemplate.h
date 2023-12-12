@@ -34,6 +34,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BlueprintTaskTemplate", meta = (DisplayName = "Activate", ExposeAutoCall = "true"))
 	void Activate() { Activate_Internal(); }
 
+	// ++CK
+	UFUNCTION(BlueprintCallable, Category = "BlueprintTaskTemplate", meta = (DisplayName = "Deactivate", ExposeAutoCall = "false"))
+	void Deactivate() { Deactivate_Internal(); }
+	// --CK
+
 	virtual UWorld* GetWorld() const override { return WorldPrivate; }
 	virtual void BeginDestroy() override;
 
@@ -49,6 +54,18 @@ protected:
 			Activate_BP();
 		}
 	}
+
+	// ++CK
+	UFUNCTION(BlueprintImplementableEvent, Category = "BlueprintTaskTemplate", meta = (DisplayName = "Deactivate"))
+	void Deactivate_BP();
+	virtual void Deactivate_Internal()
+	{
+		if (GetOuter())
+		{
+			Deactivate_BP();
+		}
+	}
+	// --CK
 
 private:
 	UPROPERTY(Transient)

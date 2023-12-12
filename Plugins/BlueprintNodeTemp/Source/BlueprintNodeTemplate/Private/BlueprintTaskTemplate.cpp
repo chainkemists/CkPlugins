@@ -225,6 +225,10 @@ void UBlueprintTaskTemplate::RefreshCollected()
 			It.SetAllExclude(AllParam, SpawnParam);
 		}
 		AutoCallFunction.AddUnique(FName(TEXT("Activate")));
+
+		// ++CK
+		AutoCallFunction.Remove(FName(TEXT("Deactivate")));
+		// --CK
 	}
 	#endif // WITH_EDITORONLY_DATA
 }
