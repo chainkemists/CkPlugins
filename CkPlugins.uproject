@@ -121,6 +121,10 @@
 			"Name": "AssetCreator",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/e70095fa9c33498f9941aa71a2b314fc"
+		},
+		{
+			"Name": "EditorTests",
+			"Enabled": true
 		}
 	]
 }
