@@ -13,6 +13,10 @@ git submodule add https://github.com/chainkemists/CkFoundation.git Plugins/CkFou
 git submodule add https://github.com/chainkemists/CkGameplayDebugger.git Plugins/CkGameplayDebugger
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/CkTests.git Plugins/CkTests
+@echo off
+
 @echo Initializing all submodules recrusively...
 git submodule update --init --recursive
 

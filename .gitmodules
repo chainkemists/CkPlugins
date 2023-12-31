@@ -4,3 +4,6 @@
 [submodule "Plugins/CkGameplayDebugger"]
 	path = Plugins/CkGameplayDebugger
 	url = https://github.com/chainkemists/CkGameplayDebugger.git
+[submodule "Plugins/CkTests"]
+	path = Plugins/CkTests
+	url = https://github.com/chainkemists/CkTests.git
