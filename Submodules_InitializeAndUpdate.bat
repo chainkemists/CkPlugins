@@ -9,6 +9,10 @@ echo.
 git submodule add https://github.com/chainkemists/AssetHistoryTracker.git Plugins/AssetHistoryTracker
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/AutoSizeComments.git Plugins/AutoSizeComments
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

@@ -10,3 +10,6 @@
 [submodule "Plugins/AssetHistoryTracker"]
 	path = Plugins/AssetHistoryTracker
 	url = https://github.com/chainkemists/AssetHistoryTracker.git
+[submodule "Plugins/AutoSizeComments"]
+	path = Plugins/AutoSizeComments
+	url = https://github.com/chainkemists/AutoSizeComments.git
