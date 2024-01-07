@@ -25,3 +25,6 @@
 [submodule "Plugins/EasyAssetCreator"]
 	path = Plugins/EasyAssetCreator
 	url = https://github.com/chainkemists/EasyAssetCreator.git
+[submodule "Plugins/GitSourceControl"]
+	path = Plugins/GitSourceControl
+	url = https://github.com/chainkemists/UEGitPlugin.git
