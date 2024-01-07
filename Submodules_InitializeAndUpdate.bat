@@ -13,6 +13,10 @@ git submodule add https://github.com/chainkemists/AssetHistoryTracker.git Plugin
 git submodule add https://github.com/chainkemists/AutoSizeComments.git Plugins/AutoSizeComments
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/BlueprintAssist.git Plugins/BlueprintAssist
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

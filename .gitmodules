@@ -13,3 +13,6 @@
 [submodule "Plugins/AutoSizeComments"]
 	path = Plugins/AutoSizeComments
 	url = https://github.com/chainkemists/AutoSizeComments.git
+[submodule "Plugins/BlueprintAssist"]
+	path = Plugins/BlueprintAssist
+	url = https://github.com/chainkemists/BlueprintAssist.git
