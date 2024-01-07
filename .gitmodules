@@ -28,3 +28,6 @@
 [submodule "Plugins/GitSourceControl"]
 	path = Plugins/GitSourceControl
 	url = https://github.com/chainkemists/UEGitPlugin.git
+[submodule "Plugins/MDMetaDataEditor"]
+	path = Plugins/MDMetaDataEditor
+	url = https://github.com/chainkemists/MDMetaDataEditor.git

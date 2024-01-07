@@ -33,6 +33,14 @@ git submodule add https://github.com/chainkemists/EasyAssetCreator.git Plugins/E
 git submodule add https://github.com/chainkemists/UEGitPlugin.git Plugins/GitSourceControl
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/UEGitPlugin.git Plugins/GitSourceControl
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/MDMetaDataEditor.git Plugins/MDMetaDataEditor
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------
