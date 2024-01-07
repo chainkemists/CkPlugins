@@ -41,6 +41,10 @@ git submodule add https://github.com/chainkemists/UEGitPlugin.git Plugins/GitSou
 git submodule add https://github.com/chainkemists/MDMetaDataEditor.git Plugins/MDMetaDataEditor
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/NodeGraphAssistant.git Plugins/NodeGraphAssistant
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

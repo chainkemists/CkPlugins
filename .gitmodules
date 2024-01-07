@@ -31,3 +31,6 @@
 [submodule "Plugins/MDMetaDataEditor"]
 	path = Plugins/MDMetaDataEditor
 	url = https://github.com/chainkemists/MDMetaDataEditor.git
+[submodule "Plugins/NodeGraphAssistant"]
+	path = Plugins/NodeGraphAssistant
+	url = https://github.com/chainkemists/NodeGraphAssistant.git
