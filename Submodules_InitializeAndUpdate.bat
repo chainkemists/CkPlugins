@@ -21,6 +21,10 @@ git submodule add https://github.com/chainkemists/BlueprintAssist.git Plugins/Bl
 git submodule add https://github.com/chainkemists/BlueprintGraphScreenshot.git Plugins/BlueprintGraphScreenshot
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/BlueprintNodeTemplate.git Plugins/BlueprintNodeTemp
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

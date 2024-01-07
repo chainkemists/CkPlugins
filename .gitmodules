@@ -19,3 +19,6 @@
 [submodule "Plugins/BlueprintGraphScreenshot"]
 	path = Plugins/BlueprintGraphScreenshot
 	url = https://github.com/chainkemists/BlueprintGraphScreenshot.git
+[submodule "Plugins/BlueprintNodeTemp"]
+	path = Plugins/BlueprintNodeTemp
+	url = https://github.com/chainkemists/BlueprintNodeTemplate.git
