@@ -1,7 +1,16 @@
 @echo off
 
 echo ===============================================================================
-echo Updating Submodules... please wait
+echo Updating Marketplace Plugins Submodules... please wait
+echo -------------------------------------------------------------------------------
+echo.
+
+@echo on
+git submodule add https://github.com/chainkemists/AssetHistoryTracker.git Plugins/AssetHistoryTracker
+@echo off
+
+echo ===============================================================================
+echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------
 echo.
 

@@ -7,3 +7,6 @@
 [submodule "Plugins/CkTests"]
 	path = Plugins/CkTests
 	url = https://github.com/chainkemists/CkTests.git
+[submodule "Plugins/AssetHistoryTracker"]
+	path = Plugins/AssetHistoryTracker
+	url = https://github.com/chainkemists/AssetHistoryTracker.git
