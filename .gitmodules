@@ -22,3 +22,6 @@
 [submodule "Plugins/BlueprintNodeTemp"]
 	path = Plugins/BlueprintNodeTemp
 	url = https://github.com/chainkemists/BlueprintNodeTemplate.git
+[submodule "Plugins/EasyAssetCreator"]
+	path = Plugins/EasyAssetCreator
+	url = https://github.com/chainkemists/EasyAssetCreator.git
