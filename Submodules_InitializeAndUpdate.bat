@@ -17,6 +17,10 @@ git submodule add https://github.com/chainkemists/AutoSizeComments.git Plugins/A
 git submodule add https://github.com/chainkemists/BlueprintAssist.git Plugins/BlueprintAssist
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/BlueprintGraphScreenshot.git Plugins/BlueprintGraphScreenshot
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

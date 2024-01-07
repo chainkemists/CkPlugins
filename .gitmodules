@@ -16,3 +16,6 @@
 [submodule "Plugins/BlueprintAssist"]
 	path = Plugins/BlueprintAssist
 	url = https://github.com/chainkemists/BlueprintAssist.git
+[submodule "Plugins/BlueprintGraphScreenshot"]
+	path = Plugins/BlueprintGraphScreenshot
+	url = https://github.com/chainkemists/BlueprintGraphScreenshot.git
