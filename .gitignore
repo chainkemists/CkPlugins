@@ -337,3 +337,6 @@ AdvancedTurnBasedTileToolkit
 
 # Free file Sync
 sync.ffs_db
+
+# misc
+Auto/
