@@ -51,6 +51,10 @@ echo ---------------------------------------------------------------------------
 echo.
 
 @echo on
+git submodule add https://github.com/chainkemists/CkApplication.git Plugins/CkApplication
+@echo off
+
+@echo on
 git submodule add https://github.com/chainkemists/CkFoundation.git Plugins/CkFoundation
 @echo off
 
