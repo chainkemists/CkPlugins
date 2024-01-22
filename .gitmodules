@@ -37,3 +37,9 @@
 [submodule "Plugins/CkApplication"]
 	path = Plugins/CkApplication
 	url = https://github.com/chainkemists/CkApplication.git
+[submodule "Plugins/WorldSpaceWidgets"]
+	path = Plugins/WorldSpaceWidgets
+	url = https://github.com/chainkemists/WorldSpaceWidgets.git
+[submodule "Plugins/NumberRenderer"]
+	path = Plugins/NumberRenderer
+	url = https://github.com/chainkemists/NumberRenderer.git
