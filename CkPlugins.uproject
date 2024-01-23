@@ -130,6 +130,16 @@
 			"Name": "BlueprintAssist",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
+		},
+		{
+			"Name": "NumberRenderer",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/16f891500ac247f5b807ed13b38ade36"
+		},
+		{
+			"Name": "WorldSpaceWidgetPlugin",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/2e17ad238d354583afbffed56c3faf54"
 		}
 	]
 }
