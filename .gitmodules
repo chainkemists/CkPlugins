@@ -43,3 +43,6 @@
 [submodule "Plugins/NumberRenderer"]
 	path = Plugins/NumberRenderer
 	url = https://github.com/chainkemists/NumberRenderer.git
+[submodule "CkAuto"]
+	path = CkAuto
+	url = https://github.com/chainkemists/CkAuto.git
