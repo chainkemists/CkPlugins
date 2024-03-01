@@ -46,3 +46,9 @@
 [submodule "CkAuto"]
 	path = CkAuto
 	url = https://github.com/chainkemists/CkAuto.git
+[submodule "Plugins/ZomgEditorAddons"]
+	path = Plugins/ZomgEditorAddons
+	url = https://sulfur-ck@github.com/chainkemists/ZomgEditorAddons.git
+[submodule "Plugins/ZenMode"]
+	path = Plugins/ZenMode
+	url = https://sulfur-ck@github.com/chainkemists/ZenMode.git
