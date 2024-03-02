@@ -53,6 +53,14 @@ git submodule add https://github.com/chainkemists/WorldSpaceWidgets.git Plugins/
 git submodule add https://github.com/chainkemists/NumberRenderer.git Plugins/NumberRenderer
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/ZomgEditorAddons.git Plugins/ZomgEditorAddons
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/ZenMode.git Plugins/ZenMode
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------
