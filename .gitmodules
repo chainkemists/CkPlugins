@@ -52,3 +52,12 @@
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://sulfur-ck@github.com/chainkemists/ZenMode.git
+[submodule "Plugins/DebugFunctionLibrary"]
+	path = Plugins/DebugFunctionLibrary
+	url = https://sulfur-ck@github.com/chainkemists/DebugFunctionLibrary.git
+[submodule "Plugins/BlueprintConsoleCommands"]
+	path = Plugins/BlueprintConsoleCommands
+	url = https://sulfur-ck@github.com/chainkemists/BlueprintConsoleCommands.git
+[submodule "Plugins/MapFunctionLibrary"]
+	path = Plugins/MapFunctionLibrary
+	url = https://sulfur-ck@github.com/chainkemists/MapFunctionLibrary.git

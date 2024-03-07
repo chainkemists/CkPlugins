@@ -61,6 +61,18 @@ git submodule add https://github.com/chainkemists/ZomgEditorAddons.git Plugins/Z
 git submodule add https://github.com/chainkemists/ZenMode.git Plugins/ZenMode
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/DebugFunctionLibrary.git Plugins/DebugFunctionLibrary
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/BlueprintConsoleCommands.git Plugins/BlueprintConsoleCommands
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/MapFunctionLibrary.git Plugins/MapFunctionLibrary
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------
