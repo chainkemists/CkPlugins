@@ -140,6 +140,31 @@
 			"Name": "WorldSpaceWidgetPlugin",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/2e17ad238d354583afbffed56c3faf54"
+		},
+		{
+			"Name": "BlueprintConsoleCommands",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/0c4ad6fccd5147a7a454f4607cec9bc2"
+		},
+		{
+			"Name": "DebugFunctionLibrary",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/19bd81002c7643aeab6b002563cbe0dd"
+		},
+		{
+			"Name": "MapFunctionLibrary",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/290e29ac0ffe4e75863a80566dfd7a07"
+		},
+		{
+			"Name": "ZEditorAddons",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/698ab8fefade462f9db0b21591daf8f5"
+		},
+		{
+			"Name": "ZenDev",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/b203c4bd28604e7689512c27f81e1945"
 		}
 	]
 }
