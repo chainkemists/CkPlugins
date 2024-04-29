@@ -9,8 +9,6 @@ public class CkPluginsServerTarget : TargetRules
 	public CkPluginsServerTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 
 		ExtraModuleNames.AddRange
 		(

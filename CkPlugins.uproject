@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "CK-UE5",
+	"EngineAssociation": "CKUE54",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -157,14 +157,14 @@
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/290e29ac0ffe4e75863a80566dfd7a07"
 		},
 		{
-			"Name": "ZEditorAddons",
+			"Name": "ZenDev",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/698ab8fefade462f9db0b21591daf8f5"
 		},
 		{
-			"Name": "ZenDev",
+			"Name": "ZEditorAddons",
 			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/b203c4bd28604e7689512c27f81e1945"
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/698ab8fefade462f9db0b21591daf8f5"
 		}
 	]
 }
