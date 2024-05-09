@@ -73,6 +73,14 @@ git submodule add https://github.com/chainkemists/BlueprintConsoleCommands.git P
 git submodule add https://github.com/chainkemists/MapFunctionLibrary.git Plugins/MapFunctionLibrary
 @echo off
 
+@echo on
+git submodule add https://sulfur-ck@github.com/chainkemists/BlueprintUE-Cpp-Plugin.git Plugins/BlueprintUE-Cpp-Plugin
+@echo off
+
+@echo on
+git submodule add https://sulfur-ck@github.com/chainkemists/Cog.git Plugins/Cog
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------

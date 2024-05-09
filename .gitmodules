@@ -48,16 +48,22 @@
 	url = https://github.com/chainkemists/CkAuto.git
 [submodule "Plugins/ZomgEditorAddons"]
 	path = Plugins/ZomgEditorAddons
-	url = https://sulfur-ck@github.com/chainkemists/ZomgEditorAddons.git
+	url = https://github.com/chainkemists/ZomgEditorAddons.git
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
-	url = https://sulfur-ck@github.com/chainkemists/ZenMode.git
+	url = https://github.com/chainkemists/ZenMode.git
 [submodule "Plugins/DebugFunctionLibrary"]
 	path = Plugins/DebugFunctionLibrary
-	url = https://sulfur-ck@github.com/chainkemists/DebugFunctionLibrary.git
+	url = https://github.com/chainkemists/DebugFunctionLibrary.git
 [submodule "Plugins/BlueprintConsoleCommands"]
 	path = Plugins/BlueprintConsoleCommands
-	url = https://sulfur-ck@github.com/chainkemists/BlueprintConsoleCommands.git
+	url = https://github.com/chainkemists/BlueprintConsoleCommands.git
 [submodule "Plugins/MapFunctionLibrary"]
 	path = Plugins/MapFunctionLibrary
-	url = https://sulfur-ck@github.com/chainkemists/MapFunctionLibrary.git
+	url = https://github.com/chainkemists/MapFunctionLibrary.git
+[submodule "Plugins/BlueprintUE-Cpp-Plugin"]
+	path = Plugins/BlueprintUE-Cpp-Plugin
+	url = https://github.com/chainkemists/BlueprintUE-Cpp-Plugin.git
+[submodule "Plugins/Cog"]
+	path = Plugins/Cog
+	url = https://github.com/chainkemists/Cog.git
