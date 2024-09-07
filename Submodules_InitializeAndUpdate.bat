@@ -74,11 +74,31 @@ git submodule add https://github.com/chainkemists/MapFunctionLibrary.git Plugins
 @echo off
 
 @echo on
-git submodule add https://sulfur-ck@github.com/chainkemists/BlueprintUE-Cpp-Plugin.git Plugins/BlueprintUE-Cpp-Plugin
+git submodule add https://github.com/chainkemists/BlueprintUE-Cpp-Plugin.git Plugins/BlueprintUE-Cpp-Plugin
 @echo off
 
 @echo on
-git submodule add https://sulfur-ck@github.com/chainkemists/Cog.git Plugins/Cog
+git submodule add https://github.com/chainkemists/Cog.git Plugins/Cog
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/Cog.git Plugins/Cog
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/Skelot.git Plugins/Skelot
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/ant.git Plugins/Ant
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/AdaptiveGizmo/ Plugins/AdaptiveGizmo
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/SpatialQuerySystem.git Plugins/SpatialQuerySystem
 @echo off
 
 echo ===============================================================================
