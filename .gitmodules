@@ -79,3 +79,6 @@
 [submodule "Plugins/SpatialQuerySystem"]
 	path = Plugins/SpatialQuerySystem
 	url = https://github.com/chainkemists/SpatialQuerySystem.git
+[submodule "Plugins/Projectile-Physics-Plugin"]
+	path = Plugins/Projectile-Physics-Plugin
+	url = https://github.com/chainkemists/Projectile-Physics-Plugin
