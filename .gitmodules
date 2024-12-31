@@ -82,3 +82,6 @@
 [submodule "Plugins/Projectile-Physics-Plugin"]
 	path = Plugins/Projectile-Physics-Plugin
 	url = https://github.com/chainkemists/Projectile-Physics-Plugin
+[submodule "Plugins/LogViewerPro"]
+	path = Plugins/LogViewerPro
+	url = https://github.com/chainkemists/LogViewerPro.git
