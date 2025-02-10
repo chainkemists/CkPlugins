@@ -85,3 +85,36 @@
 [submodule "Plugins/LogViewerPro"]
 	path = Plugins/LogViewerPro
 	url = https://github.com/chainkemists/LogViewerPro.git
+[submodule "Plugins/EOSIntegrationKit"]
+	path = Plugins/EOSIntegrationKit
+	url = https://github.com/chainkemists/EOSIntegrationKit.git
+[submodule "Plugins/AutoSettings"]
+	path = Plugins/AutoSettings
+	url = https://github.com/chainkemists/auto-settings.git
+[submodule "Plugins/Prismatiscape-Interaction-Plugin"]
+	path = Plugins/Prismatiscape-Interaction-Plugin
+	url = https://github.com/chainkemists/Prismatiscape-Interaction-Plugin.git
+[submodule "Plugins/ProInstanceTools"]
+	path = Plugins/ProInstanceTools
+	url = https://github.com/chainkemists/ProInstanceTools.git
+[submodule "Plugins/ScreenSpaceFogScattering"]
+	path = Plugins/ScreenSpaceFogScattering
+	url = https://github.com/chainkemists/ScreenSpaceFogScattering.git
+[submodule "Plugins/EditorScriptingTools"]
+	path = Plugins/EditorScriptingTools
+	url = https://github.com/chainkemists/UE4-EditorScriptingToolsPlugin
+[submodule "Plugins/PhysicalLayoutTool"]
+	path = Plugins/PhysicalLayoutTool
+	url = https://github.com/chainkemists/PhysicalLayoutTool.git
+[submodule "Plugins/MetaCheatManager"]
+	path = Plugins/MetaCheatManager
+	url = https://github.com/chainkemists/MetaCheatManager.git
+[submodule "Plugins/CableTie"]
+	path = Plugins/CableTie
+	url = https://github.com/chainkemists/CableTie.git
+[submodule "Plugins/AdvancedCommenting"]
+	path = Plugins/AdvancedCommenting
+	url = https://github.com/chainkemists/AdvancedCommenting.git
+[submodule "Plugins/VerticalTabs"]
+	path = Plugins/VerticalTabs
+	url = https://github.com/chainkemists/VerticalTabs.git

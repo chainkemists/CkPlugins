@@ -6,10 +6,6 @@ echo ---------------------------------------------------------------------------
 echo.
 
 @echo on
-git submodule add https://github.com/chainkemists/AssetHistoryTracker.git Plugins/AssetHistoryTracker
-@echo off
-
-@echo on
 git submodule add https://github.com/chainkemists/AutoSizeComments.git Plugins/AutoSizeComments
 @echo off
 
@@ -34,10 +30,6 @@ git submodule add https://github.com/chainkemists/UEGitPlugin.git Plugins/GitSou
 @echo off
 
 @echo on
-git submodule add https://github.com/chainkemists/UEGitPlugin.git Plugins/GitSourceControl
-@echo off
-
-@echo on
 git submodule add https://github.com/chainkemists/MDMetaDataEditor.git Plugins/MDMetaDataEditor
 @echo off
 
@@ -50,23 +42,7 @@ git submodule add https://github.com/chainkemists/WorldSpaceWidgets.git Plugins/
 @echo off
 
 @echo on
-git submodule add https://github.com/chainkemists/NumberRenderer.git Plugins/NumberRenderer
-@echo off
-
-@echo on
-git submodule add https://github.com/chainkemists/ZomgEditorAddons.git Plugins/ZomgEditorAddons
-@echo off
-
-@echo on
 git submodule add https://github.com/chainkemists/ZenMode.git Plugins/ZenMode
-@echo off
-
-@echo on
-git submodule add https://github.com/chainkemists/DebugFunctionLibrary.git Plugins/DebugFunctionLibrary
-@echo off
-
-@echo on
-git submodule add https://github.com/chainkemists/BlueprintConsoleCommands.git Plugins/BlueprintConsoleCommands
 @echo off
 
 @echo on
@@ -82,18 +58,6 @@ git submodule add https://github.com/chainkemists/Cog.git Plugins/Cog
 @echo off
 
 @echo on
-git submodule add https://github.com/chainkemists/Cog.git Plugins/Cog
-@echo off
-
-@echo on
-git submodule add https://github.com/chainkemists/Skelot.git Plugins/Skelot
-@echo off
-
-@echo on
-git submodule add https://github.com/chainkemists/ant.git Plugins/Ant
-@echo off
-
-@echo on
 git submodule add https://github.com/chainkemists/AdaptiveGizmo/ Plugins/AdaptiveGizmo
 @echo off
 
@@ -101,10 +65,66 @@ git submodule add https://github.com/chainkemists/AdaptiveGizmo/ Plugins/Adaptiv
 git submodule add https://github.com/chainkemists/SpatialQuerySystem.git Plugins/SpatialQuerySystem
 @echo off
 
+@echo on
+git submodule add https://github.com/chainkemists/EOSIntegrationKit.git Plugins/EOSIntegrationKit
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/auto-settings.git Plugins/AutoSettings
+@echo offs
+
+@echo on
+git submodule add https://github.com/chainkemists/Prismatiscape-Interaction-Plugin.git Plugins/Prismatiscape-Interaction-Plugin
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/ProInstanceTools.git Plugins/ProInstanceTools
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/ScreenSpaceFogScattering.git Plugins/ScreenSpaceFogScattering
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/LogViewerPro.git Plugins/LogViewerPro
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/Projectile-Physics-Plugin.git Plugins/Projectile-Physics-Plugin
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/UE4-EditorScriptingToolsPlugin Plugins/EditorScriptingTools
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/PhysicalLayoutTool.git Plugins/PhysicalLayoutTool
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/MetaCheatManager.git Plugins/MetaCheatManager
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/CableTie.git Plugins/CableTie
+@echo off
+
+@echo on
+git submodule add  https://github.com/chainkemists/AdvancedCommenting.git Plugins/AdvancedCommenting
+@echo off
+
+@echo on
+git submodule add https://github.com/chainkemists/VerticalTabs.git Plugins/VerticalTabs
+@echo off
+
 echo ===============================================================================
 echo Updating CK Submodules... please wait
 echo -------------------------------------------------------------------------------
 echo.
+
+@echo on
+git submodule add https://github.com/chainkemists/CkAuto.git CkAuto
+@echo off
 
 @echo on
 git submodule add https://github.com/chainkemists/CkApplication.git Plugins/CkApplication
