@@ -10,6 +10,7 @@ public class CkPluginsEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		bOverrideBuildEnvironment = true;
 		ExtraModuleNames.Add("CkPlugins");
+		DefaultBuildSettings = BuildSettingsVersion.V5;
 
         if (!bUseIris)
         {
