@@ -9,13 +9,10 @@ public class CkPluginsServerTarget : TargetRules
 	public CkPluginsServerTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
+		bWithPushModel = true;
+		bUseIris = true;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
-		ExtraModuleNames.AddRange
-		(
-			new string[]
-			{
-				"CkPlugins",
-			}
-		);
+		ExtraModuleNames.Add("CkPlugins");
 	}
 }

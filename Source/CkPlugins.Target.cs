@@ -8,6 +8,10 @@ public class CkPluginsTarget : TargetRules
 	public CkPluginsTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
+		bWithPushModel = true;
+		bUseIris = true;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+
 		ExtraModuleNames.Add("CkPlugins");
 	}
 }

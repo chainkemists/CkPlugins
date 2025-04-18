@@ -8,10 +8,10 @@ public class CkPluginsEditorTarget : TargetRules
 	public CkPluginsEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		bOverrideBuildEnvironment = true;
-		ExtraModuleNames.Add("CkPlugins");
 		bWithPushModel = true;
-
 		bUseIris = true;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+
+		ExtraModuleNames.Add("CkPlugins");
 	}
 }
