@@ -52,9 +52,6 @@
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
-[submodule "Plugins/DebugFunctionLibrary"]
-	path = Plugins/DebugFunctionLibrary
-	url = https://github.com/chainkemists/DebugFunctionLibrary.git
 [submodule "Plugins/BlueprintConsoleCommands"]
 	path = Plugins/BlueprintConsoleCommands
 	url = https://github.com/chainkemists/BlueprintConsoleCommands.git
