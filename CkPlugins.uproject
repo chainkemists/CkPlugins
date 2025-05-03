@@ -147,11 +147,6 @@
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/0c4ad6fccd5147a7a454f4607cec9bc2"
 		},
 		{
-			"Name": "DebugFunctionLibrary",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/19bd81002c7643aeab6b002563cbe0dd"
-		},
-		{
 			"Name": "MapFunctionLibrary",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/290e29ac0ffe4e75863a80566dfd7a07"
