@@ -142,11 +142,6 @@
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/2e17ad238d354583afbffed56c3faf54"
 		},
 		{
-			"Name": "BlueprintConsoleCommands",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/0c4ad6fccd5147a7a454f4607cec9bc2"
-		},
-		{
 			"Name": "MapFunctionLibrary",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/290e29ac0ffe4e75863a80566dfd7a07"
