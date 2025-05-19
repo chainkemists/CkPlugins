@@ -112,3 +112,6 @@
 [submodule "Plugins/VerticalTabs"]
 	path = Plugins/VerticalTabs
 	url = https://github.com/chainkemists/VerticalTabs.git
+[submodule "Plugins/BlueprintTaskForge"]
+	path = Plugins/BlueprintTaskForge
+	url = https://github.com/CommitAndChill/BlueprintTaskForge
