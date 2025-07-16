@@ -19,9 +19,6 @@
 [submodule "Plugins/BlueprintGraphScreenshot"]
 	path = Plugins/BlueprintGraphScreenshot
 	url = https://github.com/chainkemists/BlueprintGraphScreenshot.git
-[submodule "Plugins/BlueprintNodeTemp"]
-	path = Plugins/BlueprintNodeTemp
-	url = https://github.com/chainkemists/BlueprintNodeTemplate.git
 [submodule "Plugins/EasyAssetCreator"]
 	path = Plugins/EasyAssetCreator
 	url = https://github.com/chainkemists/EasyAssetCreator.git
@@ -91,9 +88,6 @@
 [submodule "Plugins/ProInstanceTools"]
 	path = Plugins/ProInstanceTools
 	url = https://github.com/chainkemists/ProInstanceTools.git
-[submodule "Plugins/ScreenSpaceFogScattering"]
-	path = Plugins/ScreenSpaceFogScattering
-	url = https://github.com/chainkemists/ScreenSpaceFogScattering.git
 [submodule "Plugins/EditorScriptingTools"]
 	path = Plugins/EditorScriptingTools
 	url = https://github.com/chainkemists/UE4-EditorScriptingToolsPlugin

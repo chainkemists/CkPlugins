@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{273D6626-4D47-8B17-97BB-FD9947274B0C}",
+	"EngineAssociation": "{21E60FAC-48AD-69BF-42B6-E98C333A2E90}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -20,7 +20,7 @@
 		},
 		{
 			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
+			"Enabled": false,
 			"TargetAllowList": [
 				"Editor"
 			]
@@ -78,26 +78,21 @@
 		},
 		{
 			"Name": "ConsoleVariables",
-			"Enabled": true
+			"Enabled": false
 		},
 		{
 			"Name": "AutoSizeComments",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ae89a2c4ab384de0a3f213b23de324f3"
 		},
 		{
-			"Name": "BlueprintNodeTemplate",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher: //ue/marketplace/content/8190f8cf1dfa44a4b9e5c8accde255f5"
-		},
-		{
 			"Name": "NodeGraphAssistant",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/d9baaaeadeaf41dcb52b3f6e134e9514"
 		},
 		{
 			"Name": "BlueprintGraphScreenshot",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/6221f79da85d4ea083b92382daa28e14"
 		},
 		{
@@ -114,13 +109,17 @@
 		},
 		{
 			"Name": "AssetHistoryTracker",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ef97fd1cc75b483aa01ca839c51b899d"
 		},
 		{
 			"Name": "AssetCreator",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/e70095fa9c33498f9941aa71a2b314fc"
+		},
+		{
+			"Name": "EOSIntegrationKit",
+			"Enabled": false
 		},
 		{
 			"Name": "EditorTests",
@@ -128,12 +127,12 @@
 		},
 		{
 			"Name": "BlueprintAssist",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
 		},
 		{
 			"Name": "NumberRenderer",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/16f891500ac247f5b807ed13b38ade36"
 		},
 		{
@@ -142,18 +141,13 @@
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/2e17ad238d354583afbffed56c3faf54"
 		},
 		{
-			"Name": "MapFunctionLibrary",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/290e29ac0ffe4e75863a80566dfd7a07"
-		},
-		{
 			"Name": "ZenDev",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/b203c4bd28604e7689512c27f81e1945"
 		},
 		{
 			"Name": "ZEditorAddons",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/698ab8fefade462f9db0b21591daf8f5"
 		},
 		{
@@ -167,7 +161,7 @@
 		},
 		{
 			"Name": "Ant",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/a35ae91206284bf89fea2db4958e9b35"
 		},
 		{
@@ -177,12 +171,12 @@
 		},
 		{
 			"Name": "Skelot",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/335a336fda3242fab2617756a4add1d6"
 		},
 		{
 			"Name": "SpatialQuerySystem",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/83ef0c629d4a4c36ba16fbe1e62ec283"
 		},
 		{
