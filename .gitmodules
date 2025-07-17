@@ -7,18 +7,12 @@
 [submodule "Plugins/CkTests"]
 	path = Plugins/CkTests
 	url = https://github.com/chainkemists/CkTests.git
-[submodule "Plugins/AssetHistoryTracker"]
-	path = Plugins/AssetHistoryTracker
-	url = https://github.com/chainkemists/AssetHistoryTracker.git
 [submodule "Plugins/AutoSizeComments"]
 	path = Plugins/AutoSizeComments
 	url = https://github.com/chainkemists/AutoSizeComments.git
 [submodule "Plugins/BlueprintAssist"]
 	path = Plugins/BlueprintAssist
 	url = https://github.com/chainkemists/BlueprintAssist.git
-[submodule "Plugins/BlueprintGraphScreenshot"]
-	path = Plugins/BlueprintGraphScreenshot
-	url = https://github.com/chainkemists/BlueprintGraphScreenshot.git
 [submodule "Plugins/EasyAssetCreator"]
 	path = Plugins/EasyAssetCreator
 	url = https://github.com/chainkemists/EasyAssetCreator.git
@@ -37,15 +31,9 @@
 [submodule "Plugins/WorldSpaceWidgets"]
 	path = Plugins/WorldSpaceWidgets
 	url = https://github.com/chainkemists/WorldSpaceWidgets.git
-[submodule "Plugins/NumberRenderer"]
-	path = Plugins/NumberRenderer
-	url = https://github.com/chainkemists/NumberRenderer.git
 [submodule "CkAuto"]
 	path = CkAuto
 	url = https://github.com/chainkemists/CkAuto.git
-[submodule "Plugins/ZomgEditorAddons"]
-	path = Plugins/ZomgEditorAddons
-	url = https://github.com/chainkemists/ZomgEditorAddons.git
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git

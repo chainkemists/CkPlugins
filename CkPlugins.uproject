@@ -82,18 +82,13 @@
 		},
 		{
 			"Name": "AutoSizeComments",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ae89a2c4ab384de0a3f213b23de324f3"
 		},
 		{
 			"Name": "NodeGraphAssistant",
 			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/d9baaaeadeaf41dcb52b3f6e134e9514"
-		},
-		{
-			"Name": "BlueprintGraphScreenshot",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/6221f79da85d4ea083b92382daa28e14"
 		},
 		{
 			"Name": "CommonUI",
@@ -106,11 +101,6 @@
 		{
 			"Name": "MDMetaDataEditor",
 			"Enabled": true
-		},
-		{
-			"Name": "AssetHistoryTracker",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ef97fd1cc75b483aa01ca839c51b899d"
 		},
 		{
 			"Name": "AssetCreator",
@@ -127,13 +117,8 @@
 		},
 		{
 			"Name": "BlueprintAssist",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
-		},
-		{
-			"Name": "NumberRenderer",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/16f891500ac247f5b807ed13b38ade36"
 		},
 		{
 			"Name": "WorldSpaceWidgetPlugin",
@@ -142,13 +127,8 @@
 		},
 		{
 			"Name": "ZenDev",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/b203c4bd28604e7689512c27f81e1945"
-		},
-		{
-			"Name": "ZEditorAddons",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/698ab8fefade462f9db0b21591daf8f5"
 		},
 		{
 			"Name": "Iris",
@@ -161,7 +141,7 @@
 		},
 		{
 			"Name": "Ant",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/a35ae91206284bf89fea2db4958e9b35"
 		},
 		{
@@ -171,17 +151,21 @@
 		},
 		{
 			"Name": "Skelot",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/335a336fda3242fab2617756a4add1d6"
 		},
 		{
 			"Name": "SpatialQuerySystem",
-			"Enabled": false,
+			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/83ef0c629d4a4c36ba16fbe1e62ec283"
 		},
 		{
 			"Name": "PlasticSourceControl",
 			"Enabled": false
+		},
+		{
+			"Name": "AngelscriptEnhancedInput",
+			"Enabled": true
 		},
 		{
 			"Name": "EditorScriptingTools",
