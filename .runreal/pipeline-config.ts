@@ -2,7 +2,7 @@ import type { PipelineConfigInterface } from 'jsr:@runreal/buildkite-ts'
 
 export const config: PipelineConfigInterface = {
 	env: {
-		RUNREAL_VERSION: '1.8.0',
+		RUNREAL_VERSION: '1.9.0',
 		RUNREAL_PROJECT_PATH: './',
 		RUNREAL_ENGINE_PATH: '$BUILDKITE_BUILD_PATH/UnrealEngine',
 		RUNREAL_BUILD_PATH: './.runreal/build',

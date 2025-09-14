@@ -23,9 +23,9 @@ export class CompilePipeline extends BasePipeline {
 
 	private addCompileEditorStep() {
 		const step: CommandStep = {
-			label: 'compile game',
+			label: ':windows: compile editor',
 			command: 'runreal workflow exec build-editor --mode buildkite',
-			id: 'compile-game',
+			id: 'compile-editor',
 		}
 		this.addStep(step)
 		this.addCommonPlugins(step)
@@ -33,8 +33,9 @@ export class CompilePipeline extends BasePipeline {
 
 	private addCompileGameStep() {
 		const step: CommandStep = {
-			label: ':cooking: cook content',
+			label: ':windows: compile game',
 			command: 'runreal workflow exec build-game --mode buildkite',
+			id: 'compile-game',
 		}
 		this.addCommonPlugins(step)
 		this.addStep(step)
