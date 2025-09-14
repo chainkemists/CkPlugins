@@ -1,0 +1,14 @@
+{
+	"fmt": {
+		"include": ["./.runreal", "runreal.config.json"],
+		"useTabs": true,
+		"lineWidth": 120,
+		"indentWidth": 2,
+		"singleQuote": true,
+		"proseWrap": "preserve",
+		"semiColons": false
+	},
+	"imports": {
+		"@runreal/buildkite-ts": "jsr:@runreal/buildkite-ts@^1.1.2"
+	}
+}

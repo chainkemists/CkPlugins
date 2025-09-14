@@ -1,0 +1,34 @@
+{
+  "project": {
+    "name": "CkPlugins"
+  },
+  "engine": {
+    "source": "https://github.com/Chainkemists/UnrealEngine-Internal",
+    "branch": "main"
+  },
+  "git": {
+    "mirrors": true
+  },
+  "workflows": [
+    {
+      "name": "Build Editor",
+      "id": "build-editor",
+      "steps": [
+        { "command": "runreal debug" },
+        { "command": "runreal engine install" },
+        { "command": "runreal engine update", "args": ["--setup"] },
+        { "command": "runreal build editor" }
+      ]
+    },
+    {
+      "name": "Build Game",
+      "id": "build-game",
+      "steps": [
+        { "command": "runreal debug" },
+        { "command": "runreal engine install" },
+        { "command": "runreal engine update", "args": ["--setup"] },
+        { "command": "runreal build game" }
+      ]
+    }
+  ]
+}
