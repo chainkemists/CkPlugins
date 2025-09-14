@@ -14,7 +14,6 @@
       "name": "Build Editor",
       "id": "build-editor",
       "steps": [
-        { "command": "runreal debug" },
         { "command": "runreal engine install" },
         { "command": "runreal engine update", "args": ["--setup"] },
         { "command": "runreal build editor" }
@@ -24,7 +23,6 @@
       "name": "Build Game",
       "id": "build-game",
       "steps": [
-        { "command": "runreal debug" },
         { "command": "runreal engine install" },
         { "command": "runreal engine update", "args": ["--setup"] },
         { "command": "runreal build game" }
