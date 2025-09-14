@@ -2,13 +2,10 @@
   "project": {
     "name": "CkPlugins"
   },
-  "engine": {
-    "source": "https://github.com/Chainkemists/UnrealEngine-Internal",
-    "branch": "main"
-  },
-  "git": {
-    "mirrors": true
-  },
+	"engine": {
+		"gitSource": "https://github.com/Chainkemists/UnrealEngine-Internal",
+		"gitBranch": "main"
+	},
   "workflows": [
     {
       "name": "Build Editor",
