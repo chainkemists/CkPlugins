@@ -76,9 +76,6 @@
 [submodule "Plugins/ProInstanceTools"]
 	path = Plugins/ProInstanceTools
 	url = https://github.com/chainkemists/ProInstanceTools.git
-[submodule "Plugins/EditorScriptingTools"]
-	path = Plugins/EditorScriptingTools
-	url = https://github.com/chainkemists/UE4-EditorScriptingToolsPlugin
 [submodule "Plugins/PhysicalLayoutTool"]
 	path = Plugins/PhysicalLayoutTool
 	url = https://github.com/chainkemists/PhysicalLayoutTool.git

@@ -166,11 +166,6 @@
 		{
 			"Name": "AngelscriptEnhancedInput",
 			"Enabled": true
-		},
-		{
-			"Name": "EditorScriptingTools",
-			"Enabled": true,
-			"MarketplaceURL": "https://unrealengineresources.com/plugins"
 		}
 	]
 }
