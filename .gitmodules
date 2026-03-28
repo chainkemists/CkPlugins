@@ -82,9 +82,6 @@
 [submodule "Plugins/PhysicalLayoutTool"]
 	path = Plugins/PhysicalLayoutTool
 	url = https://github.com/chainkemists/PhysicalLayoutTool.git
-[submodule "Plugins/MetaCheatManager"]
-	path = Plugins/MetaCheatManager
-	url = https://github.com/chainkemists/MetaCheatManager.git
 [submodule "Plugins/CableTie"]
 	path = Plugins/CableTie
 	url = https://github.com/chainkemists/CableTie.git
