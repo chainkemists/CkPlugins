@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{21E60FAC-48AD-69BF-42B6-E98C333A2E90}",
+	"EngineAssociation": "{22D2B5AE-4AE5-C485-F291-F79F407369F4}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -116,48 +116,8 @@
 			"Enabled": true
 		},
 		{
-			"Name": "BlueprintAssist",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
-		},
-		{
-			"Name": "WorldSpaceWidgetPlugin",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/2e17ad238d354583afbffed56c3faf54"
-		},
-		{
-			"Name": "ZenDev",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/b203c4bd28604e7689512c27f81e1945"
-		},
-		{
 			"Name": "Iris",
 			"Enabled": true
-		},
-		{
-			"Name": "AdaptiveGizmo",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5bb75b16f4364047b37da6fa89cacaa4"
-		},
-		{
-			"Name": "Ant",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/a35ae91206284bf89fea2db4958e9b35"
-		},
-		{
-			"Name": "RMPP",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/05b3c06715ba4f61aebe67856235b475"
-		},
-		{
-			"Name": "Skelot",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/335a336fda3242fab2617756a4add1d6"
-		},
-		{
-			"Name": "SpatialQuerySystem",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/83ef0c629d4a4c36ba16fbe1e62ec283"
 		},
 		{
 			"Name": "PlasticSourceControl",

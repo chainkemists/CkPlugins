@@ -9,7 +9,6 @@ public class CkPluginsTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		bWithPushModel = true;
-		bUseIris = true;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.Add("CkPlugins");

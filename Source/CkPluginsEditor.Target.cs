@@ -9,7 +9,6 @@ public class CkPluginsEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		bWithPushModel = true;
-		bUseIris = true;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.Add("CkPlugins");

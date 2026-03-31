@@ -10,7 +10,6 @@ public class CkPluginsServerTarget : TargetRules
 	{
 		Type = TargetType.Server;
 		bWithPushModel = true;
-		bUseIris = true;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.Add("CkPlugins");
