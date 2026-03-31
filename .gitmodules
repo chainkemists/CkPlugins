@@ -58,9 +58,6 @@
 [submodule "Plugins/PhysicalLayoutTool"]
 	path = Plugins/PhysicalLayoutTool
 	url = https://github.com/chainkemists/PhysicalLayoutTool.git
-[submodule "Plugins/CableTie"]
-	path = Plugins/CableTie
-	url = https://github.com/chainkemists/CableTie.git
 [submodule "Plugins/AdvancedCommenting"]
 	path = Plugins/AdvancedCommenting
 	url = https://github.com/chainkemists/AdvancedCommenting.git
