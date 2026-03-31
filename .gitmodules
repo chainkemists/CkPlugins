@@ -34,9 +34,6 @@
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
-[submodule "Plugins/Skelot"]
-	path = Plugins/Skelot
-	url = https://github.com/chainkemists/Skelot.git
 [submodule "Plugins/Ant"]
 	path = Plugins/Ant
 	url = https://github.com/chainkemists/ant.git
