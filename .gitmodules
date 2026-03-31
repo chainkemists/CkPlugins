@@ -49,9 +49,6 @@
 [submodule "Plugins/Ant"]
 	path = Plugins/Ant
 	url = https://github.com/chainkemists/ant.git
-[submodule "Plugins/AdaptiveGizmo"]
-	path = Plugins/AdaptiveGizmo
-	url = https://github.com/chainkemists/AdaptiveGizmo/
 [submodule "Plugins/SpatialQuerySystem"]
 	path = Plugins/SpatialQuerySystem
 	url = https://github.com/chainkemists/SpatialQuerySystem.git
