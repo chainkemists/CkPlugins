@@ -37,9 +37,6 @@
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
-[submodule "Plugins/BlueprintUE-Cpp-Plugin"]
-	path = Plugins/BlueprintUE-Cpp-Plugin
-	url = https://github.com/chainkemists/BlueprintUE-Cpp-Plugin.git
 [submodule "Plugins/Cog"]
 	path = Plugins/Cog
 	url = https://github.com/chainkemists/Cog.git
