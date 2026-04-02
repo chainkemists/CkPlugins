@@ -12,7 +12,7 @@ public class CkPlugins : ModuleRules
 
         PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-        SetupIrisSupport(Target);
+        SetupIrisSupport(Target, true);
 
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
