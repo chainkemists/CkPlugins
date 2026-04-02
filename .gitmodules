@@ -13,9 +13,6 @@
 [submodule "Plugins/BlueprintAssist"]
 	path = Plugins/BlueprintAssist
 	url = https://github.com/chainkemists/BlueprintAssist.git
-[submodule "Plugins/EasyAssetCreator"]
-	path = Plugins/EasyAssetCreator
-	url = https://github.com/chainkemists/EasyAssetCreator.git
 [submodule "Plugins/GitSourceControl"]
 	path = Plugins/GitSourceControl
 	url = https://github.com/chainkemists/UEGitPlugin.git
@@ -25,39 +22,9 @@
 [submodule "Plugins/CkApplication"]
 	path = Plugins/CkApplication
 	url = https://github.com/chainkemists/CkApplication.git
-[submodule "Plugins/WorldSpaceWidgets"]
-	path = Plugins/WorldSpaceWidgets
-	url = https://github.com/chainkemists/WorldSpaceWidgets.git
 [submodule "CkAuto"]
 	path = CkAuto
 	url = https://github.com/chainkemists/CkAuto.git
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
-[submodule "Plugins/Ant"]
-	path = Plugins/Ant
-	url = https://github.com/chainkemists/ant.git
-[submodule "Plugins/LogViewerPro"]
-	path = Plugins/LogViewerPro
-	url = https://github.com/chainkemists/LogViewerPro.git
-[submodule "Plugins/EOSIntegrationKit"]
-	path = Plugins/EOSIntegrationKit
-	url = https://github.com/chainkemists/EOSIntegrationKit.git
-[submodule "Plugins/AutoSettings"]
-	path = Plugins/AutoSettings
-	url = https://github.com/chainkemists/auto-settings.git
-[submodule "Plugins/Prismatiscape-Interaction-Plugin"]
-	path = Plugins/Prismatiscape-Interaction-Plugin
-	url = https://github.com/chainkemists/Prismatiscape-Interaction-Plugin.git
-[submodule "Plugins/ProInstanceTools"]
-	path = Plugins/ProInstanceTools
-	url = https://github.com/chainkemists/ProInstanceTools.git
-[submodule "Plugins/PhysicalLayoutTool"]
-	path = Plugins/PhysicalLayoutTool
-	url = https://github.com/chainkemists/PhysicalLayoutTool.git
-[submodule "Plugins/AdvancedCommenting"]
-	path = Plugins/AdvancedCommenting
-	url = https://github.com/chainkemists/AdvancedCommenting.git
-[submodule "Plugins/VerticalTabs"]
-	path = Plugins/VerticalTabs
-	url = https://github.com/chainkemists/VerticalTabs.git
