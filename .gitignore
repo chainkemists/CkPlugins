@@ -341,3 +341,7 @@ sync.ffs_db
 # misc
 Auto/
 CompileData*
+.serena/
+.userena/
+.mcp.json
+compile_commands.json
