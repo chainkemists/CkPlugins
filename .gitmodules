@@ -28,3 +28,6 @@
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
+[submodule "Plugins/GitLink"]
+	path = Plugins/GitLink
+	url = https://github.com/CommitAndChill/GitLink.git
