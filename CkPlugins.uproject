@@ -19,6 +19,13 @@
 			]
 		},
 		{
+			"Name": "GitLink",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
 			"Name": "ModelingToolsEditorMode",
 			"Enabled": false,
 			"TargetAllowList": [
