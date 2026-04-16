@@ -345,3 +345,4 @@ CompileData*
 .userena/
 .mcp.json
 compile_commands.json
+.claude/
