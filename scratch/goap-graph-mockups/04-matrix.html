@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mockup 4 — Dependency Matrix</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0e1116; color: #e6e6ea; font: 12px/1.4 system-ui, sans-serif; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #13171f; border-bottom: 1px solid #262b36; height: 40px; box-sizing: border-box; }
+  .topbar a { color: #9da2ad; text-decoration: none; font-size: 12px; }
+  .topbar a:hover { color: #e6e6ea; }
+  .topbar h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  .topbar label { color: #9da2ad; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .topbar select { background: #1a1f29; color: #dfe2ea; border: 1px solid #2a303d; padding: 3px 6px; border-radius: 3px; font: inherit; }
+
+  .stage { position: absolute; inset: 40px 0 0 0; overflow: auto; padding: 0; }
+  table { border-collapse: collapse; font-size: 11px; }
+  th, td { padding: 0; margin: 0; }
+
+  .matrix-wrapper { display: inline-block; padding: 16px; }
+
+  /* Sticky row & column headers */
+  thead th {
+    position: sticky; top: 0; z-index: 3;
+    background: #13171f; color: #dfe2ea;
+    border-bottom: 1px solid #262b36;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    padding: 8px 4px;
+    font-weight: 500; text-align: left;
+    min-width: 20px; max-width: 20px; width: 20px;
+    height: 160px;
+    border-left: 1px solid #1a1f2a;
+    font-size: 10px; white-space: nowrap;
+  }
+  thead th:first-child { width: 220px; min-width: 220px; max-width: 220px; writing-mode: horizontal-tb; transform: none; height: 160px; text-align: right; padding-right: 10px; vertical-align: bottom; }
+  thead th.group-hdr-age      { color: #b46fd0; border-bottom-color: #b46fd0; }
+  thead th.group-hdr-build    { color: #c28a2a; border-bottom-color: #c28a2a; }
+  thead th.group-hdr-research { color: #5fb3d4; border-bottom-color: #5fb3d4; }
+  thead th.group-hdr-resource { color: #4ea84e; border-bottom-color: #4ea84e; }
+  thead th.group-hdr-army     { color: #c74c4c; border-bottom-color: #c74c4c; }
+  thead th.group-hdr-pop      { color: #e2c8a0; border-bottom-color: #e2c8a0; }
+
+  tbody th { position: sticky; left: 0; z-index: 2;
+    background: #13171f; color: #dfe2ea;
+    min-width: 220px; width: 220px; max-width: 220px;
+    padding: 3px 10px 3px 14px; text-align: left; font-weight: 500;
+    border-right: 1px solid #262b36; border-top: 1px solid #1a1f2a;
+    cursor: default;
+  }
+  tbody th .cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  tbody th .meta { display: inline-block; color: #6b707b; font-size: 10px; margin-left: 8px; }
+
+  tbody td {
+    width: 20px; height: 22px;
+    border-left: 1px solid #1a1f2a; border-top: 1px solid #1a1f2a;
+    text-align: center; vertical-align: middle;
+    position: relative;
+  }
+  tbody td .pre { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #c74c4c; box-shadow: 0 0 0 1px rgba(0,0,0,0.4); }
+  tbody td .eff { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #4ea84e; box-shadow: 0 0 0 1px rgba(0,0,0,0.4); }
+  tbody td .both { width: 12px; height: 12px; background: linear-gradient(135deg, #c74c4c 50%, #4ea84e 50%); border-radius: 2px; }
+
+  tr.row-group-break th, tr.row-group-break td { border-top: 2px solid #262b36; }
+
+  /* Hover highlights entire row + column */
+  tbody tr:hover th,
+  tbody tr:hover td { background: #181d28; }
+  .col-hl { background: #181d28 !important; }
+  .cell-hot { background: #2a2013 !important; }
+
+  .legend { position: fixed; bottom: 14px; right: 20px; background: rgba(19,23,31,0.9); border: 1px solid #262b36; padding: 8px 12px; border-radius: 4px; font-size: 11px; color: #9da2ad; display: flex; gap: 14px; z-index: 5; }
+  .legend .pre { background: #c74c4c; }
+  .legend .eff { background: #4ea84e; }
+  .legend .both { background: linear-gradient(135deg, #c74c4c 50%, #4ea84e 50%); border-radius: 2px; }
+  .legend .pre, .legend .eff, .legend .both { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .legend .both { border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">← back</a>
+  <h1>Mockup 4 — Dependency matrix</h1>
+  <label>Sort rows by:
+    <select id="sortSel">
+      <option value="category">Category → name</option>
+      <option value="pre">Precondition count</option>
+      <option value="cost">Cost</option>
+      <option value="age">Age gate</option>
+    </select>
+  </label>
+  <span style="color:#6b707b;font-size:11px;margin-left:auto">Rows = actions · Cols = world-state predicates · <span style="color:#c74c4c">●</span> precondition · <span style="color:#4ea84e">▪</span> effect</span>
+</div>
+<div class="stage" id="stage"></div>
+<div class="legend">
+  <span><span class="pre"></span>Precondition (row needs this to run)</span>
+  <span><span class="eff"></span>Effect (row sets this true)</span>
+  <span><span class="both"></span>Both (rare — self-loop)</span>
+</div>
+
+<script src="empire-data.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById("stage");
+  const sortSel = document.getElementById("sortSel");
+
+  // Build the full set of predicates used anywhere.
+  const allPreds = new Set();
+  for (const a of EMPIRE_ACTIONS) { a.pre.forEach(x => allPreds.add(x)); a.eff.forEach(x => allPreds.add(x)); }
+  EMPIRE_GOALS.forEach(g => g.cond.forEach(x => allPreds.add(x)));
+
+  // Predicate groups (visual clustering)
+  const PRED_GROUPS = [
+    { name: "age",      label: "Age",       match: p => p.startsWith("IsIn") && p.endsWith("Age") },
+    { name: "pop",      label: "Population",match: p => p === "HasFreePopulation" || p === "HasEnoughVillagers" || p === "HasHouse" },
+    { name: "resource", label: "Resources", match: p => p.startsWith("HasEnough") },
+    { name: "build",    label: "Buildings", match: p => p.startsWith("Has") && !p.startsWith("HasEnough") && !p.startsWith("HasResearched") && !p.startsWith("HasArmy") && p !== "HasFreePopulation" && p !== "HasEnoughVillagers" && p !== "HasHouse" },
+    { name: "research", label: "Research",  match: p => p.startsWith("HasResearched") },
+    { name: "army",     label: "Army",      match: p => p.startsWith("HasArmy") },
+  ];
+
+  function groupOf(p) {
+    for (const g of PRED_GROUPS) if (g.match(p)) return g.name;
+    return "misc";
+  }
+
+  // Sorted predicates: by group order, then alpha
+  const predList = [...allPreds].sort((a, b) => {
+    const ga = PRED_GROUPS.findIndex(g => g.match(a));
+    const gb = PRED_GROUPS.findIndex(g => g.match(b));
+    if (ga !== gb) return ga - gb;
+    return a.localeCompare(b);
+  });
+
+  function sortedActions() {
+    const mode = sortSel.value;
+    const acts = EMPIRE_ACTIONS.slice();
+    if (mode === "pre") acts.sort((a, b) => b.pre.length - a.pre.length || a.name.localeCompare(b.name));
+    else if (mode === "cost") acts.sort((a, b) => b.cost - a.cost || a.name.localeCompare(b.name));
+    else if (mode === "age") acts.sort((a, b) => getAgeGate(a) - getAgeGate(b) || a.name.localeCompare(b.name));
+    else {
+      const catOrder = ["gather", "build", "age", "research", "trade", "train"];
+      acts.sort((a, b) => {
+        const ca = catOrder.indexOf(a.cat), cb = catOrder.indexOf(b.cat);
+        return ca !== cb ? ca - cb : a.name.localeCompare(b.name);
+      });
+    }
+    return acts;
+  }
+
+  function render() {
+    stage.innerHTML = "";
+    const wrapper = document.createElement("div");
+    wrapper.className = "matrix-wrapper";
+    stage.appendChild(wrapper);
+
+    const table = document.createElement("table");
+    wrapper.appendChild(table);
+
+    // Header row: first cell = group legends row label, rest = predicate names rotated 90°
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    const corner = document.createElement("th");
+    corner.textContent = "Action \\ Predicate";
+    headRow.appendChild(corner);
+    predList.forEach((p, i) => {
+      const th = document.createElement("th");
+      th.textContent = p;
+      th.className = "group-hdr-" + groupOf(p);
+      th.dataset.colIdx = i;
+      th.addEventListener("mouseenter", () => highlightCol(i));
+      th.addEventListener("mouseleave", () => clearHighlights());
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    // Rows
+    const tbody = document.createElement("tbody");
+    const acts = sortedActions();
+    let lastCat = null;
+    acts.forEach((a, ri) => {
+      const tr = document.createElement("tr");
+      if (lastCat !== null && a.cat !== lastCat) tr.classList.add("row-group-break");
+      lastCat = a.cat;
+
+      const rowHead = document.createElement("th");
+      rowHead.innerHTML = `<span class="cat-dot" style="background:${CATEGORY_COLORS[a.cat]}"></span>${a.name}<span class="meta">$${a.cost} · ${a.pre.length}p / ${a.eff.length}e</span>`;
+      tr.appendChild(rowHead);
+
+      predList.forEach((p, ci) => {
+        const td = document.createElement("td");
+        const isPre = a.pre.includes(p);
+        const isEff = a.eff.includes(p);
+        if (isPre && isEff) {
+          td.innerHTML = `<span class="both" title="Precondition AND effect"></span>`;
+        } else if (isPre) {
+          td.innerHTML = `<span class="pre" title="Precondition: ${p}"></span>`;
+        } else if (isEff) {
+          td.innerHTML = `<span class="eff" title="Effect: ${p}"></span>`;
+        }
+        td.dataset.colIdx = ci;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    // Goal rows (shown at bottom)
+    const goalSep = document.createElement("tr");
+    goalSep.classList.add("row-group-break");
+    const gsCell = document.createElement("td");
+    gsCell.colSpan = predList.length + 1;
+    gsCell.style.height = "8px"; gsCell.style.background = "#0e1116"; gsCell.style.borderTop = "2px solid #f5c842";
+    goalSep.appendChild(gsCell);
+    tbody.appendChild(goalSep);
+
+    for (const g of EMPIRE_GOALS) {
+      const tr = document.createElement("tr");
+      const rowHead = document.createElement("th");
+      rowHead.innerHTML = `<span class="cat-dot" style="background:${CATEGORY_COLORS.goal}"></span>🎯 ${g.name}<span class="meta">priority ${g.priority}</span>`;
+      tr.appendChild(rowHead);
+      predList.forEach((p, ci) => {
+        const td = document.createElement("td");
+        if (g.cond.includes(p)) {
+          td.innerHTML = `<span class="pre" title="Goal condition: ${p}" style="background:#f5c842"></span>`;
+        }
+        td.dataset.colIdx = ci;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+
+    // Column summary footer: number of producers / consumers per predicate
+    const tfoot = document.createElement("tfoot");
+    const prodRow = document.createElement("tr");
+    const prodLabel = document.createElement("th");
+    prodLabel.style.borderTop = "2px solid #262b36";
+    prodLabel.innerHTML = `<span style="color:#4ea84e">▪</span> Producers`;
+    prodRow.appendChild(prodLabel);
+    predList.forEach(p => {
+      const td = document.createElement("td");
+      const n = EMPIRE_ACTIONS.filter(a => a.eff.includes(p)).length;
+      td.style.borderTop = "2px solid #262b36";
+      if (n > 0) td.innerHTML = `<span style="color:#4ea84e;font-size:10px">${n}</span>`;
+      tfoot.appendChild(td);
+      prodRow.appendChild(td);
+    });
+    tfoot.appendChild(prodRow);
+    const consRow = document.createElement("tr");
+    const consLabel = document.createElement("th");
+    consLabel.innerHTML = `<span style="color:#c74c4c">●</span> Consumers`;
+    consRow.appendChild(consLabel);
+    predList.forEach(p => {
+      const td = document.createElement("td");
+      const n = EMPIRE_ACTIONS.filter(a => a.pre.includes(p)).length + EMPIRE_GOALS.filter(g => g.cond.includes(p)).length;
+      if (n > 0) td.innerHTML = `<span style="color:#c74c4c;font-size:10px">${n}</span>`;
+      consRow.appendChild(td);
+    });
+    tfoot.appendChild(consRow);
+    table.appendChild(tfoot);
+  }
+
+  function highlightCol(idx) {
+    document.querySelectorAll(`td[data-col-idx="${idx}"]`).forEach(td => td.classList.add("col-hl"));
+  }
+  function clearHighlights() {
+    document.querySelectorAll(".col-hl").forEach(td => td.classList.remove("col-hl"));
+  }
+
+  sortSel.addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>

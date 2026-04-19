@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mockup 3 — Macro-nodes</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0e1116; color: #e6e6ea; font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #13171f; border-bottom: 1px solid #262b36; }
+  .topbar a { color: #9da2ad; text-decoration: none; font-size: 12px; }
+  .topbar a:hover { color: #e6e6ea; }
+  .topbar h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  .topbar button { background: #1a1f29; color: #dfe2ea; border: 1px solid #2a303d; padding: 4px 10px; border-radius: 3px; font: inherit; cursor: pointer; }
+  .topbar button:hover { border-color: #4a5268; }
+
+  .stage { position: absolute; inset: 40px 0 0 0; overflow: auto; }
+
+  .lane { display: flex; flex-direction: column; margin: 16px; }
+  .columns { display: flex; gap: 24px; padding: 16px; }
+  .column { background: #13171f; border: 1px solid #262b36; border-radius: 6px; min-width: 260px; max-width: 360px; flex: 1 1 0; display: flex; flex-direction: column; }
+  .col-header { padding: 10px 14px; border-bottom: 1px solid #262b36; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .col-header h2 { margin: 0; font-size: 13px; font-weight: 700; flex: 1; }
+  .col-header .age-pill { font-size: 10px; color: #9da2ad; background: #0e1116; padding: 2px 6px; border-radius: 10px; border: 1px solid #2a303d; }
+  .col-header .chev { color: #6b707b; font-size: 14px; font-family: monospace; }
+  .col-header.dark    h2 { color: #8b93a5; }
+  .col-header.feudal  h2 { color: #c7a370; }
+  .col-header.castle  h2 { color: #cf7a4a; }
+  .col-header.imperial h2 { color: #e6a6d9; }
+
+  .col-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .column.collapsed .col-body { display: none; }
+  .column.collapsed .col-summary { display: block; }
+  .col-summary { display: none; padding: 10px 14px; color: #9da2ad; font-size: 12px; }
+  .col-summary .count { color: #dfe2ea; font-weight: 600; }
+
+  .group { border: 1px solid #222838; border-radius: 4px; background: #10141c; }
+  .group-header { padding: 6px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #8a93a6; border-bottom: 1px solid #1a1f2a; display: flex; gap: 8px; align-items: center; }
+  .group-header .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .group-header .count { margin-left: auto; color: #5c6472; font-size: 10px; }
+  .group-actions { padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+
+  .action { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: #161c26; border-radius: 3px; font-size: 11px; cursor: pointer; border-left: 3px solid transparent; }
+  .action:hover { background: #1d2432; }
+  .action .name { flex: 1; color: #dfe2ea; font-weight: 500; }
+  .action .cost { color: #6b707b; font-size: 10px; }
+  .action .pre-badge { color: #8a93a6; font-size: 10px; padding: 1px 5px; background: #0c1018; border-radius: 10px; }
+
+  .goals { display: flex; gap: 12px; padding: 0 16px 16px; }
+  .goal-card { background: #1e1808; border: 1px solid #5b4510; border-radius: 6px; padding: 10px 14px; }
+  .goal-card h3 { margin: 0 0 4px; color: #f5c842; font-size: 13px; }
+  .goal-card .cond { color: #d4b15f; font-size: 11px; }
+
+  .details { position: fixed; right: 20px; top: 60px; width: 280px; background: #13171f; border: 1px solid #2a303d; border-radius: 6px; padding: 14px; font-size: 12px; display: none; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+  .details.shown { display: block; }
+  .details h4 { margin: 0 0 6px; color: #f5c842; font-size: 13px; }
+  .details .sub { color: #9da2ad; font-size: 11px; margin-bottom: 10px; }
+  .details .row { margin: 6px 0; }
+  .details .row b { color: #9da2ad; font-weight: 500; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .details .row .v { color: #dfe2ea; font-size: 11px; }
+  .details .close { position: absolute; top: 8px; right: 10px; cursor: pointer; color: #6b707b; }
+  .details .close:hover { color: #e6e6ea; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">← back</a>
+  <h1>Mockup 3 — Macro-nodes (grouped by age × category)</h1>
+  <button id="expandAll">Expand all</button>
+  <button id="collapseAll">Collapse all</button>
+  <span style="color:#6b707b;font-size:11px;margin-left:auto">Click an age column header to collapse it · Click an action for details</span>
+</div>
+<div class="stage" id="stage"></div>
+<div class="details" id="details">
+  <span class="close" id="detailsClose">×</span>
+  <h4 id="detailsName"></h4>
+  <div class="sub" id="detailsSub"></div>
+  <div class="row"><b>Preconditions</b><div class="v" id="detailsPre"></div></div>
+  <div class="row"><b>Effects</b><div class="v" id="detailsEff"></div></div>
+</div>
+
+<script src="empire-data.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById("stage");
+  const details = document.getElementById("details");
+
+  const AGES = [
+    { key: "dark",     label: "Dark Age",     pill: "Gate: IsInDarkAge" },
+    { key: "feudal",   label: "Feudal Age",   pill: "Gate: IsInFeudalAge" },
+    { key: "castle",   label: "Castle Age",   pill: "Gate: IsInCastleAge" },
+    { key: "imperial", label: "Imperial Age", pill: "Gate: IsInImperialAge" },
+  ];
+  function ageKeyOf(a) { return AGES[getAgeGate(a)].key; }
+
+  const CAT_ORDER = ["gather", "build", "age", "research", "trade", "train"];
+  const CAT_LABELS = {
+    gather: "Gather", build: "Build", age: "Age", research: "Research", trade: "Trade", train: "Train"
+  };
+
+  const collapsed = new Set(); // ageKey
+
+  function render() {
+    stage.innerHTML = "";
+    const columns = document.createElement("div");
+    columns.className = "columns";
+    stage.appendChild(columns);
+
+    for (const age of AGES) {
+      const actions = EMPIRE_ACTIONS.filter(a => ageKeyOf(a) === age.key);
+      const col = document.createElement("div");
+      col.className = "column " + age.key + (collapsed.has(age.key) ? " collapsed" : "");
+
+      const hdr = document.createElement("div");
+      hdr.className = "col-header " + age.key;
+      hdr.innerHTML = `
+        <h2>${age.label}</h2>
+        <span class="age-pill">${age.pill}</span>
+        <span class="chev">${collapsed.has(age.key) ? "▸" : "▾"}</span>`;
+      hdr.addEventListener("click", () => {
+        if (collapsed.has(age.key)) collapsed.delete(age.key); else collapsed.add(age.key);
+        render();
+      });
+      col.appendChild(hdr);
+
+      const summary = document.createElement("div");
+      summary.className = "col-summary";
+      summary.innerHTML = `<span class="count">${actions.length}</span> actions hidden · avg cost ${
+        (actions.reduce((s, a) => s + a.cost, 0) / Math.max(1, actions.length)).toFixed(1)
+      }`;
+      col.appendChild(summary);
+
+      const body = document.createElement("div");
+      body.className = "col-body";
+
+      const byCat = new Map();
+      for (const a of actions) {
+        if (!byCat.has(a.cat)) byCat.set(a.cat, []);
+        byCat.get(a.cat).push(a);
+      }
+      for (const cat of CAT_ORDER) {
+        if (!byCat.has(cat)) continue;
+        const list = byCat.get(cat);
+        const group = document.createElement("div");
+        group.className = "group";
+        group.innerHTML = `
+          <div class="group-header">
+            <span class="dot" style="background:${CATEGORY_COLORS[cat]}"></span>
+            ${CAT_LABELS[cat]}
+            <span class="count">${list.length}</span>
+          </div>`;
+        const actBox = document.createElement("div");
+        actBox.className = "group-actions";
+        list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name));
+        for (const a of list) {
+          const row = document.createElement("div");
+          row.className = "action";
+          row.style.borderLeftColor = CATEGORY_COLORS[cat];
+          row.innerHTML = `
+            <span class="name">${a.name}</span>
+            <span class="pre-badge">${a.pre.length}&nbsp;pre</span>
+            <span class="cost">$${a.cost}</span>`;
+          row.addEventListener("click", () => showDetails(a));
+          actBox.appendChild(row);
+        }
+        group.appendChild(actBox);
+        body.appendChild(group);
+      }
+
+      col.appendChild(body);
+      columns.appendChild(col);
+    }
+
+    // Goals row at the bottom
+    const goalsDiv = document.createElement("div");
+    goalsDiv.className = "goals";
+    for (const g of EMPIRE_GOALS) {
+      const card = document.createElement("div");
+      card.className = "goal-card";
+      card.innerHTML = `<h3>🎯 ${g.name}</h3>
+        <div class="cond">priority ${g.priority} · ${g.cond.join(", ")}</div>`;
+      goalsDiv.appendChild(card);
+    }
+    stage.appendChild(goalsDiv);
+  }
+
+  function showDetails(a) {
+    document.getElementById("detailsName").textContent = a.name;
+    document.getElementById("detailsSub").textContent =
+      `${a.cat} · cost ${a.cost} · ${AGES[getAgeGate(a)].label} gate`;
+    document.getElementById("detailsPre").innerHTML =
+      a.pre.length ? a.pre.map(p => `<div>• ${p}</div>`).join("") : "<em style='color:#6b707b'>none</em>";
+    document.getElementById("detailsEff").innerHTML =
+      a.eff.map(e => `<div>• ${e}</div>`).join("");
+    details.classList.add("shown");
+  }
+
+  document.getElementById("detailsClose").addEventListener("click", () => details.classList.remove("shown"));
+  document.getElementById("expandAll").addEventListener("click", () => { collapsed.clear(); render(); });
+  document.getElementById("collapseAll").addEventListener("click", () => { AGES.forEach(x => collapsed.add(x.key)); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

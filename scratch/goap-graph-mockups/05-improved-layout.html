@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mockup 5 — Improved Layout</title>
+<style>
+  :root {
+    --bg:            #0b0e13;
+    --bg-1:          #11151c;
+    --bg-2:          #161b24;
+    --bg-3:          #1b2230;
+    --border:        #232a38;
+    --border-strong: #32394a;
+    --text:          #e5e7ed;
+    --text-dim:      #8a92a4;
+    --text-mute:     #5a6277;
+    --accent:        #f5c842;
+    --accent-dim:    rgba(245,200,66,0.12);
+    --ok:            #55c47a;
+    --err:           #d65a5a;
+    --warn:          #e6a545;
+    --info:          #5fb3d4;
+
+    --cat-gather:    #4ea84e;
+    --cat-build:     #c28a2a;
+    --cat-research:  #5fb3d4;
+    --cat-train:     #c74c4c;
+    --cat-age:       #b46fd0;
+    --cat-trade:     #d4b15f;
+  }
+
+  html, body {
+    margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 13px/1.45 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    overflow: hidden; -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+  button { font: inherit; color: inherit; }
+
+  .app {
+    display: grid;
+    grid-template-rows: 44px 1fr;
+    height: 100%;
+  }
+
+  /* =============================================================
+     TOP TOOLBAR
+     ============================================================= */
+  .toolbar {
+    display: flex; align-items: center; gap: 16px; padding: 0 16px;
+    background: var(--bg-1); border-bottom: 1px solid var(--border);
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; }
+  .toolbar .sep { width: 1px; height: 22px; background: var(--border); }
+  .toolbar a.back { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+  .toolbar .label { color: var(--text-dim); font-size: 11px; }
+  .toolbar select, .toolbar button {
+    background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;
+  }
+  .toolbar button:hover, .toolbar select:hover { border-color: var(--border-strong); }
+  .toolbar .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; background: rgba(85,196,122,0.14); color: var(--ok);
+    border: 1px solid rgba(85,196,122,0.32); border-radius: 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .toolbar .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px rgba(85,196,122,0.6); }
+  .toolbar .spacer { flex: 1; }
+
+  /* =============================================================
+     MAIN GRID: left rail | center | right rail
+     ============================================================= */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr 360px;
+    min-height: 0;
+    height: 100%;
+  }
+
+  /* =============================================================
+     LEFT RAIL — Plan History
+     ============================================================= */
+  .left-rail {
+    background: var(--bg-1); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .rail-head {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rail-head h2 {
+    margin: 0; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim);
+  }
+  .rail-head .count {
+    margin-left: auto; font-size: 10px; color: var(--text-mute);
+    background: var(--bg-2); padding: 1px 6px; border-radius: 10px;
+  }
+  .history-list { overflow-y: auto; flex: 1; padding: 6px 0; }
+  .history-row {
+    padding: 8px 14px; cursor: pointer; border-left: 3px solid transparent;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .history-row:hover { background: rgba(95,179,212,0.05); }
+  .history-row.selected { background: rgba(95,179,212,0.10); border-left-color: var(--info); }
+  .history-row .row-top { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .history-row .row-top .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .history-row.ok .dot { background: var(--ok); }
+  .history-row.fail .dot { background: var(--err); }
+  .history-row .meta { color: var(--text-dim); font-size: 10px; }
+  .history-row .frame {
+    margin-left: auto; color: var(--text-mute); font-size: 10px; font-variant-numeric: tabular-nums;
+  }
+  .history-row .chain {
+    color: var(--text-mute); font-size: 10px; line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .history-row .chain .sep { color: var(--text-mute); margin: 0 3px; opacity: 0.5; }
+  .history-row .chain .goal { color: var(--accent); font-weight: 600; }
+  .history-row.selected .chain { color: var(--text-dim); }
+
+  /* =============================================================
+     CENTER COLUMN — tabs + viewport + plan strip
+     ============================================================= */
+  .center { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+  .view-tabs {
+    display: flex; align-items: flex-end; gap: 0;
+    background: var(--bg-1); border-bottom: 1px solid var(--border);
+    padding: 0 12px;
+  }
+  .view-tab {
+    padding: 8px 16px; font-size: 12px; font-weight: 600; color: var(--text-dim);
+    border: none; background: transparent; cursor: pointer;
+    border-bottom: 2px solid transparent; position: relative; top: 1px;
+  }
+  .view-tab.active { color: var(--text); border-bottom-color: var(--info); }
+  .view-tab:hover:not(.active) { color: var(--text); }
+  .view-controls {
+    display: flex; align-items: center; gap: 8px; margin-left: auto; padding: 4px 0;
+  }
+  .view-controls .label { color: var(--text-mute); font-size: 10px; }
+  .view-controls button {
+    background: var(--bg-2); color: var(--text-dim); border: 1px solid var(--border);
+    padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;
+  }
+  .view-controls button:hover { color: var(--text); border-color: var(--border-strong); }
+
+  .viewport {
+    flex: 1; background:
+      radial-gradient(circle at 50% 50%, #10141c 0%, #0a0d12 100%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(95,179,212,0.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(95,179,212,0.04) 40px);
+    position: relative; overflow: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .viewport .sim-watermark {
+    position: absolute; top: 30px; right: 50px;
+    font: 700 46px/1 "Inter", sans-serif; letter-spacing: 0.08em;
+    color: rgba(245,200,66,0.18); pointer-events: none; user-select: none;
+  }
+
+  /* Graph view */
+  .graph-svg { display: block; margin: 40px auto; }
+  .graph-node rect { stroke-width: 2; rx: 6; }
+  .graph-node text.title { fill: var(--text); font-size: 11px; font-weight: 700; }
+  .graph-node text.cost  { fill: var(--accent); font-size: 11px; font-weight: 700; }
+  .graph-node text.meta  { fill: var(--text-dim); font-size: 9px; }
+  .graph-node.action rect { fill: rgba(95,179,212,0.12); stroke: var(--info); }
+  .graph-node.goal rect   { fill: rgba(245,200,66,0.14); stroke: var(--accent); }
+  .graph-node.goal text.title { fill: var(--accent); }
+  .graph-edge { fill: none; stroke: var(--ok); stroke-width: 2.4; marker-end: url(#arrow); }
+  .graph-edge.future { stroke: var(--text-mute); stroke-dasharray: 4 3; stroke-width: 1.6; }
+
+  /* =============================================================
+     PLAN STRIP — the hero widget (redesigned)
+     ============================================================= */
+  .plan-strip {
+    background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    flex-shrink: 0;
+  }
+  .plan-strip .head {
+    display: flex; align-items: center; gap: 10px; font-size: 11px;
+  }
+  .plan-strip .head .title {
+    font-weight: 700; font-size: 11px; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .plan-strip .head .meta {
+    color: var(--text-dim); font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-strip .head .meta b { color: var(--text); font-weight: 600; }
+  .plan-strip .head .rule {
+    flex: 1; height: 1px; background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+  }
+  .plan-strip .head .goal-label {
+    color: var(--text-dim); font-size: 11px;
+  }
+  .plan-strip .head .goal-name {
+    color: var(--accent); font-weight: 700; font-size: 12px;
+  }
+
+  .plan-flow {
+    display: flex; align-items: stretch; gap: 0;
+    overflow-x: auto; padding: 2px 0 4px;
+    scrollbar-width: thin;
+  }
+  .step {
+    flex-shrink: 0; display: flex; flex-direction: column;
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 12px 8px; min-width: 150px;
+    position: relative;
+  }
+  .step .n {
+    position: absolute; top: -8px; left: 10px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--bg-3); border: 1.5px solid var(--border-strong);
+    font-size: 10px; font-weight: 700; color: var(--text-dim);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step.done .n   { background: var(--ok);     border-color: var(--ok);     color: #0a0d12; }
+  .step.active .n { background: var(--accent); border-color: var(--accent); color: #0a0d12; }
+  .step .name {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    white-space: nowrap; margin-top: 2px;
+  }
+  .step .sub {
+    display: flex; align-items: center; gap: 8px; margin-top: 4px;
+    font-size: 10px; color: var(--text-dim);
+  }
+  .step .sub .cost { color: var(--accent); font-weight: 700; }
+  .step .sub .state { text-transform: uppercase; letter-spacing: 0.06em; }
+  .step.done   .sub .state { color: var(--ok); }
+  .step.active .sub .state { color: var(--accent); }
+  .step.done   { border-color: rgba(85,196,122,0.35); background: rgba(85,196,122,0.05); }
+  .step.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(245,200,66,0.25); background: rgba(245,200,66,0.06); }
+
+  .arrow {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 28px; color: var(--text-mute);
+  }
+  .arrow.done   { color: var(--ok); }
+  .arrow.active { color: var(--accent); }
+  .arrow svg { width: 20px; height: 12px; }
+
+  .goal-pill {
+    flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start;
+    background: linear-gradient(135deg, rgba(245,200,66,0.14) 0%, rgba(245,200,66,0.04) 100%);
+    border: 1.5px solid var(--accent); border-radius: 8px;
+    padding: 7px 14px 8px; min-width: 200px;
+    position: relative; margin-left: 4px;
+  }
+  .goal-pill .target {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .goal-pill .target svg { width: 12px; height: 12px; fill: var(--accent); }
+  .goal-pill .gname { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 1px; }
+  .goal-pill .cond {
+    font-size: 10px; color: var(--text-dim); margin-top: 4px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+  }
+
+  .plan-strip.empty {
+    flex-direction: row; align-items: center; justify-content: center;
+    color: var(--text-mute); font-style: italic; padding: 24px;
+  }
+
+  /* =============================================================
+     RIGHT RAIL — three stacked inspectors
+     ============================================================= */
+  .right-rail {
+    background: var(--bg-1); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .inspector {
+    display: flex; flex-direction: column; min-height: 0; border-bottom: 1px solid var(--border);
+  }
+  .inspector:last-child { border-bottom: none; }
+  .inspector-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--bg-1); flex-shrink: 0;
+    cursor: pointer; user-select: none;
+  }
+  .inspector-head h3 {
+    margin: 0; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim);
+  }
+  .inspector-head .count {
+    font-size: 10px; color: var(--text-mute);
+    background: var(--bg-2); padding: 1px 6px; border-radius: 10px;
+  }
+  .inspector-head .state-pill {
+    font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .inspector-head .state-pill.ok   { background: rgba(85,196,122,0.14);  color: var(--ok); }
+  .inspector-head .state-pill.fail { background: rgba(214,90,90,0.14);   color: var(--err); }
+  .inspector-head .chev { margin-left: auto; color: var(--text-mute); font-size: 11px; }
+  .inspector-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0 10px; }
+
+  /* ----- World State ----- */
+  .ws-controls {
+    padding: 0 14px 8px; display: flex; gap: 8px; align-items: center;
+  }
+  .ws-controls input[type="text"] {
+    flex: 1; background: var(--bg-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px;
+    font-size: 11px;
+  }
+  .ws-controls label {
+    display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-dim); white-space: nowrap;
+  }
+  .ws-controls input[type="checkbox"] { accent-color: var(--info); }
+  .ws-list { padding: 0 14px; }
+  .ws-row {
+    display: flex; align-items: center; padding: 3px 6px; margin: 0 -6px;
+    border-radius: 3px; font-size: 11px; font-family: "JetBrains Mono", Consolas, monospace;
+  }
+  .ws-row .key { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ws-row .val { font-weight: 700; font-variant-numeric: tabular-nums; margin-left: 8px; }
+  .ws-row .val.t { color: var(--ok); }
+  .ws-row .val.f { color: var(--err); }
+  .ws-row.flash-t { background: rgba(85,196,122,0.16); }
+  .ws-row.flash-f { background: rgba(214,90,90,0.16); }
+
+  /* ----- Action Details (the redesign) ----- */
+  .ad-empty {
+    padding: 20px 16px; color: var(--text-mute); font-size: 11px; text-align: center;
+    font-style: italic; line-height: 1.5;
+  }
+  .ad-empty svg { width: 28px; height: 28px; opacity: 0.3; margin-bottom: 6px; }
+  .ad-header { padding: 10px 14px 12px; border-bottom: 1px solid var(--border); }
+  .ad-header .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ad-header .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ad-header .cat-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim);
+  }
+  .ad-header .title {
+    margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--text);
+    word-break: break-word;
+  }
+  .ad-header .sub {
+    margin-top: 4px; font-size: 11px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ad-header .sub .cost { color: var(--accent); font-weight: 700; }
+  .ad-header .sub .dot-sep { color: var(--border-strong); }
+
+  .ad-section { padding: 10px 14px 6px; }
+  .ad-section h4 {
+    margin: 0 0 6px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ad-section h4 .count { color: var(--text-mute); font-weight: 500; font-size: 10px; letter-spacing: 0; text-transform: none; }
+  .ad-pred {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px; margin: 2px 0;
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 3px;
+    font-family: "JetBrains Mono", Consolas, monospace; font-size: 10.5px;
+  }
+  .ad-pred .marker { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ad-pred .marker.need { background: var(--err); }
+  .ad-pred .marker.eff  { background: var(--ok); }
+  .ad-pred .key { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ad-pred .val.t { color: var(--ok); font-weight: 700; }
+  .ad-pred .val.f { color: var(--err); font-weight: 700; }
+  .ad-pred .status {
+    font-size: 9px; padding: 1px 5px; border-radius: 2px; white-space: nowrap;
+  }
+  .ad-pred .status.ok  { background: rgba(85,196,122,0.14);  color: var(--ok); }
+  .ad-pred .status.bad { background: rgba(214,90,90,0.14);   color: var(--err); }
+
+  .ad-footer { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+  .ad-footer button {
+    background: var(--bg-2); color: var(--text-dim); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 3px; font-size: 11px; cursor: pointer;
+  }
+  .ad-footer button:hover { color: var(--text); border-color: var(--border-strong); }
+
+  /* ----- Failure Analysis ----- */
+  .fa-banner {
+    margin: 0 14px 8px; padding: 6px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .fa-banner.ok   { background: rgba(85,196,122,0.14);  color: var(--ok);   border: 1px solid rgba(85,196,122,0.32); }
+  .fa-banner.fail { background: rgba(214,90,90,0.14);   color: var(--err);  border: 1px solid rgba(214,90,90,0.32); }
+  .fa-stats {
+    padding: 0 14px 8px; font-size: 10px; color: var(--text-mute);
+    font-variant-numeric: tabular-nums;
+  }
+  .fa-tree { padding: 0 14px 12px; }
+  .fa-node {
+    display: flex; align-items: flex-start; gap: 8px; padding: 3px 0; font-size: 11px;
+  }
+  .fa-node .tag {
+    font-size: 9px; padding: 1px 5px; border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .fa-node .tag.needed { background: rgba(230,165,69,0.16); color: var(--warn); }
+  .fa-node .tag.sat    { background: rgba(85,196,122,0.14);  color: var(--ok); }
+  .fa-node .tag.action { background: rgba(95,179,212,0.12);  color: var(--info); }
+  .fa-node .body { flex: 1; color: var(--text-dim); font-family: "JetBrains Mono", Consolas, monospace; font-size: 10.5px; }
+  .fa-node .body b { color: var(--text); font-weight: 700; }
+  .fa-node .body .note { color: var(--text-mute); font-style: italic; font-family: inherit; }
+
+  /* tooltip */
+  .tooltip {
+    position: fixed; pointer-events: none; background: var(--bg-3);
+    border: 1px solid var(--border-strong); color: var(--text);
+    padding: 8px 10px; border-radius: 4px; font-size: 11px; max-width: 320px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 100; display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- =====================================================================
+       TOP TOOLBAR
+       ===================================================================== -->
+  <div class="toolbar">
+    <a class="back" href="index.html">← back</a>
+    <div class="sep"></div>
+
+    <div class="group">
+      <span class="label">Entity</span>
+      <select>
+        <option>Gym.GoapEmpire.Station</option>
+        <option>Gym.Goap.Door</option>
+        <option>Gym.Goap.Combat</option>
+      </select>
+    </div>
+
+    <div class="group">
+      <span class="status-pill"><span class="dot"></span>Plan Found</span>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="group">
+      <span class="label">Name</span>
+      <button>◀</button>
+      <span style="font-weight:700;min-width:16px;text-align:center">1</span>
+      <button>▶</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="group">
+      <button>Zoom to Fit</button>
+      <button>Relayout</button>
+      <button>Pause</button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MAIN GRID
+       ===================================================================== -->
+  <div class="main">
+
+    <!-- LEFT RAIL: Plan History -->
+    <aside class="left-rail">
+      <div class="rail-head">
+        <h2>Plan History</h2>
+        <span class="count">124</span>
+      </div>
+      <div class="history-list">
+        <div class="history-row selected ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 45 steps, cost 74<span class="frame">F#10842</span></div>
+          <div class="chain">GatherWood <span class="sep">→</span> BuildBarracks <span class="sep">→</span> GatherFood <span class="sep">→</span> AdvanceToFeudalAge <span class="sep">→</span> … <span class="goal">[ReachImperialAge]</span></div>
+        </div>
+        <div class="history-row ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 8 steps, cost 18<span class="frame">F#10420</span></div>
+          <div class="chain">GatherFood <span class="sep">→</span> BuildBarracks <span class="sep">→</span> AdvanceToFeudalAge <span class="goal">[ReachFeudalAge]</span></div>
+        </div>
+        <div class="history-row fail">
+          <div class="row-top"><span class="dot"></span>Plan Failed — 0 steps, cost 0<span class="frame">F#10398</span></div>
+          <div class="chain">(no plan) <span class="goal">[ReachFeudalAge]</span></div>
+        </div>
+        <div class="history-row ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 6 steps, cost 14<span class="frame">F#10287</span></div>
+          <div class="chain">GatherFood <span class="sep">→</span> BuildBarracks <span class="sep">→</span> AdvanceToFeudalAge <span class="goal">[ReachFeudalAge]</span></div>
+        </div>
+        <div class="history-row ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 12 steps, cost 24<span class="frame">F#10116</span></div>
+          <div class="chain">GatherWood <span class="sep">→</span> BuildLumberCamp <span class="sep">→</span> GatherWoodFromCamp <span class="sep">→</span> BuildMill <span class="sep">→</span> … <span class="goal">[ReachFeudalAge]</span></div>
+        </div>
+        <div class="history-row fail">
+          <div class="row-top"><span class="dot"></span>Plan Failed — 0 steps, cost 0<span class="frame">F#9944</span></div>
+          <div class="chain">(no plan) <span class="goal">[ReachCastleAge]</span></div>
+        </div>
+        <div class="history-row ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 3 steps, cost 7<span class="frame">F#9801</span></div>
+          <div class="chain">GatherFood <span class="sep">→</span> BuildFarm <span class="sep">→</span> GatherFoodFromFarm <span class="goal">[ReachFeudalAge]</span></div>
+        </div>
+        <div class="history-row ok">
+          <div class="row-top"><span class="dot"></span>Plan Found — 22 steps, cost 46<span class="frame">F#9650</span></div>
+          <div class="chain">GatherWood <span class="sep">→</span> BuildMill <span class="sep">→</span> BuildFarm <span class="sep">→</span> … <span class="goal">[ReachCastleAge]</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER: view tabs + viewport + plan strip -->
+    <main class="center">
+      <div class="view-tabs">
+        <button class="view-tab active">Graph</button>
+        <button class="view-tab">Macro</button>
+        <div class="view-controls">
+          <span class="label">Name depth</span>
+          <button>◀</button>
+          <span style="font-size:11px;font-weight:700;color:var(--text);min-width:16px;text-align:center">1</span>
+          <button>▶</button>
+          <span class="label" style="margin-left:8px">Spacing</span>
+          <button>H−</button><span style="font-size:11px;color:var(--text)">300</span><button>H+</button>
+          <button>V−</button><span style="font-size:11px;color:var(--text)">100</span><button>V+</button>
+        </div>
+      </div>
+
+      <div class="viewport">
+        <div class="sim-watermark">SIMULATING</div>
+        <svg class="graph-svg" width="920" height="360" viewBox="0 0 920 360">
+          <defs>
+            <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,-5L10,0L0,5" fill="#55c47a"></path>
+            </marker>
+            <marker id="arrow-fut" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,-5L10,0L0,5" fill="#5a6277"></path>
+            </marker>
+          </defs>
+          <!-- Edges -->
+          <path class="graph-edge" d="M200,130 C260,130 260,130 320,130"></path>
+          <path class="graph-edge" d="M440,130 C500,130 500,130 560,130"></path>
+          <path class="graph-edge" d="M680,130 C740,130 740,180 800,180"></path>
+          <path class="graph-edge future" style="stroke:#5a6277;marker-end:url(#arrow-fut)" d="M440,220 C500,220 500,220 560,220"></path>
+          <path class="graph-edge future" style="stroke:#5a6277;marker-end:url(#arrow-fut)" d="M680,220 C740,220 740,180 800,180"></path>
+
+          <!-- Nodes -->
+          <g class="graph-node action" transform="translate(80,100)"><rect width="120" height="60"></rect>
+            <text class="title" x="12" y="22">GatherFood</text>
+            <text class="cost"  x="96" y="22" text-anchor="end">$3</text>
+            <text class="meta"  x="12" y="40">cat: gather</text>
+            <text class="meta"  x="12" y="52">eff: HasEnoughFood</text>
+          </g>
+          <g class="graph-node action" transform="translate(320,100)"><rect width="120" height="60"></rect>
+            <text class="title" x="12" y="22">BuildBarracks</text>
+            <text class="cost"  x="96" y="22" text-anchor="end">$4</text>
+            <text class="meta"  x="12" y="40">pre: HasEnoughWood</text>
+            <text class="meta"  x="12" y="52">eff: HasBarracks</text>
+          </g>
+          <g class="graph-node action" transform="translate(560,100)"><rect width="120" height="60"></rect>
+            <text class="title" x="12" y="22">AdvanceFeudal</text>
+            <text class="cost"  x="96" y="22" text-anchor="end">$6</text>
+            <text class="meta"  x="12" y="40">pre: HasBarracks, …</text>
+            <text class="meta"  x="12" y="52">eff: IsInFeudalAge</text>
+          </g>
+          <g class="graph-node action" transform="translate(320,190)"><rect width="120" height="60"></rect>
+            <text class="title" x="12" y="22">GatherWood</text>
+            <text class="cost"  x="96" y="22" text-anchor="end">$3</text>
+            <text class="meta"  x="12" y="40">cat: gather</text>
+            <text class="meta"  x="12" y="52">eff: HasEnoughWood</text>
+          </g>
+          <g class="graph-node action" transform="translate(560,190)"><rect width="120" height="60"></rect>
+            <text class="title" x="12" y="22">BuildBlacksmith</text>
+            <text class="cost"  x="96" y="22" text-anchor="end">$3</text>
+            <text class="meta"  x="12" y="40">pre: HasEnoughWood</text>
+            <text class="meta"  x="12" y="52">eff: HasBlacksmith</text>
+          </g>
+          <g class="graph-node goal" transform="translate(800,150)"><rect width="100" height="60"></rect>
+            <text class="title" x="12" y="22">🎯 Goal</text>
+            <text class="meta"  x="12" y="40">ReachFeudal</text>
+            <text class="meta"  x="12" y="52">P:10</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Plan Strip -->
+      <div class="plan-strip">
+        <div class="head">
+          <span class="title">Plan</span>
+          <span class="meta"><b>3</b> steps · total cost <b>13</b> · <b>1</b> / 3 done</span>
+          <div class="rule"></div>
+          <span class="goal-label">Goal:</span>
+          <span class="goal-name">ReachFeudalAge</span>
+        </div>
+        <div class="plan-flow">
+          <div class="step done">
+            <span class="n">1</span>
+            <div class="name">GatherFood</div>
+            <div class="sub"><span class="cost">$3</span><span class="state">✓ done</span></div>
+          </div>
+          <div class="arrow done"><svg viewBox="0 0 20 12"><path d="M0,6 L16,6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12,1 L18,6 L12,11" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <div class="step active">
+            <span class="n">2</span>
+            <div class="name">BuildBarracks</div>
+            <div class="sub"><span class="cost">$4</span><span class="state">▶ executing</span></div>
+          </div>
+          <div class="arrow active"><svg viewBox="0 0 20 12"><path d="M0,6 L16,6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12,1 L18,6 L12,11" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <div class="step">
+            <span class="n">3</span>
+            <div class="name">AdvanceToFeudalAge</div>
+            <div class="sub"><span class="cost">$6</span><span class="state">pending</span></div>
+          </div>
+          <div class="arrow"><svg viewBox="0 0 20 12"><path d="M0,6 L16,6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12,1 L18,6 L12,11" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <div class="goal-pill">
+            <div class="target">
+              <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
+              goal · priority 10
+            </div>
+            <div class="gname">ReachFeudalAge</div>
+            <div class="cond">IsInFeudalAge = true</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT RAIL: 3 stacked inspectors -->
+    <aside class="right-rail">
+
+      <!-- World State -->
+      <section class="inspector" style="flex: 1 1 0; min-height: 140px;">
+        <div class="inspector-head">
+          <h3>World State</h3>
+          <span class="count">40</span>
+          <span class="chev">▾</span>
+        </div>
+        <div class="inspector-body">
+          <div class="ws-controls">
+            <input type="text" placeholder="Filter tags…">
+            <label><input type="checkbox"> only true</label>
+          </div>
+          <div class="ws-list">
+            <div class="ws-row flash-t"><span class="key">Empire.HasBarracks</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.HasEnoughFood</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.HasEnoughWood</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.HasEnoughGold</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.HasEnoughStone</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.HasFarm</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.HasFreePopulation</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.HasHouse</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.HasLumberCamp</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.IsInDarkAge</span><span class="val t">true</span></div>
+            <div class="ws-row"><span class="key">Empire.IsInFeudalAge</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.IsInCastleAge</span><span class="val f">false</span></div>
+            <div class="ws-row"><span class="key">Empire.IsInImperialAge</span><span class="val f">false</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Details (persistent — this is why tabs don't work) -->
+      <section class="inspector" style="flex: 1.2 1 0; min-height: 220px;">
+        <div class="inspector-head">
+          <h3>Action Details</h3>
+          <span class="count">step 2 of plan</span>
+          <span class="chev">▾</span>
+        </div>
+        <div class="inspector-body" style="padding-bottom: 0;">
+          <div class="ad-header">
+            <div class="top">
+              <span class="cat-dot" style="background: var(--cat-build)"></span>
+              <span class="cat-label">Build</span>
+            </div>
+            <div class="title">BuildBarracks</div>
+            <div class="sub">
+              <span class="cost">cost $4</span>
+              <span class="dot-sep">·</span>
+              <span>2 preconditions</span>
+              <span class="dot-sep">·</span>
+              <span>1 effect</span>
+              <span class="dot-sep">·</span>
+              <span style="color: var(--accent)">▶ executing</span>
+            </div>
+          </div>
+
+          <div class="ad-section">
+            <h4>Preconditions <span class="count">2</span></h4>
+            <div class="ad-pred">
+              <span class="marker need"></span>
+              <span class="key">Empire.HasEnoughWood</span>
+              <span class="val t">true</span>
+              <span class="status ok">satisfied</span>
+            </div>
+            <div class="ad-pred">
+              <span class="marker need"></span>
+              <span class="key">Empire.IsInDarkAge</span>
+              <span class="val t">true</span>
+              <span class="status ok">satisfied</span>
+            </div>
+          </div>
+
+          <div class="ad-section">
+            <h4>Effects <span class="count">1</span></h4>
+            <div class="ad-pred">
+              <span class="marker eff"></span>
+              <span class="key">Empire.HasBarracks</span>
+              <span class="val t">:= true</span>
+              <span class="status ok">will set</span>
+            </div>
+          </div>
+
+          <div class="ad-section">
+            <h4>Consumed by <span class="count">3 actions</span></h4>
+            <div class="ad-pred" style="cursor:pointer">
+              <span class="key" style="color:var(--info)">AdvanceToFeudalAge</span>
+              <span style="color: var(--text-mute); font-size: 10px;">$6</span>
+            </div>
+            <div class="ad-pred" style="cursor:pointer">
+              <span class="key" style="color:var(--info)">BuildArchery</span>
+              <span style="color: var(--text-mute); font-size: 10px;">$4</span>
+            </div>
+            <div class="ad-pred" style="cursor:pointer">
+              <span class="key" style="color:var(--info)">TrainMilitia</span>
+              <span style="color: var(--text-mute); font-size: 10px;">$2</span>
+            </div>
+          </div>
+        </div>
+        <div class="ad-footer">
+          <button>View in graph</button>
+          <button>Jump to step</button>
+        </div>
+      </section>
+
+      <!-- Failure Analysis -->
+      <section class="inspector" style="flex: 0.9 1 0; min-height: 140px;">
+        <div class="inspector-head">
+          <h3>Failure Analysis</h3>
+          <span class="state-pill ok">Plan Found</span>
+          <span class="chev">▾</span>
+        </div>
+        <div class="inspector-body">
+          <div class="fa-stats">
+            Goal: <b style="color:var(--accent)">ReachFeudalAge</b> · this-frame: 12 iters, 47µs · open 0 / closed 8 · search time: 0.3% of budget
+          </div>
+          <div class="fa-tree">
+            <div class="fa-node"><span class="tag needed">needed</span><div class="body"><b>IsInFeudalAge</b> = true <span style="color:var(--text-mute)"> · current: false</span></div></div>
+            <div class="fa-node" style="padding-left: 22px"><span class="tag action">action</span><div class="body"><b>AdvanceToFeudalAge</b> <span style="color:var(--accent)">$6</span></div></div>
+            <div class="fa-node" style="padding-left: 44px"><span class="tag sat">satisfied</span><div class="body"><b>HasBarracks</b> <span class="note">(via plan step 2)</span></div></div>
+            <div class="fa-node" style="padding-left: 44px"><span class="tag sat">satisfied</span><div class="body"><b>IsInDarkAge</b> <span class="note">(initial state)</span></div></div>
+            <div class="fa-node" style="padding-left: 44px"><span class="tag sat">satisfied</span><div class="body"><b>HasEnoughFood</b> <span class="note">(via plan step 1)</span></div></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  // Simple collapse toggling for inspector sections (bonus interaction)
+  document.querySelectorAll('.inspector-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const section = head.parentElement;
+      const body = section.querySelector('.inspector-body');
+      const chev = head.querySelector('.chev');
+      const collapsed = body.style.display === 'none';
+      body.style.display = collapsed ? '' : 'none';
+      chev.textContent = collapsed ? '▾' : '▸';
+      section.style.flex = collapsed ? '' : '0 0 auto';
+      section.style.minHeight = collapsed ? '' : '0';
+    });
+  });
+
+  // History row selection
+  document.querySelectorAll('.history-row').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.history-row').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+    });
+  });
+
+  // View tab switching
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

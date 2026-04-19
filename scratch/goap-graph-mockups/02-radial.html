@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mockup 2 — Radial</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0e1116; color: #e6e6ea; font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #13171f; border-bottom: 1px solid #262b36; }
+  .topbar a { color: #9da2ad; text-decoration: none; font-size: 12px; }
+  .topbar a:hover { color: #e6e6ea; }
+  .topbar h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  .topbar select { background: #1a1f29; color: #dfe2ea; border: 1px solid #2a303d; padding: 3px 6px; border-radius: 3px; font: inherit; }
+
+  .stage { position: absolute; inset: 40px 0 0 0; overflow: hidden; }
+  svg { display: block; width: 100%; height: 100%; }
+
+  .ring { fill: none; stroke: #1d2230; stroke-width: 1; }
+  .ring-label { fill: #4c5264; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .node rect { stroke-width: 1.5; rx: 4; ry: 4; }
+  .node text.name { fill: #f2f3f7; font-weight: 600; font-size: 10px; }
+  .node text.meta { fill: rgba(255,255,255,0.7); font-size: 9px; }
+  .node:hover rect { stroke: #f5c842 !important; stroke-width: 2; }
+
+  .edge { fill: none; stroke: #3a4358; stroke-width: 1; opacity: 0.35; }
+  .edge.hot { stroke: #f5c842; stroke-width: 2; opacity: 0.9; }
+  .edge.faded { opacity: 0.06; }
+
+  .goal circle { fill: #3a2f0a; stroke: #f5c842; stroke-width: 2; }
+  .goal text { fill: #f5c842; font-weight: 700; font-size: 11px; text-anchor: middle; }
+
+  .legend { position: absolute; bottom: 12px; left: 16px; display: flex; gap: 12px; font-size: 11px; color: #9da2ad; background: rgba(19,23,31,0.88); padding: 6px 10px; border: 1px solid #262b36; border-radius: 4px; }
+  .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+  .tooltip { position: fixed; pointer-events: none; background: #1a1f29; border: 1px solid #3a4358; color: #f2f3f7; padding: 8px 10px; border-radius: 4px; font-size: 11px; max-width: 320px; line-height: 1.45; box-shadow: 0 4px 16px rgba(0,0,0,0.4); z-index: 10; }
+  .tooltip strong { color: #f5c842; }
+  .tooltip .row { color: #9da2ad; }
+  .tooltip .row b { color: #dfe2ea; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">← back</a>
+  <h1>Mockup 2 — Radial (goal-centric)</h1>
+  <label style="color:#9da2ad;font-size:12px">Goal:
+    <select id="goalSel"></select>
+  </label>
+  <span style="color:#6b707b;font-size:11px;margin-left:auto">Rings = depth from goal · Arc position = category</span>
+</div>
+<div class="stage" id="stage"></div>
+<div class="legend">
+  <span><span class="swatch" style="background:#4ea84e"></span>Gather</span>
+  <span><span class="swatch" style="background:#c28a2a"></span>Build</span>
+  <span><span class="swatch" style="background:#5fb3d4"></span>Research</span>
+  <span><span class="swatch" style="background:#c74c4c"></span>Train</span>
+  <span><span class="swatch" style="background:#b46fd0"></span>Age</span>
+  <span><span class="swatch" style="background:#d4b15f"></span>Trade</span>
+</div>
+<div class="tooltip" id="tooltip" style="display:none"></div>
+
+<script src="empire-data.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById("stage");
+  const tooltip = document.getElementById("tooltip");
+  const goalSel = document.getElementById("goalSel");
+
+  EMPIRE_GOALS.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g.name; opt.textContent = g.name;
+    goalSel.appendChild(opt);
+  });
+  goalSel.value = "BuildWonder";
+
+  // Depth from the selected goal: BFS backward through producers.
+  function depthFromGoal(goalName) {
+    const goal = EMPIRE_GOALS.find(g => g.name === goalName);
+    const producers = new Map();
+    for (const a of EMPIRE_ACTIONS) for (const e of a.eff) {
+      if (!producers.has(e)) producers.set(e, []);
+      producers.get(e).push(a.name);
+    }
+    const dist = new Map();
+    const frontier = [];
+    for (const a of EMPIRE_ACTIONS) {
+      if (a.eff.some(e => goal.cond.includes(e))) {
+        dist.set(a.name, 1); frontier.push(a.name);
+      }
+    }
+    let head = 0;
+    while (head < frontier.length) {
+      const name = frontier[head++];
+      const a = EMPIRE_ACTIONS.find(x => x.name === name);
+      const d = dist.get(name);
+      for (const p of a.pre) {
+        for (const prod of (producers.get(p) || [])) {
+          if (!dist.has(prod)) { dist.set(prod, d + 1); frontier.push(prod); }
+        }
+      }
+    }
+    return dist;
+  }
+
+  const CAT_ANGLE = {
+    gather:   -Math.PI * 0.5 + 0 * Math.PI / 3, // N
+    build:    -Math.PI * 0.5 + 1 * Math.PI / 3, // NE
+    age:      -Math.PI * 0.5 + 2 * Math.PI / 3, // SE
+    train:    -Math.PI * 0.5 + 3 * Math.PI / 3, // S
+    research: -Math.PI * 0.5 + 4 * Math.PI / 3, // SW
+    trade:    -Math.PI * 0.5 + 5 * Math.PI / 3, // NW
+  };
+  const CAT_ARC = Math.PI / 3; // each category occupies 60° of the ring
+
+  function render() {
+    const goalName = goalSel.value;
+    const dist = depthFromGoal(goalName);
+    const inClosure = [...dist.keys()];
+    const maxDepth = Math.max(...dist.values(), 1);
+
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const cx = w / 2, cy = h / 2;
+    const innerR = 90;
+    const ringStep = Math.min((Math.min(w, h) / 2 - innerR - 40) / Math.max(1, maxDepth), 110);
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+
+    // Rings
+    for (let d = 1; d <= maxDepth; d++) {
+      const r = innerR + d * ringStep;
+      const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      ring.setAttribute("cx", cx); ring.setAttribute("cy", cy); ring.setAttribute("r", r);
+      ring.setAttribute("class", "ring");
+      svg.appendChild(ring);
+      const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      lbl.setAttribute("class", "ring-label");
+      lbl.setAttribute("x", cx + 4);
+      lbl.setAttribute("y", cy - r + 12);
+      lbl.textContent = `depth ${d}`;
+      svg.appendChild(lbl);
+    }
+
+    // Group by depth+category, compute angular positions within arc.
+    const buckets = new Map();
+    for (const name of inClosure) {
+      const a = EMPIRE_ACTIONS.find(x => x.name === name);
+      const d = dist.get(name);
+      const key = d + "|" + a.cat;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(a);
+    }
+    const pos = new Map();
+    for (const [key, list] of buckets) {
+      const [d, cat] = key.split("|");
+      const baseAngle = CAT_ANGLE[cat];
+      const r = innerR + Number(d) * ringStep;
+      const n = list.length;
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      for (let i = 0; i < n; i++) {
+        const t = n === 1 ? 0 : (i / (n - 1) - 0.5);
+        const angle = baseAngle + t * CAT_ARC * 0.9;
+        pos.set(list[i].name, {
+          x: cx + Math.cos(angle) * r,
+          y: cy + Math.sin(angle) * r,
+          a: list[i],
+        });
+      }
+    }
+
+    // Edges from producer → consumer within closure, plus effect → goal at centre.
+    const edgesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    svg.appendChild(edgesGroup);
+    for (const name of inClosure) {
+      const a = EMPIRE_ACTIONS.find(x => x.name === name);
+      for (const pre of a.pre) {
+        for (const prod of EMPIRE_ACTIONS) {
+          if (prod.eff.includes(pre) && pos.has(prod.name)) {
+            drawEdge(edgesGroup, pos.get(prod.name), pos.get(a.name));
+          }
+        }
+      }
+      const goal = EMPIRE_GOALS.find(g => g.name === goalName);
+      if (a.eff.some(e => goal.cond.includes(e))) {
+        drawEdgeToCentre(edgesGroup, pos.get(a.name), cx, cy);
+      }
+    }
+
+    // Goal at centre
+    const gg = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    gg.setAttribute("class", "goal");
+    gg.setAttribute("transform", `translate(${cx},${cy})`);
+    const gc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    gc.setAttribute("r", 50); gg.appendChild(gc);
+    const gt1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    gt1.setAttribute("y", -4); gt1.textContent = goalName; gg.appendChild(gt1);
+    const goal = EMPIRE_GOALS.find(g => g.name === goalName);
+    const gt2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    gt2.setAttribute("y", 12);
+    gt2.setAttribute("style", "font-weight:400;font-size:9px;fill:#d4b15f");
+    gt2.textContent = `priority ${goal.priority} · ${goal.cond.join(", ")}`;
+    gg.appendChild(gt2);
+    svg.appendChild(gg);
+
+    // Action nodes
+    for (const p of pos.values()) {
+      const a = p.a;
+      const NW = 140, NH = 32;
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.setAttribute("class", "node");
+      g.setAttribute("transform", `translate(${p.x - NW/2},${p.y - NH/2})`);
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("width", NW); rect.setAttribute("height", NH);
+      const col = CATEGORY_COLORS[a.cat] || "#555";
+      rect.setAttribute("fill", hexToRgba(col, 0.22));
+      rect.setAttribute("stroke", col);
+      g.appendChild(rect);
+      const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      name.setAttribute("class", "name"); name.setAttribute("x", 6); name.setAttribute("y", 13);
+      name.textContent = a.name; g.appendChild(name);
+      const meta = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      meta.setAttribute("class", "meta"); meta.setAttribute("x", 6); meta.setAttribute("y", 25);
+      meta.textContent = `cost ${a.cost} · pre ${a.pre.length}`;
+      g.appendChild(meta);
+
+      g.addEventListener("mouseenter", e => showTooltip(e, a));
+      g.addEventListener("mousemove",  moveTooltip);
+      g.addEventListener("mouseleave", hideTooltip);
+      svg.appendChild(g);
+    }
+
+    const outOfClosure = EMPIRE_ACTIONS.filter(a => !pos.has(a.name));
+    const meta = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    meta.setAttribute("x", 16); meta.setAttribute("y", h - 14);
+    meta.setAttribute("fill", "#6b707b"); meta.setAttribute("font-size", "11");
+    meta.textContent = `${pos.size} of ${EMPIRE_ACTIONS.length} actions are reachable toward ${goalName}. ${outOfClosure.length} hidden.`;
+    svg.appendChild(meta);
+
+    stage.innerHTML = ""; stage.appendChild(svg);
+  }
+
+  function drawEdge(parent, from, to) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+    path.setAttribute("d", `M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`);
+    path.setAttribute("class", "edge");
+    parent.appendChild(path);
+  }
+  function drawEdgeToCentre(parent, from, cx, cy) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${from.x} ${from.y} L ${cx} ${cy}`);
+    path.setAttribute("class", "edge hot");
+    parent.appendChild(path);
+  }
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function showTooltip(e, a) {
+    tooltip.innerHTML = `<strong>${a.name}</strong> <span style="color:#9da2ad">(${a.cat})</span>
+      <div class="row"><b>Cost:</b> ${a.cost}</div>
+      <div class="row"><b>Preconditions:</b> ${a.pre.length ? a.pre.join(", ") : "<em>none</em>"}</div>
+      <div class="row"><b>Effects:</b> ${a.eff.join(", ")}</div>`;
+    tooltip.style.display = "block"; moveTooltip(e);
+  }
+  function moveTooltip(e) {
+    tooltip.style.left = (e.clientX + 14) + "px";
+    tooltip.style.top  = (e.clientY + 14) + "px";
+  }
+  function hideTooltip() { tooltip.style.display = "none"; }
+
+  goalSel.addEventListener("change", render);
+  window.addEventListener("resize", render);
+  render();
+})();
+</script>
+</body>
+</html>

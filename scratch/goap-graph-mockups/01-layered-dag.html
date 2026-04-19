@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Mockup 1 — Layered DAG</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0e1116; color: #e6e6ea; font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #13171f; border-bottom: 1px solid #262b36; }
+  .topbar a { color: #9da2ad; text-decoration: none; font-size: 12px; }
+  .topbar a:hover { color: #e6e6ea; }
+  .topbar h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  .topbar label { font-size: 12px; color: #9da2ad; display: flex; align-items: center; gap: 6px; }
+  .topbar input[type="checkbox"] { accent-color: #4fa4d4; }
+  .topbar select { background: #1a1f29; color: #dfe2ea; border: 1px solid #2a303d; padding: 3px 6px; border-radius: 3px; font: inherit; }
+
+  .stage { position: absolute; inset: 40px 0 0 0; overflow: auto; }
+  svg { display: block; }
+
+  .col-header { fill: #9da2ad; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .col-bg { fill: #11151c; }
+  .col-bg.alt { fill: #0f1319; }
+
+  .node rect { stroke-width: 1.5; rx: 4; ry: 4; }
+  .node text.name { fill: #f2f3f7; font-weight: 600; font-size: 11px; }
+  .node text.meta { fill: rgba(255,255,255,0.7); font-size: 9px; }
+  .node:hover rect { stroke: #f5c842 !important; stroke-width: 2; }
+
+  .edge { fill: none; stroke: #3a4358; stroke-width: 1.2; opacity: 0.45; }
+  .edge.hot { stroke: #f5c842; stroke-width: 2; opacity: 1; }
+  .edge.faded { opacity: 0.08; }
+
+  .goal rect { fill: #3a2f0a; stroke: #f5c842; }
+  .goal text.name { fill: #f5c842; }
+
+  .legend { position: absolute; bottom: 12px; left: 16px; display: flex; gap: 12px; font-size: 11px; color: #9da2ad; background: rgba(19,23,31,0.88); padding: 6px 10px; border: 1px solid #262b36; border-radius: 4px; }
+  .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+  .tooltip { position: fixed; pointer-events: none; background: #1a1f29; border: 1px solid #3a4358; color: #f2f3f7; padding: 8px 10px; border-radius: 4px; font-size: 11px; max-width: 320px; line-height: 1.45; box-shadow: 0 4px 16px rgba(0,0,0,0.4); z-index: 10; }
+  .tooltip strong { color: #f5c842; }
+  .tooltip .row { color: #9da2ad; }
+  .tooltip .row b { color: #dfe2ea; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="index.html">← back</a>
+  <h1>Mockup 1 — Layered DAG</h1>
+  <label><input type="checkbox" id="toggleEfficient" checked /> Efficient gather variants</label>
+  <label><input type="checkbox" id="toggleResearch" checked /> Research</label>
+  <label><input type="checkbox" id="toggleMilitary" checked /> Military / train</label>
+  <label>Focus goal:
+    <select id="focusGoal">
+      <option value="">— none —</option>
+    </select>
+  </label>
+  <span id="stats" style="margin-left:auto;color:#6b707b;font-size:11px;"></span>
+</div>
+<div class="stage" id="stage"></div>
+<div class="legend">
+  <span><span class="swatch" style="background:#4ea84e"></span>Gather</span>
+  <span><span class="swatch" style="background:#c28a2a"></span>Build</span>
+  <span><span class="swatch" style="background:#5fb3d4"></span>Research</span>
+  <span><span class="swatch" style="background:#c74c4c"></span>Train</span>
+  <span><span class="swatch" style="background:#b46fd0"></span>Age</span>
+  <span><span class="swatch" style="background:#d4b15f"></span>Trade</span>
+  <span><span class="swatch" style="background:#f5c842"></span>Goal</span>
+</div>
+<div class="tooltip" id="tooltip" style="display:none"></div>
+
+<script src="empire-data.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById("stage");
+  const tooltip = document.getElementById("tooltip");
+  const stats = document.getElementById("stats");
+  const focusSel = document.getElementById("focusGoal");
+  const toggleEfficient = document.getElementById("toggleEfficient");
+  const toggleResearch  = document.getElementById("toggleResearch");
+  const toggleMilitary  = document.getElementById("toggleMilitary");
+
+  EMPIRE_GOALS.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g.name;
+    opt.textContent = g.name;
+    focusSel.appendChild(opt);
+  });
+
+  function filterActions() {
+    let acts = EMPIRE_ACTIONS.slice();
+    if (!toggleEfficient.checked) {
+      acts = acts.filter(a => !/From(Camp|Farm|Mill)$/.test(a.name));
+    }
+    if (!toggleResearch.checked) {
+      acts = acts.filter(a => a.cat !== "research");
+    }
+    if (!toggleMilitary.checked) {
+      acts = acts.filter(a => a.cat !== "train" && !/^(Build)(Barracks|Archery|Stable|SiegeWorkshop|Castle)$/.test(a.name));
+    }
+    return acts;
+  }
+
+  // Layout: columns by goal-distance (0 = immediately produces a goal effect).
+  // Actions unreachable from any goal (-1) are bucketed in a rightmost "misc" column.
+  function layout(acts) {
+    const dist = computeGoalDistances(acts, EMPIRE_GOALS);
+    const maxDepth = Math.max(...[...dist.values()].filter(d => d >= 0));
+    // Column index: depth 0 is rightmost (closest to goal), we flip for L→R reading.
+    const colIdxOf = (d) => (d < 0 ? maxDepth + 1 : maxDepth - d);
+    const cols = Array.from({ length: maxDepth + 2 }, () => []);
+    for (const a of acts) {
+      const d = dist.get(a.name);
+      cols[colIdxOf(d)].push(a);
+    }
+    // Sort each column by category then name for stable eyeballing.
+    const catOrder = ["gather", "build", "age", "research", "trade", "train"];
+    for (const col of cols) {
+      col.sort((a, b) => {
+        const ca = catOrder.indexOf(a.cat), cb = catOrder.indexOf(b.cat);
+        return ca !== cb ? ca - cb : a.name.localeCompare(b.name);
+      });
+    }
+    // Goal column = one more, rightmost.
+    const colLabels = [];
+    for (let i = 0; i <= maxDepth; i++) colLabels.push(`Depth ${maxDepth - i}`);
+    colLabels.push("Unreached");
+    colLabels.push("Goals");
+    cols.push(EMPIRE_GOALS.slice());
+    return { cols, colLabels };
+  }
+
+  const NODE_W = 180, NODE_H = 40, COL_GAP = 40, ROW_GAP = 10, HEADER_H = 32, PADDING = 24;
+
+  function render() {
+    const acts = filterActions();
+    const { cols, colLabels } = layout(acts);
+    const maxRows = Math.max(...cols.map(c => c.length));
+    const W = cols.length * (NODE_W + COL_GAP) + COL_GAP + PADDING * 2;
+    const H = HEADER_H + maxRows * (NODE_H + ROW_GAP) + PADDING * 2;
+
+    stats.textContent = `${acts.length} actions · ${EMPIRE_GOALS.length} goals · ${cols.length - 1} depth columns`;
+
+    // Assign positions
+    const pos = new Map();
+    cols.forEach((col, ci) => {
+      const x = PADDING + ci * (NODE_W + COL_GAP);
+      col.forEach((a, ri) => {
+        const y = PADDING + HEADER_H + ri * (NODE_H + ROW_GAP);
+        pos.set(a.name, { x, y, w: NODE_W, h: NODE_H, isGoal: !!a.cond });
+      });
+    });
+
+    // Build SVG
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", W);
+    svg.setAttribute("height", H);
+
+    // Column backgrounds
+    cols.forEach((col, ci) => {
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      bg.setAttribute("class", "col-bg" + (ci % 2 ? " alt" : ""));
+      bg.setAttribute("x", PADDING + ci * (NODE_W + COL_GAP) - COL_GAP/2);
+      bg.setAttribute("y", 0);
+      bg.setAttribute("width", NODE_W + COL_GAP);
+      bg.setAttribute("height", H);
+      svg.appendChild(bg);
+
+      const hdr = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      hdr.setAttribute("class", "col-header");
+      hdr.setAttribute("x", PADDING + ci * (NODE_W + COL_GAP) + NODE_W / 2);
+      hdr.setAttribute("y", 20);
+      hdr.setAttribute("text-anchor", "middle");
+      hdr.textContent = colLabels[ci];
+      svg.appendChild(hdr);
+    });
+
+    // Edges: action → consumer (precondition matches effect). For goals,
+    // edge from any producer-of-cond to the goal.
+    const edgesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    svg.appendChild(edgesGroup);
+
+    const focusGoal = focusSel.value;
+    const focusSet = buildFocusClosure(focusGoal, acts);
+
+    // Action → goal edges
+    for (const g of EMPIRE_GOALS) {
+      for (const cond of g.cond) {
+        for (const a of acts) {
+          if (a.eff.includes(cond)) {
+            const hot = focusSet && focusSet.has(a.name) && g.name === focusGoal;
+            drawEdge(edgesGroup, pos.get(a.name), pos.get(g.name), focusSet && !hot);
+          }
+        }
+      }
+    }
+    // Action → action (producer → consumer) edges
+    for (const a of acts) {
+      for (const p of a.pre) {
+        for (const producer of acts) {
+          if (producer.eff.includes(p)) {
+            drawEdge(edgesGroup, pos.get(producer.name), pos.get(a.name),
+                     focusSet && (!focusSet.has(producer.name) || !focusSet.has(a.name)));
+          }
+        }
+      }
+    }
+
+    // Nodes
+    for (const [ci, col] of cols.entries()) {
+      for (const a of col) {
+        const p = pos.get(a.name);
+        const isGoal = !!a.cond;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "node" + (isGoal ? " goal" : ""));
+        g.setAttribute("transform", `translate(${p.x},${p.y})`);
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("width", NODE_W);
+        rect.setAttribute("height", NODE_H);
+        if (!isGoal) {
+          const col = CATEGORY_COLORS[a.cat] || "#555";
+          rect.setAttribute("fill", hexToRgba(col, 0.22));
+          rect.setAttribute("stroke", col);
+        }
+        g.appendChild(rect);
+
+        const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        name.setAttribute("class", "name");
+        name.setAttribute("x", 10);
+        name.setAttribute("y", 16);
+        name.textContent = a.name;
+        g.appendChild(name);
+
+        const meta = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        meta.setAttribute("class", "meta");
+        meta.setAttribute("x", 10);
+        meta.setAttribute("y", 30);
+        meta.textContent = isGoal
+          ? `priority ${a.priority} · ${a.cond.join(", ")}`
+          : `cost ${a.cost} · pre ${a.pre.length} · eff ${a.eff.length}`;
+        g.appendChild(meta);
+
+        g.addEventListener("mouseenter", e => showTooltip(e, a));
+        g.addEventListener("mousemove",  e => moveTooltip(e));
+        g.addEventListener("mouseleave", hideTooltip);
+        svg.appendChild(g);
+      }
+    }
+
+    stage.innerHTML = "";
+    stage.appendChild(svg);
+  }
+
+  function buildFocusClosure(goalName, acts) {
+    if (!goalName) return null;
+    const goal = EMPIRE_GOALS.find(g => g.name === goalName);
+    if (!goal) return null;
+    const producers = new Map();
+    for (const a of acts) for (const e of a.eff) {
+      if (!producers.has(e)) producers.set(e, []);
+      producers.get(e).push(a.name);
+    }
+    // Track visited actions only. The goal name may collide with an action
+    // name (e.g. BuildWonder goal + BuildWonder action), so we intentionally
+    // do NOT seed visited with the goal.
+    const visited = new Set();
+    const queue = [...goal.cond];
+    while (queue.length) {
+      const cond = queue.shift();
+      const list = producers.get(cond) || [];
+      for (const producer of list) {
+        if (visited.has(producer)) continue;
+        visited.add(producer);
+        const a = acts.find(x => x.name === producer);
+        if (a) queue.push(...a.pre);
+      }
+    }
+    // Add the goal at the end with a distinct key so edge checks against it
+    // (goalName !== any action name convention) still resolve.
+    visited.add("__goal__:" + goalName);
+    return visited;
+  }
+
+  function drawEdge(parent, from, to, faded) {
+    if (!from || !to) return;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const x1 = from.x + from.w, y1 = from.y + from.h / 2;
+    const x2 = to.x,             y2 = to.y + to.h / 2;
+    const mx = (x1 + x2) / 2;
+    path.setAttribute("d", `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`);
+    path.setAttribute("class", "edge" + (faded ? " faded" : ""));
+    parent.appendChild(path);
+  }
+
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff;
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function showTooltip(e, a) {
+    const isGoal = !!a.cond;
+    tooltip.innerHTML = isGoal
+      ? `<strong>${a.name}</strong> <span style="color:#9da2ad">(goal)</span>
+         <div class="row"><b>Priority:</b> ${a.priority}</div>
+         <div class="row"><b>Conditions:</b> ${a.cond.join(", ")}</div>`
+      : `<strong>${a.name}</strong> <span style="color:#9da2ad">(${a.cat})</span>
+         <div class="row"><b>Cost:</b> ${a.cost}</div>
+         <div class="row"><b>Preconditions:</b> ${a.pre.length ? a.pre.join(", ") : "<em>none</em>"}</div>
+         <div class="row"><b>Effects:</b> ${a.eff.join(", ")}</div>`;
+    tooltip.style.display = "block";
+    moveTooltip(e);
+  }
+  function moveTooltip(e) {
+    const pad = 14;
+    tooltip.style.left = (e.clientX + pad) + "px";
+    tooltip.style.top  = (e.clientY + pad) + "px";
+  }
+  function hideTooltip() { tooltip.style.display = "none"; }
+
+  toggleEfficient.addEventListener("change", render);
+  toggleResearch.addEventListener("change", render);
+  toggleMilitary.addEventListener("change", render);
+  focusSel.addEventListener("change", render);
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>GOAP Graph Mockups — Empire Gym</title>
+<style>
+  body { background: #0e1116; color: #e6e6ea; font: 14px/1.5 system-ui, sans-serif; margin: 0; padding: 32px; }
+  h1 { font-size: 18px; margin: 0 0 8px 0; }
+  p.lede { color: #9da2ad; margin: 0 0 24px 0; max-width: 640px; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  li a { display: block; padding: 16px; background: #181c24; border: 1px solid #262b36; border-radius: 6px; text-decoration: none; color: inherit; }
+  li a:hover { background: #1f2531; border-color: #3a4256; }
+  li .title { font-weight: 600; margin-bottom: 4px; color: #dfe2ea; }
+  li .desc { color: #9da2ad; font-size: 12px; }
+  li.soon a { opacity: 0.5; pointer-events: none; }
+  .meta { margin-top: 32px; color: #6b707b; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>GOAP Graph Mockups — Empire Gym (45 actions, 4 goals)</h1>
+<p class="lede">Static prototypes exploring how to display a classical-GOAP action dependency graph at scale. Every mockup renders the same data as <code>CkGoapEmpire_Actions.as</code> so differences are purely in layout + interaction.</p>
+
+<ul>
+  <li style="grid-column: 1 / -1;">
+    <a href="05-improved-layout.html" style="background: linear-gradient(135deg, #1d2837 0%, #181c24 100%); border-color: #3a5570;">
+      <div class="title" style="color: #f5c842">★ 5. Improved full-app layout (recommended)</div>
+      <div class="desc">Redesigned window: three-column grid with Plan History rail, center view with redesigned plan strip, and persistent right-side inspector stack (World State · Action Details · Failure Analysis) — no more Action Details as a lost bottom tab.</div>
+    </a>
+  </li>
+  <li>
+    <a href="01-layered-dag.html">
+      <div class="title">1. Layered DAG</div>
+      <div class="desc">Columns = goal-distance depth. Strict left-to-right tiers instead of a free-floating force layout.</div>
+    </a>
+  </li>
+  <li>
+    <a href="02-radial.html">
+      <div class="title">2. Radial</div>
+      <div class="desc">Goal at centre, preconditions radiating outward. Age rings to cut visual noise.</div>
+    </a>
+  </li>
+  <li>
+    <a href="03-macro-nodes.html">
+      <div class="title">3. Macro-nodes</div>
+      <div class="desc">Collapse actions into tech-age super-nodes. Click to expand a tier at a time.</div>
+    </a>
+  </li>
+  <li>
+    <a href="04-matrix.html">
+      <div class="title">4. Dependency matrix</div>
+      <div class="desc">Actions × effects grid. Sometimes a non-graph view is clearer.</div>
+    </a>
+  </li>
+</ul>
+
+<p class="meta">Data source: <code>Plugins/CkTests/Script/CkGoap/CkGoapEmpire_Actions.as</code></p>
+</body>
+</html>
