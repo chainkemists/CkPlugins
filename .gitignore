@@ -345,4 +345,7 @@ CompileData*
 .userena/
 .mcp.json
 compile_commands.json
-.claude/
+# Added by code-review-graph
+.code-review-graph/
+.claude/*
+!.claude/settings.json
