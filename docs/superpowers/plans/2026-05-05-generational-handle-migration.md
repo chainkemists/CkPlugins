@@ -493,6 +493,15 @@ git commit -m "test(CkRegistry): handle-in-fragment lifecycle"
 
 Repeats the user's reproducer in test form: many consecutive PIE start/stops while handles are held in fragments and UObjects. Currently this fails (silent process termination); post-migration it must pass.
 
+> **AS-API + design corrections discovered during Tasks 0.2 / 0.4 (READ BEFORE IMPLEMENTING):**
+>
+> 1. **API: `Request_CreateEntity` not `Request_SpawnEntity`.** The `utils_entity_lifetime` namespace generated at `Plugins/CkFoundation/Script/Generated/utils_entity_lifetime.as` only exposes `Request_CreateEntity`, `Request_DestroyEntity`, `BindTo_OnBeginDestroy`, etc. There is no `Request_SpawnEntity`.
+> 2. **API: `FinishSuccess()` not `Finish_Success()`.** The `UCk_AutoTest_Base` AS API uses camelCase, not snake_case.
+> 3. **`Request_DestroyEntity` is deferred.** It enqueues a destroy request fragment that the destroy processor resolves on a later tick. Synchronous post-destroy assertions (`Assert_True(ck::Is_NOT_Valid(...))` immediately after the call) will always fail because the entity is still alive when the assertion runs. Use `BindTo_OnBeginDestroy` to wait for the destroy to actually fire — see `Plugins/CkTests/Script/CkRegistry/CkAutoTest_Registry_HandleCopyDestroy.as` for the canonical pattern (binds the callback, requests destroy, finishes from the callback).
+> 4. **A 1000-iteration tight loop in one tick does not "stress" a deferred-destroy system.** It enqueues 1000 destroy requests that all resolve on the next tick — so for 999 of the iterations there is no allocator pressure, just request accumulation. Either redesign as a per-tick loop driven by Tick + a counter, or accept that the test's actual coverage is "the slot allocator doesn't choke on 1000 simultaneous live entities then 1000 destroys" and shape the test accordingly.
+>
+> The corrected test below uses approach (4): create N entities up front (validates allocator throughput), then destroy them all and finish from the last OnBeginDestroy callback (validates the destroy queue + slot recycling). The cross-PIE coverage the original task description aspired to is NOT achievable from inside a single AutoTest run — it stays operator-driven (re-run the suite N times).
+
 **Files:**
 - Create: `Plugins/CkTests/Script/CkRegistry/CkAutoTest_Registry_PieStartStopStress.as`
 
@@ -502,65 +511,102 @@ Repeats the user's reproducer in test form: many consecutive PIE start/stops whi
 // Language=angelscript
 
 //============================================================================
-// CK REGISTRY — AUTOMATION TEST: PIE START/STOP STRESS
+// CK REGISTRY — AUTOMATION TEST: ALLOCATOR + DESTROY-QUEUE STRESS
 //============================================================================
 //
-// Cycles entity spawn → store-in-fragment → tag-for-destroy → tick → repeat
-// many times within a single PIE session. Although this doesn't actually
-// stop/start PIE (AutoTests don't drive that themselves), it stresses the
-// same allocation patterns the bug exhibited: many short-lived entities
-// with handles stashed across frame boundaries.
+// Validates that allocating N entities + destroying them all in the same PIE
+// session does not produce slot-allocator or destroy-queue pathologies.
 //
-// The actual cross-PIE coverage requires running the AutoTest suite
-// repeatedly via the Test Automation panel; that part is operator-driven.
+// Stress pattern:
+//   1. Spawn N child entities off a long-lived test handle.
+//   2. Verify each is valid (allocator throughput).
+//   3. Bind OnBeginDestroy on the LAST one (the cheapest synchronisation point).
+//   4. Request destroy on all of them.
+//   5. Finish from the last entity's OnBeginDestroy callback.
+//
+// Cross-PIE coverage (the originally-named "PIE start/stop" intent) is NOT
+// achievable from inside one AutoTest run — that stays operator-driven by
+// running the suite repeatedly.
 //============================================================================
 
-class UCk_AutoTest_Registry_PieStartStopStress : UCk_AutoTest_Base
+class UCk_AutoTest_Registry_AllocatorStress : UCk_AutoTest_Base
 {
-    private const int32 _IterationCount = 1000;
-    private int32 _Iteration = 0;
-    private FCk_Handle _PersistentHandle;
+    private const int32 _Count = 1000;
+    private array<FCk_Handle> _Spawned;
 
     UFUNCTION(BlueprintOverride)
     void DoBeginPlay(FCk_Handle InHandle)
     {
-        _PersistentHandle = InHandle;
-        DoNextIteration();
-    }
+        auto LocalHandle = InHandle;
 
-    private void DoNextIteration()
-    {
-        if (_Iteration >= _IterationCount)
+        _Spawned.Reserve(_Count);
+        for (int32 I = 0; I < _Count; ++I)
         {
-            Finish_Success();
-            return;
+            auto E = utils_entity_lifetime::Request_CreateEntity(LocalHandle);
+            Assert_True(ck::IsValid(E),
+                f"Iteration {I}: CreateEntity must produce valid handle");
+            _Spawned.Add(E);
         }
 
-        ++_Iteration;
-        auto Spawn = utils_entity_lifetime::Request_SpawnEntity(_PersistentHandle);
-        Assert_True(ck::IsValid(Spawn),
-            f"Iteration {_Iteration}: spawn must produce valid handle");
+        // Bind on the last one as the finish trigger; destroys are deferred,
+        // so we need a latent point to confirm the queue actually drained.
+        auto Last = _Spawned[_Spawned.Num() - 1];
+        utils_entity_lifetime::BindTo_OnBeginDestroy(Last,
+            FCk_Delegate_OnBeginDestroy(this, n"OnLastBeginDestroy"));
 
-        utils_entity_lifetime::Request_DestroyEntity(Spawn);
+        // Enqueue destroys for all of them.
+        for (int32 I = 0; I < _Spawned.Num(); ++I)
+        {
+            utils_entity_lifetime::Request_DestroyEntity(_Spawned[I]);
+        }
+    }
 
-        Assert_True(ck::Is_NOT_Valid(Spawn),
-            f"Iteration {_Iteration}: post-destroy must be invalid");
-
-        DoNextIteration();
+    UFUNCTION()
+    private void OnLastBeginDestroy(FCk_Handle InHandle)
+    {
+        if (IsFinished()) { return; }
+        FinishSuccess();
     }
 }
 ```
 
-- [ ] **Step 2: Run on current code**
+> **Class rename:** old plan called this `UCk_AutoTest_Registry_PieStartStopStress`; renamed to `UCk_AutoTest_Registry_AllocatorStress` because cross-PIE coverage is genuinely outside the test's reach — the new name is honest about what it actually verifies. If you keep the old class name, file name, and commit message, that's also fine; rename is a docs-quality choice.
 
-Expected: PASS within a single PIE session (the bug only manifests across PIE start/stop). This test serves as a perf-floor check — 1000 spawn/destroys must complete without churn.
+- [ ] **Step 2: Build and run**
 
-- [ ] **Step 3: Commit**
+Build CkPluginsEditor Development (incremental should be fast — no C++ changes for this task):
 
 ```bash
-git add Plugins/CkTests/Script/CkRegistry/CkAutoTest_Registry_PieStartStopStress.as
-git commit -m "test(CkRegistry): PIE start/stop stress (1000 spawn/destroy cycles)"
+"D:/Repos/UnrealEngineAngelscript/Engine/Build/BatchFiles/Build.bat" \
+  CkPluginsEditor Win64 Development \
+  -project="D:/Repos/CkPlugins/CkPlugins.uproject" -waitmutex
 ```
+
+Run the test:
+
+```bash
+"D:/Repos/UnrealEngineAngelscript/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" \
+  "D:/Repos/CkPlugins/CkPlugins.uproject" \
+  -ExecCmds="Automation RunTests Ck_AutoTest_Registry" \
+  -TestExit="Automation Test Queue Empty" \
+  -nullrhi -unattended -nopause -nosplash \
+  -log=Task05Run.log
+```
+
+Filter `Ck_AutoTest_Registry` (substring) catches all three Registry AS tests; check the log for the new test's `Result={Success}` line. Expected: PASS on current code. The `_TestEntityScriptClass` path is auto-resolved via the generated wrapper — no manual map placement; the populator subsystem auto-spawns the actor on AS recompile.
+
+- [ ] **Step 3: Commit (CkTests submodule)**
+
+```bash
+cd D:/Repos/CkPlugins/Plugins/CkTests
+git add Script/CkRegistry/CkAutoTest_Registry_AllocatorStress.as \
+        Script/Generated/CkTests_AutoTestActors.as \
+        Script/Generated/CkTests_EntitySpawnParams.as \
+        Content/AutoTests/AutoTests_CkTests_Level.umap
+git commit -m "test(CkRegistry): allocator + destroy-queue stress AutoTest (1000 entities)"
+```
+
+Then bump the parent CkPlugins submodule pointer in a follow-up commit.
 
 ### Task 0.6: Audit `_TransientEntity` on `FCk_Registry`
 
