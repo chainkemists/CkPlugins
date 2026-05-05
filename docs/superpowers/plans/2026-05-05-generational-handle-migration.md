@@ -114,6 +114,41 @@ git add docs/superpowers/plans/2026-05-05-generational-handle-migration-baseline
 git commit -m "docs(plan): capture pre-migration AutoTest baseline (known failures)"
 ```
 
+### Pre-Flight Audit Findings (Tasks 0.6 + 0.7 completed early)
+
+The two Phase 0 research tasks (`_TransientEntity` audit and NetSerializer wire-format verification) were executed during Pre-Flight since their findings affect plan task structure for later phases. Recording the decisions here so subsequent task implementations can reference them:
+
+#### Audit 0.6 — `_TransientEntity` decision: **option (c) — store in `entt::registry::ctx`**
+
+Findings from `grep -rn "_TransientEntity\|Get_TransientEntity"` across `Plugins/CkFoundation/Source`:
+
+- Most readers go through `UCk_Utils_EcsWorld_Subsystem_UE::Get_TransientEntity(world)` or `UCk_Utils_EntityLifetime_UE::Get_TransientEntity(handle/registry)` — utility-routed access.
+- A handful read directly via `FCk_Registry::Get_TransientEntity()` (e.g., `CkEntityLifetime_Utils.cpp:401`).
+- `TProcessor::_TransientEntity` is a per-processor cached field (separate concept; unchanged by migration).
+
+Decision rationale: storing in `entt::registry::ctx<FCk_TransientEntityCtx>()` (a) keeps `FCk_Registry` view at minimum size — just slot+gen, 12 bytes; (b) is idiomatic for entt; (c) requires zero changes to existing call sites since `FCk_Registry::Get_TransientEntity()` keeps its signature, the implementation swap is internal.
+
+**Implementation:**
+- **Phase 4 — subsystem `Initialize`:** after `entt::basic_registry` creation, register the transient entity into the registry's context: `OwnedRegistry->ctx().emplace<FCk_TransientEntityCtx>(FCk_TransientEntityCtx{TransientEntity})`.
+- **Phase 2 — `FCk_Registry::Get_TransientEntity()`:** read it back: `return Resolve()->ctx().get<FCk_TransientEntityCtx>().Entity`.
+- **Phase 2 — `FCk_Registry`:** remove `FCk_Entity _TransientEntity;` field. `FCk_Registry` becomes `{ FCk_RegistryHandle _RegistryHandle; }` only — 12 bytes.
+
+Add a tiny POD type at the top of `CkRegistry.h` or in `CkRegistry_Handle.h`:
+```cpp
+namespace ck { struct FCk_TransientEntityCtx { FCk_Entity Entity; }; }
+```
+
+#### Audit 0.7 — NetSerializer wire-format claim: **CONFIRMED**
+
+Findings from inspection of `CkHandle.cpp`:
+
+- Legacy `NetSerialize` body (line 407–438): both saving and loading paths execute only `Ar << _ReplicationDriver` (lines 423, 428). On load, the entity-side state is reconstructed locally via `*this = _ReplicationDriver->Get_AssociatedEntity()`.
+- Iris `FCk_HandleNetSerializer::Quantize` (line ~845): writes only `&Source._ReplicationDriver` through `FWeakObjectNetSerializer`.
+- Iris `Dequantize` (line ~865): reads `_ReplicationDriver`, calls `Get_AssociatedEntity()` to reconstruct local handle.
+- Zero references to `_Entity` or `_Registry` (or `_RegistryHandle` post-migration) in any serialization body.
+
+**Conclusion:** Internal handle bytes never cross machines. The migration's layout change (replacing `TOptional<FCk_Registry>` with `FCk_RegistryHandle`) is invisible to replication. Phase 7 stays as a verification-only phase — no code changes to `NetSerialize` or `FCk_HandleNetSerializer` required.
+
 ### Pre-Flight Task PF.4: Test scoping — run only new + relevant tests during migration
 
 Per user direction: full-suite runs are too slow for per-task iteration. Subsequent test invocations in this plan default to:
