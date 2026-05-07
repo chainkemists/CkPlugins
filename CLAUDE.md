@@ -54,6 +54,18 @@ runreal build editor
 
 Configurations available: Development, Test, Shipping, Debug.
 
+#### Building the editor directly (Build.bat)
+
+For editor-only iteration without going through runreal, invoke the engine's `Build.bat` directly. The engine path is resolved dynamically from this project's `.uproject` `EngineAssociation` GUID via a tiny helper — do not hardcode it:
+
+```powershell
+$engine = & "$env:CLAUDE_PROJECT_DIR\CkAuto\Get-ProjectEnginePath.ps1"
+& "$engine\Engine\Build\BatchFiles\Build.bat" CkPluginsEditor Win64 Development `
+    -Project="$env:CLAUDE_PROJECT_DIR\CkPlugins.uproject" -WaitMutex -FromMsBuild
+```
+
+The same `PreToolUse` hook that guards git ops (see *Hooks / safety guards*) also blocks `Build.bat` invocations whenever UnrealEditor is running for this project — building while the editor has DLLs loaded corrupts hot-reload state. Close the editor first, or set `SKIP_UNREAL_GUARD=1` if you know what you're doing.
+
 ### Running
 
 ```bash
@@ -125,11 +137,12 @@ The `CkAuto/UpdateAllSubmodules_PUSH_DEV.bat` helper can automate steps 2–3 ac
 
 ## Hooks / safety guards
 
-`.claude/settings.json` registers a `PreToolUse` hook (`CkAuto/Check-UnrealNotRunning.ps1`) that intercepts file-mutating git commands (`checkout`, `switch`, `rebase`, `merge`, `reset`, `pull`, `clean`, `restore`, `cherry-pick`, `revert`, `stash pop/apply`). Behaviour:
+`.claude/settings.json` registers a `PreToolUse` hook (`CkAuto/Check-UnrealNotRunning.ps1`) that intercepts file-mutating git commands (`checkout`, `switch`, `rebase`, `merge`, `reset`, `pull`, `clean`, `restore`, `cherry-pick`, `revert`, `stash pop/apply`) and engine `Build.bat` invocations. Behaviour:
 
 - **Editor closed for this project** → silent pass.
 - **Editor open, op only touches source/config** → soft-warn prompt (`permissionDecision: "ask"`); user confirms or declines.
 - **Editor open, op touches engine-locked paths** (`.uasset`/`.umap`/`Content/`/`Binaries/`/`Saved/`/`Intermediate/`/`DerivedDataCache/`/`Plugins/*/{Content,Binaries,Intermediate}/`) → hard block (`permissionDecision: "deny"`), enforced even in `--dangerously-skip-permissions` mode.
+- **Editor open, command invokes `Build.bat`** → hard block (`permissionDecision: "deny"`). Building the editor while it's running corrupts hot-reload state.
 
 Detection is per-project: probes `Saved/Logs/*.log` for an exclusive write lock (UE holds the active log exclusively while running). Other UE instances open for unrelated projects do not trip the guard, and renamed editor binaries don't matter (no process-name scan).
 
