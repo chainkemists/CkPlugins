@@ -165,3 +165,39 @@ Phase 1 ships when:
 - Deliverable 3 has produced either a merged fix or a Phase 2 deferral write-up.
 - Deliverable 4 has produced either a merged fix or an explicit skip decision.
 - Final snapshot shows the toolbox build+test cycle is faster than baseline. No specific second target — even a 2-3 sec save on a 26 sec cycle is meaningful given the rate at which we run this loop.
+
+## Phase 1 Results (2026-05-13)
+
+**Measurement infrastructure shipped:**
+- `UnrealToolbox --measure` (sub-flag of `--test`) writes per-phase JSON snapshots alongside the log.
+- `UnrealToolbox --measure-compare <a.json> <b.json>` prints a per-phase delta table.
+- 8 Catch2 tests fixture-pin the parser regex so log-format drift will break the build, not silently produce wrong numbers.
+
+**Per-phase numbers (DebugGame, --test-pattern IskmRenderer):**
+
+| Phase | Baseline | After Phase 1 | Delta |
+|---|---|---|---|
+| engine_init_seconds | 17.258s | 15.919s | **-1.339s (-7.8%)** |
+| total_to_pie_ready_seconds | 64.669s | 64.206s | -0.463s (-0.7%) |
+| as_* markers | null (upstream stopped emitting them) | null | n/a |
+
+Tests: 19/19 IskmRenderer pass before and after.
+
+**Project-side cleanup:** 16 unused engine plugins disabled in `CkPlugins.uproject` (mobile/Apple/movie-player, MediaPlate, Quixel Bridge+Fab, DatasmithContent, AlembicImporter, GLTFExporter, MetaHumanSDK, RiderSourceCodeAccess). Confirmed safe via single build+test cycle.
+
+**Deliverable 3 (AS double-reload investigation):** Turned out to be a wrong hypothesis. The "double-init" we saw in old logs is not two AS reloads inside one editor — it's **two separate editor processes** spawned by the toolbox `--test` mode: one for `Automation List; Quit` discovery, one for `Automation RunTests; Quit` execution. Each editor process does its own AS init exactly once. Findings: [`docs/superpowers/plans/2026-05-13-as-double-reload-findings.md`](../plans/2026-05-13-as-double-reload-findings.md). Decision: defer to Phase 2 — the natural fix is at the toolbox layer (collapse discovery + run into one editor process), not engine-side.
+
+**Deliverable 4 (AS debug-DB deferral):** No change needed. Upstream `FAngelscriptDebugServer::SendDebugDatabase` is already lazy — only invoked when a debugger client explicitly sends `RequestDebugDatabase`. Toolbox runs don't connect a debugger so the cost is already zero. The 0.739s we measured in the May 5 fixture was from an older AS plugin version. Findings: [`docs/superpowers/plans/2026-05-13-as-debugdb-deferral-findings.md`](../plans/2026-05-13-as-debugdb-deferral-findings.md).
+
+**Discovery: AS timing log markers no longer emitted.** The Hazelight AS plugin demoted the per-phase timing logs (`bindings total`, `class generator reload`, `post full reload`, `script reload total`) sometime between 2026-05-05 and 2026-05-13. The parser still extracts them correctly from logs that have them (the frozen fixture in tests verifies that), but real runs return `null` for those phases. Re-introducing per-phase AS timing visibility is a Phase 2 candidate.
+
+## Phase 2 Targets (decided after Phase 1 results)
+
+Highest-value targets, ordered by expected savings:
+
+1. **Toolbox single-editor-process for `--test`** (Task 10 discovery). Both `Automation List` and `Automation RunTests` could run in the same editor process via a combined `-ExecCmds=` chain. Estimated saving: ~17-25 sec per `--test` cycle (one cold-start eliminated). This is a toolbox-side change at `D:\Repos\FtxUiFramework\apps\UnrealToolbox\src\TestRunner.cpp`.
+2. **Platform `.ini` cull engine patch.** UE 5.5's `FConfigCacheIni::AsyncInitializeConfigForPlatforms` walks every known platform unconditionally in editor builds (~1.2 sec). A small engine-fork patch adding a `[Core.System] +ConfigPlatformsToSkip=...` config key would let us narrow to Windows-only.
+3. **Tooltip backport (`SDeferredToolTip` from UE 5.8).** 1-5 sec save in DebugGame builds per editor process. Engine fork patch.
+4. **Re-enable AS timing logs at a higher verbosity / different category.** Cheap (~5 lines) but only adds observability, not savings. Worth doing alongside any AS work in Phase 2.
+
+A Phase 2 spec will pick which of these to attack first based on whether you want maximum savings (toolbox fix) or maximum observability (re-enable AS markers).
