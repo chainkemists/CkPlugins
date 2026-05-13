@@ -247,6 +247,40 @@ Phase 2 ships when:
 3. **Deliverable 3** (RunHeadlessTest integration) — touches the user-facing flow. Smoke-tested end to end with measurements.
 4. **Final snapshot + sign-off** — capture before/after snapshots, append results to this spec.
 
+## Phase 2 Results (filled in on completion)
+
+**First-run cycle (--build --test, cache invalidated):**
+
+| Phase | Phase 1 final | Phase 2 final | Delta |
+|---|---|---|---|
+| engine_init_seconds | 15.919 | 17.788 | +1.869 |
+| total_to_pie_ready_seconds | 64.206 | 64.565 | +0.359 |
+
+(Expected: roughly unchanged. First-run still pays both spawns. Observed: well within run-to-run noise — confirms Phase 2 does not regress the post-build cycle.)
+
+**Iteration cycle (--test alone, cached):**
+
+| Phase | --build cycle | cached cycle | Delta |
+|---|---|---|---|
+| engine_init_seconds | 17.788 | 18.479 | +0.691 |
+| total_to_pie_ready_seconds | 64.565 | 31.621 | -32.944 |
+
+(Expected: total_to_pie_ready_seconds drops by ~15-20 sec. Observed: -32.944s / -51.0% — well past target. One full editor cold-start eliminated, plus the discovery-phase Automation List/exit overhead removed.)
+
+**Combined Phase 1 + Phase 2 saving on iteration cycle:**
+
+BuildTest-bundle.startup.json (Phase 1 final post-build cycle) total: 64.206s
+Phase2-final-cached.startup.json total: 31.621s
+Saving: 32.585 sec (-50.8%)
+
+Note: Phase 1's `BuildTest-baseline.startup.json` (the earliest pre-Phase-1 baseline) sat at 64.669s. Comparing that to Phase 2 cached (31.621s) yields 33.048s saving across both phases — Phase 1 itself was a wash on `total_to_pie_ready_seconds` (the -1.339s engine_init saving did not materialise at the wall-clock level), so essentially the entire iteration-cycle improvement is Phase 2.
+
+Tests: 19/19 IskmRenderer pass on every smoke-test in Tasks 5 and 6 (cache-empty, cached, build-trigger, discover-fresh, final-postbuild, final-cached).
+
+Phase 3 decision: **deferred — revisit if iteration-cycle ergonomics demand it**. Reasoning: the measured 32.9s saving on iteration cycles already exceeds the Phase 2 target by ~2x and crosses the perceptual "feels fast" threshold for tight inner-loop work; the remaining Phase 3 candidates (single-process flow ~30s further, engine-fork .ini cull ~1.2s, UE 5.8 tooltip backport 1-5s, AS timing-marker restoration) each add complexity (engine-fork patches need maintenance across UE upgrades; single-process flow rewires the toolbox `--test` pipeline) and the next sensible decision point is after we've lived with the Phase 2 win for a few real iteration loops to see whether the remaining ~31s/cycle is actually painful.
+
+---
+
 ## Phase 3 (deferred)
 
 After Phase 2 ships, remaining candidates from Phase 1's sign-off:
