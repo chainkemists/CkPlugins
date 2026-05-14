@@ -12,7 +12,7 @@
 
 ## Goal
 
-Reduce per-process editor cold-start by ~2-6 sec via two independent engine-fork patches on `D:\Repos\UnrealEngineCk` (branch `main-ck`):
+Reduce per-process editor cold-start by ~2-6 sec via two independent engine-fork patches on `D:\Repos\UnrealEngineAngelscript` (branch `main-ck`):
 
 1. **Tooltip backport (1-5 sec)** — port Epic Games' UE 5.8 `SDeferredToolTip` / `SDeferredToolTipText` widgets into our UE 5.5 fork. The shipped UE 5.8 change defers tooltip widget construction from "every widget at construction time" (~38000 eager `SNew(SToolTip)` invocations during editor init in DebugGame) to "first tooltip access". Per Epic's measurements and the source article (https://larstofus.com/2025/09/02/speeding-up-the-unreal-editor-launch-by-not-spawning-38000-tooltips/), this saves 2-5 sec in Debug, ~1 sec in Development, and ~40 MB RAM.
 
@@ -31,7 +31,7 @@ The toolbox layer doesn't change in this phase — the same `UnrealToolbox.exe` 
 UE 5.5's `FSlateApplication::MakeToolTip` (both overloads) constructs an `SToolTip` widget eagerly every time any code asks for a tooltip:
 
 ```cpp
-// D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp:4647-4658
+// D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp:4647-4658
 TSharedRef<IToolTip> FSlateApplication::MakeToolTip(const TAttribute<FText>& ToolTipText)
 {
     return SNew(SToolTip)
@@ -76,7 +76,7 @@ On a Windows-only dev host we pay ~1.2 sec for IOS/Android/Mac/Linux/PS5/etc. co
 
 ## In Scope (Phase 3)
 
-Two deliverables, both engine-fork patches on `D:\Repos\UnrealEngineCk` branch `main-ck`. Both land in the same rebuild + measurement cycle, but as two distinct commits so individual revert / bisect is clean.
+Two deliverables, both engine-fork patches on `D:\Repos\UnrealEngineAngelscript` branch `main-ck`. Both land in the same rebuild + measurement cycle, but as two distinct commits so individual revert / bisect is clean.
 
 ### Deliverable 1 — Backport SDeferredToolTip + convert two call sites
 
@@ -87,7 +87,7 @@ Declares two classes implementing `IToolTip`:
 - **`SDeferredToolTip`** — wraps a `FOnGetDeferredToolTip` delegate. First call to any `IToolTip` method invokes the delegate to construct the underlying tooltip, then forwards all subsequent calls to it. Used when the tooltip construction is non-trivial (e.g. needs to capture state, query a documentation system, etc.).
 - **`SDeferredToolTipText`** — specialized for plain-text tooltips. Takes a `TAttribute<FText>`, lazily constructs an `SToolTip` with that text on first access. Used for the common case.
 
-The UE 5.5 `IToolTip` interface at `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\SlateCore\Public\Widgets\IToolTip.h` is byte-identical to UE 5.8's (same nine virtual methods, same defaults). Therefore the new header is a clean copy — no adaptation needed.
+The UE 5.5 `IToolTip` interface at `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\SlateCore\Public\Widgets\IToolTip.h` is byte-identical to UE 5.8's (same nine virtual methods, same defaults). Therefore the new header is a clean copy — no adaptation needed.
 
 **NEW** `Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp` (~215 lines, copy verbatim from UE 5.8).
 

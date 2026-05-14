@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Land two engine-fork patches on `D:\Repos\UnrealEngineCk` (branch `main-ck`) to shave ~2-6 sec off editor cold-start per process: (1) port UE 5.8's `SDeferredToolTip` widget to defer tooltip construction, (2) add a `[Core.System] ConfigPlatformsToInclude=Windows` allow-list opt-in so the editor stops loading IOS/Android/Mac/Linux/etc. `.ini` files. Plus a one-line project-side opt-in in `Config/DefaultEngine.ini`.
+**Goal:** Land two engine-fork patches on `D:\Repos\UnrealEngineAngelscript` (branch `main-ck`) to shave ~2-6 sec off editor cold-start per process: (1) port UE 5.8's `SDeferredToolTip` widget to defer tooltip construction, (2) add a `[Core.System] ConfigPlatformsToInclude=Windows` allow-list opt-in so the editor stops loading IOS/Android/Mac/Linux/etc. `.ini` files. Plus a one-line project-side opt-in in `Config/DefaultEngine.ini`.
 
 **Architecture:** Two independent engine commits on `main-ck` so individual revert / bisect is clean, but bundled into one rebuild + measurement cycle for speed. Per-deliverable abort thresholds (tooltip ≥ 1.0 sec, cull ≥ 0.5 sec) with a documented attribution procedure if the combined saving under-delivers (< 1.5 sec). No new tests in this plan — verification is `--measure-compare` against the Phase 2 baseline, manual tooltip smoke, log grep for platforms, and the existing IskmRenderer 19-test set.
 
-**Tech Stack:** UE 5.5 (chainkemists fork at `D:\Repos\UnrealEngineCk`, branch `main-ck`), C++ (Slate + Core modules + PropertyEditor module), runreal build system (`runreal build editor`), `UnrealToolbox.exe --measure` / `--measure-compare` from Phase 1 / Phase 2.
+**Tech Stack:** UE 5.5 (chainkemists fork at `D:\Repos\UnrealEngineAngelscript`, branch `main-ck`), C++ (Slate + Core modules + PropertyEditor module), runreal build system (`runreal build editor`), `UnrealToolbox.exe --measure` / `--measure-compare` from Phase 1 / Phase 2.
 
 **Spec:** [docs/superpowers/specs/2026-05-13-sdeferredtooltip-backport-design.md](../specs/2026-05-13-sdeferredtooltip-backport-design.md)
 
@@ -18,7 +18,7 @@
 
 ## File Structure
 
-**Modified in `D:\Repos\UnrealEngineCk` (branch `main-ck`):**
+**Modified in `D:\Repos\UnrealEngineAngelscript` (branch `main-ck`):**
 - `Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h` — NEW. Copied verbatim from UE 5.8.
 - `Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp` — NEW. Copied verbatim from UE 5.8.
 - `Engine/Source/Runtime/Slate/Private/Framework/Application/SlateApplication.cpp` — MODIFY. Two-line swap in `FSlateApplication::MakeToolTip` (both overloads) + one `#include`.
@@ -36,7 +36,7 @@
 ## Working-directory note for agentic workers
 
 Two repos plus one engine fork are touched:
-- **Engine fork:** `D:\Repos\UnrealEngineCk` (branch `main-ck`). Use `git -C /d/Repos/UnrealEngineCk ...`.
+- **Engine fork:** `D:\Repos\UnrealEngineAngelscript` (branch `main-ck`). Use `git -C /d/Repos/UnrealEngineAngelscript ...`.
 - **CkPlugins project:** `D:\Repos\CkPlugins` (branch `feature/generational-handle-migration`). Use `git -C /d/Repos/CkPlugins ...`.
 - **UE 5.8 reference (read-only):** `E:\UE_5.8`. Used for verbatim file copies in Task 2 and to diff-check Task 5's structural change.
 
@@ -120,23 +120,23 @@ Record the noise floor in a short note for the Phase 3 Results section — the p
 ## Task 2: Apply Deliverable 1 (tooltip backport) and commit
 
 **Files:**
-- Create: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Public\Widgets\SDeferredToolTip.h`
-- Create: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Private\Widgets\SDeferredToolTip.cpp`
-- Modify: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp`
-- Modify: `D:\Repos\UnrealEngineCk\Engine\Source\Editor\PropertyEditor\Private\PropertyEditorHelpers.cpp`
+- Create: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Public\Widgets\SDeferredToolTip.h`
+- Create: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Private\Widgets\SDeferredToolTip.cpp`
+- Modify: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp`
+- Modify: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Editor\PropertyEditor\Private\PropertyEditorHelpers.cpp`
 
 - [ ] **Step 1: Copy `SDeferredToolTip.h` from UE 5.8 verbatim**
 
 Source: `E:\UE_5.8\Engine\Source\Runtime\Slate\Public\Widgets\SDeferredToolTip.h` (93 lines).
-Destination: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Public\Widgets\SDeferredToolTip.h`.
+Destination: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Public\Widgets\SDeferredToolTip.h`.
 
-Copy the file verbatim. No edits needed — the `IToolTip` interface at `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\SlateCore\Public\Widgets\IToolTip.h` is byte-identical to UE 5.8's, so all nine virtual methods overridden by `SDeferredToolTip` / `SDeferredToolTipText` line up cleanly.
+Copy the file verbatim. No edits needed — the `IToolTip` interface at `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\SlateCore\Public\Widgets\IToolTip.h` is byte-identical to UE 5.8's, so all nine virtual methods overridden by `SDeferredToolTip` / `SDeferredToolTipText` line up cleanly.
 
 After copy, verify the file landed:
 
 ```bash
-ls D:/Repos/UnrealEngineCk/Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
-head -5 D:/Repos/UnrealEngineCk/Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
+ls D:/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
+head -5 D:/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
 ```
 
 Expected: file exists, first line is `// Copyright Epic Games, Inc. All Rights Reserved.`.
@@ -144,22 +144,22 @@ Expected: file exists, first line is `// Copyright Epic Games, Inc. All Rights R
 - [ ] **Step 2: Copy `SDeferredToolTip.cpp` from UE 5.8 verbatim**
 
 Source: `E:\UE_5.8\Engine\Source\Runtime\Slate\Private\Widgets\SDeferredToolTip.cpp` (215 lines).
-Destination: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Private\Widgets\SDeferredToolTip.cpp`.
+Destination: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Private\Widgets\SDeferredToolTip.cpp`.
 
 Copy the file verbatim.
 
 After copy:
 
 ```bash
-ls D:/Repos/UnrealEngineCk/Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
-head -5 D:/Repos/UnrealEngineCk/Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
+ls D:/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
+head -5 D:/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
 ```
 
 Expected: file exists, first line is `// Copyright Epic Games, Inc. All Rights Reserved.`.
 
 - [ ] **Step 3: Modify `SlateApplication.cpp` — swap both `MakeToolTip` overloads**
 
-Open `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp`.
+Open `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Slate\Private\Framework\Application\SlateApplication.cpp`.
 
 First, add the include. Find the existing `#include "Widgets/SToolTip.h"` line and insert immediately after:
 
@@ -200,7 +200,7 @@ TSharedRef<IToolTip> FSlateApplication::MakeToolTip( const FText& ToolTipText )
 After the edit, sanity-check the file:
 
 ```bash
-grep -n "SDeferredToolTipText\|MakeToolTip" /d/Repos/UnrealEngineCk/Engine/Source/Runtime/Slate/Private/Framework/Application/SlateApplication.cpp | head -10
+grep -n "SDeferredToolTipText\|MakeToolTip" /d/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Slate/Private/Framework/Application/SlateApplication.cpp | head -10
 ```
 
 Expected: at least two `MakeShared<SDeferredToolTipText>` matches (one per overload) plus the `#include` line.
@@ -210,7 +210,7 @@ Expected: at least two `MakeShared<SDeferredToolTipText>` matches (one per overl
 Before editing `PropertyEditorHelpers.cpp`, read the current `SPropertyNameWidget::Construct` body to understand the shape we're adapting from. The UE 5.8 form wraps the documentation-tooltip construction in a lambda passed to `SDeferredToolTip` — but our 5.5 fork may have the eager `IDocumentation::Get()->CreateToolTip(...)` call inline at a different surrounding shape.
 
 ```bash
-grep -n "SPropertyNameWidget::Construct" /d/Repos/UnrealEngineCk/Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
+grep -n "SPropertyNameWidget::Construct" /d/Repos/UnrealEngineAngelscript/Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
 ```
 
 Read ~40 lines starting at the `::Construct` line. Confirm:
@@ -224,7 +224,7 @@ If all three hold, proceed to Step 5 with the standard adaptation.
 
 - [ ] **Step 5: Modify `PropertyEditorHelpers.cpp` — wrap documentation tooltip in `SDeferredToolTip`**
 
-Open `D:\Repos\UnrealEngineCk\Engine\Source\Editor\PropertyEditor\Private\PropertyEditorHelpers.cpp`.
+Open `D:\Repos\UnrealEngineAngelscript\Engine\Source\Editor\PropertyEditor\Private\PropertyEditorHelpers.cpp`.
 
 Add the include near the other `Widgets/` includes at the top of the file:
 
@@ -264,7 +264,7 @@ Adapt to whatever widget our fork passes the tooltip into (read in Step 4).
 After the edit:
 
 ```bash
-grep -n "SDeferredToolTip\|CreateDocumentationToolTipDeferred" /d/Repos/UnrealEngineCk/Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
+grep -n "SDeferredToolTip\|CreateDocumentationToolTipDeferred" /d/Repos/UnrealEngineAngelscript/Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
 ```
 
 Expected: at least 3 matches (include + lambda + MakeShared call).
@@ -272,22 +272,22 @@ Expected: at least 3 matches (include + lambda + MakeShared call).
 - [ ] **Step 6: Verify staging contains exactly four files**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk add Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
-git -C /d/Repos/UnrealEngineCk add Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
-git -C /d/Repos/UnrealEngineCk add Engine/Source/Runtime/Slate/Private/Framework/Application/SlateApplication.cpp
-git -C /d/Repos/UnrealEngineCk add Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
+git -C /d/Repos/UnrealEngineAngelscript add Engine/Source/Runtime/Slate/Public/Widgets/SDeferredToolTip.h
+git -C /d/Repos/UnrealEngineAngelscript add Engine/Source/Runtime/Slate/Private/Widgets/SDeferredToolTip.cpp
+git -C /d/Repos/UnrealEngineAngelscript add Engine/Source/Runtime/Slate/Private/Framework/Application/SlateApplication.cpp
+git -C /d/Repos/UnrealEngineAngelscript add Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp
 echo "=== staged files (should be exactly 4) ==="
-git -C /d/Repos/UnrealEngineCk diff --cached --name-only
+git -C /d/Repos/UnrealEngineAngelscript diff --cached --name-only
 ```
 
 Expected: exactly four files listed, all paths matching the four above. If Step 4 elected to skip the PropertyEditorHelpers change, expect three files instead.
 
-If any other path appears, `git -C /d/Repos/UnrealEngineCk reset HEAD <path>` to unstage and investigate.
+If any other path appears, `git -C /d/Repos/UnrealEngineAngelscript reset HEAD <path>` to unstage and investigate.
 
 - [ ] **Step 7: Commit Deliverable 1**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk commit -m "$(cat <<'EOF'
+git -C /d/Repos/UnrealEngineAngelscript commit -m "$(cat <<'EOF'
 feat(slate): backport SDeferredToolTip from UE 5.8
 
 Defers SToolTip widget construction from "every widget at construction
@@ -320,7 +320,7 @@ If Step 4 skipped PropertyEditorHelpers, replace the "two call-site swaps" wordi
 - [ ] **Step 8: Verify the commit**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk show HEAD --stat
+git -C /d/Repos/UnrealEngineAngelscript show HEAD --stat
 ```
 
 Expected: 3 or 4 files changed, two `create mode` entries (the new `SDeferredToolTip.h/.cpp`), title `feat(slate): backport SDeferredToolTip from UE 5.8`.
@@ -330,12 +330,12 @@ Expected: 3 or 4 files changed, two `create mode` entries (the new `SDeferredToo
 ## Task 3: Apply Deliverable 2 (platforms cull) and commit
 
 **Files:**
-- Modify: `D:\Repos\UnrealEngineCk\Engine\Source\Runtime\Core\Private\Misc\ConfigCacheIni.cpp`
+- Modify: `D:\Repos\UnrealEngineAngelscript\Engine\Source\Runtime\Core\Private\Misc\ConfigCacheIni.cpp`
 
 - [ ] **Step 1: Locate the existing `AsyncInitializeConfigForPlatforms` function**
 
 ```bash
-grep -n "void FConfigCacheIni::AsyncInitializeConfigForPlatforms" /d/Repos/UnrealEngineCk/Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
+grep -n "void FConfigCacheIni::AsyncInitializeConfigForPlatforms" /d/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
 ```
 
 Expected: one match around line 6390. The function is gated by `#if WITH_EDITOR` (the `#if` is above the function, the matching `#endif` is just below).
@@ -432,7 +432,7 @@ The two changes are: (1) read `ConfigPlatformsToInclude` from `GConfig` near the
 After the edit:
 
 ```bash
-grep -n "ConfigPlatformsToInclude\|ShouldInclude" /d/Repos/UnrealEngineCk/Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
+grep -n "ConfigPlatformsToInclude\|ShouldInclude" /d/Repos/UnrealEngineAngelscript/Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
 ```
 
 Expected: 4-5 matches (one `GConfig->GetArray`, one lambda definition, two `if (!ShouldInclude...)` guards, possibly one in a comment).
@@ -440,9 +440,9 @@ Expected: 4-5 matches (one `GConfig->GetArray`, one lambda definition, two `if (
 - [ ] **Step 3: Verify staging contains exactly one file**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk add Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
+git -C /d/Repos/UnrealEngineAngelscript add Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp
 echo "=== staged files (should be exactly 1) ==="
-git -C /d/Repos/UnrealEngineCk diff --cached --name-only
+git -C /d/Repos/UnrealEngineAngelscript diff --cached --name-only
 ```
 
 Expected: exactly `Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp`.
@@ -450,7 +450,7 @@ Expected: exactly `Engine/Source/Runtime/Core/Private/Misc/ConfigCacheIni.cpp`.
 - [ ] **Step 4: Commit Deliverable 2**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk commit -m "$(cat <<'EOF'
+git -C /d/Repos/UnrealEngineAngelscript commit -m "$(cat <<'EOF'
 feat(core): add ConfigPlatformsToInclude opt-in for editor platform .ini loading
 
 FConfigCacheIni::AsyncInitializeConfigForPlatforms walks every platform
@@ -477,7 +477,7 @@ EOF
 - [ ] **Step 5: Verify the commit**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk show HEAD --stat
+git -C /d/Repos/UnrealEngineAngelscript show HEAD --stat
 ```
 
 Expected: 1 file changed, title `feat(core): add ConfigPlatformsToInclude opt-in for editor platform .ini loading`.
@@ -485,7 +485,7 @@ Expected: 1 file changed, title `feat(core): add ConfigPlatformsToInclude opt-in
 - [ ] **Step 6: Verify both commits are on `main-ck`**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk log --oneline -5
+git -C /d/Repos/UnrealEngineAngelscript log --oneline -5
 ```
 
 Expected: tip shows `feat(core): ...` followed by `feat(slate): ...` followed by whatever was on `main-ck` previously. Both are on `main-ck` (no feature branch).
@@ -542,7 +542,7 @@ git -C /d/Repos/CkPlugins commit -m "$(cat <<'EOF'
 chore(config): opt into ConfigPlatformsToInclude=Windows allow-list
 
 Phase 3 Deliverable 2 project-side activation. With the matching engine
-fork patch on main-ck (UnrealEngineCk: feat(core): add
+fork patch on main-ck (UnrealEngineAngelscript: feat(core): add
 ConfigPlatformsToInclude opt-in), editor startup now skips ~9 non-Windows
 platform .ini loads (IOS, Android, Mac, Linux, etc.), saving ~1.2 sec
 per editor process.
@@ -599,7 +599,7 @@ Common failures and recovery:
 - **Missing include for `SDeferredToolTip.h` in `SlateApplication.cpp`** → check that the include was added in Task 2 Step 3. If missing, add it and re-run.
 - **`SLATE_API` macro missing on a new class method** → the verbatim copy from UE 5.8 should already have these. If a method is flagged as undefined, confirm the verbatim copy didn't drop any.
 - **`GConfig->GetArray` signature mismatch** → unlikely (the API is stable across 5.5/5.8) but if it surfaces, check whether our fork has a non-stock `GConfig`. Adapt the call signature.
-- **PropertyEditorHelpers adaptation breaks compile** → revisit Task 2 Step 4 — the adaptation may need a different surrounding shape than UE 5.8's. The fallback is to back out only the PropertyEditorHelpers change (`git -C /d/Repos/UnrealEngineCk checkout HEAD~1 -- Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp` then `git -C /d/Repos/UnrealEngineCk commit --amend` to keep just the Slate parts of Deliverable 1).
+- **PropertyEditorHelpers adaptation breaks compile** → revisit Task 2 Step 4 — the adaptation may need a different surrounding shape than UE 5.8's. The fallback is to back out only the PropertyEditorHelpers change (`git -C /d/Repos/UnrealEngineAngelscript checkout HEAD~1 -- Engine/Source/Editor/PropertyEditor/Private/PropertyEditorHelpers.cpp` then `git -C /d/Repos/UnrealEngineAngelscript commit --amend` to keep just the Slate parts of Deliverable 1).
 
 If the build succeeds, record end time:
 
@@ -613,7 +613,7 @@ The wall-clock delta (end − start) goes in the Phase 3 Results section.
 
 ```bash
 # Path varies by config; typical Debug location:
-ls -la $(find D:/Repos/UnrealEngineCk/Engine/Binaries/Win64 -name "UnrealEditor*.exe" 2>/dev/null | head -1) 2>&1 | head -3
+ls -la $(find D:/Repos/UnrealEngineAngelscript/Engine/Binaries/Win64 -name "UnrealEditor*.exe" 2>/dev/null | head -1) 2>&1 | head -3
 ```
 
 Expected: editor binary modification time within the rebuild window (between start and end timestamps from Step 2/3).
@@ -804,7 +804,7 @@ Replace `<X.X>` with the actual numbers from Step 1.
 - [ ] **Step 4: Push the engine fork**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk push origin main-ck 2>&1 | tail -10
+git -C /d/Repos/UnrealEngineAngelscript push origin main-ck 2>&1 | tail -10
 ```
 
 Expected: two commits land (`feat(slate): ...`, `feat(core): ...`). If push prompts for credentials non-interactively, the agent stops and the user pushes manually.
@@ -820,7 +820,7 @@ Expected: two commits land on `feature/generational-handle-migration` (`chore(co
 - [ ] **Step 6: Verify all three remotes match local**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk log origin/main-ck..HEAD --oneline
+git -C /d/Repos/UnrealEngineAngelscript log origin/main-ck..HEAD --oneline
 git -C /d/Repos/CkPlugins log origin/feature/generational-handle-migration..HEAD --oneline
 ```
 
@@ -835,7 +835,7 @@ The combined saving fell below the ≥ 1.5 sec sign-off threshold but above the 
 - [ ] **Step 1: Revert Deliverable 2 (platforms cull) on `main-ck`**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk revert HEAD --no-edit
+git -C /d/Repos/UnrealEngineAngelscript revert HEAD --no-edit
 ```
 
 This creates a new revert commit on `main-ck` that backs out the `ConfigCacheIni.cpp` change. Don't push yet — we may revert this revert if it turns out the cull is the load-bearing patch.
@@ -875,7 +875,7 @@ Per-deliverable thresholds:
 
 Four cases:
 
-1. **Both above thresholds** (rare given combined is 1.0-1.5 sec, but possible if the two interact): revert the revert (`git -C /d/Repos/UnrealEngineCk revert HEAD --no-edit`), rebuild, fall through to Branch 8A.
+1. **Both above thresholds** (rare given combined is 1.0-1.5 sec, but possible if the two interact): revert the revert (`git -C /d/Repos/UnrealEngineAngelscript revert HEAD --no-edit`), rebuild, fall through to Branch 8A.
 2. **Only tooltip above threshold**: keep the revert commit (cull is reverted; tooltip remains). Push fork + CkPlugins (don't push the `+ConfigPlatformsToInclude=Windows` line — it's harmless without the engine support, but cleaner not to ship it).
 3. **Only cull above threshold**: revert the revert AND revert Deliverable 1 (tooltip). Push the resulting two-revert + one-keep state. The `Config/DefaultEngine.ini` line stays.
 4. **Neither above threshold**: fall through to Branch 8C.
@@ -891,11 +891,11 @@ Same shape as Branch 8A Steps 4-6 (push engine fork + CkPlugins), but the spec's
 - [ ] **Step 1: Revert both engine commits on `main-ck`**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk log --oneline -5
+git -C /d/Repos/UnrealEngineAngelscript log --oneline -5
 # Confirm the two feat commits are at the tip:
 #   feat(core): add ConfigPlatformsToInclude opt-in ...
 #   feat(slate): backport SDeferredToolTip from UE 5.8
-git -C /d/Repos/UnrealEngineCk revert HEAD HEAD~1 --no-edit
+git -C /d/Repos/UnrealEngineAngelscript revert HEAD HEAD~1 --no-edit
 ```
 
 Creates two revert commits on `main-ck`, undoing both deliverables.
@@ -929,7 +929,7 @@ Per-deliverable attribution (Branch 8B procedure run / not run):
 Hypotheses for why the saving fell short of Epic's reported 2-5 sec on Debug:
 - <list>
 
-All commits reverted on `main-ck` (UnrealEngineCk) and on `feature/generational-handle-migration` (CkPlugins).
+All commits reverted on `main-ck` (UnrealEngineAngelscript) and on `feature/generational-handle-migration` (CkPlugins).
 
 **Phase 4 decision:** <fill>.
 ```
@@ -955,7 +955,7 @@ EOF
 - [ ] **Step 5: Push fork and CkPlugins**
 
 ```bash
-git -C /d/Repos/UnrealEngineCk push origin main-ck 2>&1 | tail -10
+git -C /d/Repos/UnrealEngineAngelscript push origin main-ck 2>&1 | tail -10
 git -C /d/Repos/CkPlugins push 2>&1 | tail -10
 ```
 
