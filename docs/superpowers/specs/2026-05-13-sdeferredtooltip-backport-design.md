@@ -357,6 +357,68 @@ Each commit body names what it ports / modifies, links this Phase 3 spec, and (a
     - Combined saving 1.0-1.5 sec → run per-deliverable attribution: revert tooltip commit, rebuild, measure; if platforms cull saving < 0.5 sec, revert that too. Push whichever survives.
     - Combined saving < 1.0 sec → revert both commits on `main-ck`, document negative result, abandon Phase 3.
 
-## Phase 3 Results (filled in on completion)
+## Phase 3 Results — Null measured saving, patches kept landed
 
-(Placeholder section. Implementer fills with real numbers from the measurement step or removes if the patch was rolled back.)
+**Outcome:** Engine patches were applied cleanly and pass all verification gates (build, tests, runtime smoke), but the measured wall-clock saving falls within run-to-run noise. Per user decision the patches remain on `main-ck` (not reverted) so they can be re-evaluated in different contexts (different host, different build config, future Phase 4 work) without re-doing the engineering.
+
+### Verification gates (all passed)
+
+- **Build:** Engine rebuild succeeded in 41 sec via `runreal build editor --configuration DebugGame` (only 15 actions; warm-cache scenario). Modified DLLs: `UnrealEditor-Core.dll`, `UnrealEditor-Slate.dll`, `UnrealEditor-PropertyEditor.dll`.
+- **IskmRenderer regression:** 19/19 passed on both postbuild and cached toolbox cycles after patches landed.
+- **Tooltip backport runtime check:** Manual smoke across 4 editor scenes (Blueprint graph node, Project Settings property name, toolbar button, content browser asset). Tooltips appear with text, no crashes, no stale content. The backport is wired correctly.
+- **Platforms cull runtime check:** `grep "Loading .* ini files took"` in post-patch log shows only `Loading Windows ini files took 0.02 seconds`. Stock behaviour (10 platforms loaded) confirmed absent. The cull is wired correctly.
+
+### Measurement (DebugGame, IskmRenderer pattern, post host-restart fresh session)
+
+**PRE-patch baseline (single sample, captured 2026-05-13 ~19:30 PDT before machine restart):**
+
+| Metric | Postbuild | Cached |
+|---|---|---|
+| engine_init_seconds | 17.280 | 13.911 |
+| total_to_pie_ready_seconds | 54.936 | 25.100 |
+
+**POST-patch cached cycle (4 samples; sample 0 from Task 6 is a cold-cache outlier, samples 1-3 are a tight cluster in steady state):**
+
+| Sample | engine_init_seconds | total_to_pie_ready_seconds |
+|---|---|---|
+| Sample 0 (Task 6, post-rebuild cold) | 16.843 | 28.985 |
+| Sample 1 | 13.935 | 25.528 |
+| Sample 2 | 14.005 | 25.464 |
+| Sample 3 | 14.140 | 25.961 |
+| **avg 1-3 (steady state)** | **14.027** | **25.651** |
+| spread 1-3 (max-min) | 0.205 | 0.497 |
+
+**Delta vs PRE-patch cached baseline:**
+- engine_init: **+0.116 sec** (avg 14.027 vs pre 13.911) — within noise floor.
+- total_to_pie_ready: **+0.551 sec** (avg 25.651 vs pre 25.100) — within noise floor.
+
+**Per-deliverable thresholds (per plan):**
+- Tooltip ≥ 1.0 sec: not met.
+- Platforms cull ≥ 0.5 sec: not met.
+- Combined ≥ 1.5 sec sign-off: not met.
+
+### Why the article's reported savings did not materialise here
+
+**Platforms cull:** The article quotes ~1.2 sec saving on `engine_init`. Our log data shows the cull is active (only `Windows` loaded), but the actual savings are much smaller:
+- Pre-patch: 10 platforms loading **in parallel** in a thread pool (per-platform cost ~0.05-0.07 sec each).
+- Post-patch: 1 platform (Windows, 0.02 sec).
+- Wall-clock saving on `engine_init`: roughly the difference in max-parallel-time, ~0.04 sec — not the sum of serial times.
+- The article's 1.2 sec figure was a Debug build with full debug-allocator instrumentation; our DebugGame has lower per-platform cost.
+
+**Tooltip backport:** The article quotes 2-5 sec saving on Debug, ~1 sec on Development. Manual smoke confirmed the lazy-construction path is firing. Possible reasons it doesn't show in our measurements:
+1. Phase 1 already disabled 16 plugins → fewer eager tooltips constructed at editor init.
+2. Our project's editor surface (CkPlugins as a plugin host, not a full game) has fewer toolbar/menu widgets than a typical Epic-style editor.
+3. AngelScript binding + class-generator reload dominates startup time in our build, masking smaller savings inside `engine_init_seconds`.
+
+### Decision rationale (kept landed)
+
+The patches are correct, scoped, and verified. They impose no measurable cost (build clean, no test regressions, no visual regressions). Reverting would lose engineering work that may show savings in a different context — for example a host with slower disk I/O, a different build configuration, or a future game project on the same fork with more editor surface. The carry cost across UE rebases is small (one `SDeferredToolTip` directory copy + a 10-line `ConfigCacheIni.cpp` diff).
+
+### Phase 4 / further-work decision
+
+**Deferred.** The 32.6 sec iteration-cycle saving from Phase 2 is the load-bearing win of the editor-startup campaign. Remaining Phase 4 candidates from the Phase 1 spec's "Phase 2 Targets" table:
+
+- Toolbox single-process flow (combine `Automation List` + `Automation RunTests` into one `-ExecCmds` chain) — saves the post-build cycle's second editor spawn. Pure toolbox work, no engine fork.
+- AS timing marker re-enable — observability only.
+
+Neither is urgent. Revisit if the post-build cycle ergonomics become a bottleneck again.
