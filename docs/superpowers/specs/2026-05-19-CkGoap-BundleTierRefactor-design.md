@@ -1,3 +1,5 @@
+> ⚠ **SUPERSEDED** by [2026-05-19-CkGoap-ActionSetUnification-design.md](2026-05-19-CkGoap-ActionSetUnification-design.md). The Bundle/Tier trichotomy collapses into the ActionSet/Action dichotomy in the successor spec; this file is retained for historical context.
+
 # CkGoap Bundle/Tier Refactor — Design Spec
 
 **Date:** 2026-05-19
@@ -146,20 +148,29 @@ On each non-root tier in the active chain, we record which parent action injecte
 
 ### 2.5 New action field: `_ActionTag`
 
-`UCk_GoapAction_EntityScript` gains a single new field:
+`UCk_GoapAction_EntityScript` gains a single new field, populated by the builder API in the same pattern as `_Preconditions` / `_Effects` / `_Cost`:
 
 ```cpp
-UPROPERTY(EditDefaultsOnly, Category = "Ck|GOAP|Action",
-          meta = (Categories = "Goap.Action"))
+// In UCk_GoapAction_EntityScript — plain C++ member, not a UPROPERTY.
+// Populated via the SetActionTag builder; read by FProcessor_Goap_Setup
+// (which is a friend class). Lives on the CDO; not editor-exposed.
 FGameplayTag _ActionTag;
+
+// Builder:
+UFUNCTION(BlueprintCallable, Category = "Ck|GOAP|Action",
+          DisplayName = "[Ck][GOAP] Set Action Tag")
+void SetActionTag(
+    UPARAM(meta = (Categories = "Goap.Tier")) FGameplayTag InTag);
 ```
 
-Subclasses populate this in their `DefineAction` builder (a new `SetActionTag(FGameplayTag)` builder added alongside `AddPrecondition`/`AddEffect`/`SetCost`). When `_ActionTag` equals a tier's `_TierTag` (strict, full-tag), that tier auto-activates as the child of whichever tier is currently planning this action.
+**Semantically, an action's tag IS a tier tag.** The author of an action calls `SetActionTag(...)` with the `_TierTag` value of whichever sub-tier the action delegates to. The `UPARAM(meta = (Categories = "Goap.Tier"))` constraint surfaces only `Goap.Tier.*` tags in BP / AS pickers at the call site, so authors discover the available sub-tier tags directly.
+
+Subclasses populate this in their `DefineAction` builder (a new `SetActionTag(FGameplayTag)` builder added alongside `AddPrecondition`/`AddEffect`/`SetCost`). At chain-update time the bundle's catalog is keyed by `_TierTag`; the processor calls `Catalog.Find(NextActionTag)` for strict-equality lookup. When `_ActionTag` equals a tier's `_TierTag` (full-tag), that tier auto-activates as the child of whichever tier is currently planning this action.
 
 Two important rules:
 
 - `_ActionTag` is **scoped to the action subclass**, not to the action's appearance on a specific tier. Two tiers in the same bundle that both register the same action subclass will both see that action's tag.
-- An action whose `_ActionTag` equals NO tier in the bundle catalog is a **leaf action** — the chain stops at the tier that planned it.
+- An action whose `_ActionTag` equals NO tier in the bundle catalog is a **leaf action** — the chain stops at the tier that planned it. The same is true for an action that never calls `SetActionTag` (its `_ActionTag` stays as a default-constructed `FGameplayTag`).
 
 ---
 
@@ -1003,7 +1014,7 @@ For future readers comparing this design against the reference at `F:\FullSource
 | Aspect | Reference | This design |
 |---|---|---|
 | Identity | `UTuq_Core_Label*` (UObject) | `FGameplayTag` |
-| Match semantics | "Short" (last-segment) name equality | Strict full-tag equality |
+| Match semantics | "Short" (last-segment) name equality | Strict full-tag equality (`Action._ActionTag` and `Tier._TierTag` both live in the `Goap.Tier.*` tagspace; authors set the action's tag to the delegated sub-tier's tag) |
 | Goal injection | Deferred via request queue (1-frame lag) | Synchronous at chain append |
 | Same-frame chain growth | Yes (newly-appended tier plans in same iteration) | No (deferred to next frame) |
 | WS ownership | Per-tier, by value (embedded in CurrentState) | Separate entity, injected; default-to-parent |
