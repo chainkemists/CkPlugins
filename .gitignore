@@ -343,7 +343,6 @@ Auto/
 CompileData*
 .serena/
 .userena/
-.mcp.json
 compile_commands.json
 # Added by code-review-graph
 .code-review-graph/
