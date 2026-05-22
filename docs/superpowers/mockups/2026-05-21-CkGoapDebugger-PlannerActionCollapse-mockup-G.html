@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CK GOAP Debugger — Mockup G (Planner/Action Collapse)</title>
+<style>
+/* =============================================================== */
+/* Tokens (mirror FCkGoapDebuggerStyle palette) */
+/* =============================================================== */
+:root {
+    --bg-app: #15181c;
+    --bg-surface: #1d2025;
+    --bg-surface-2: #25292e;
+    --bg-surface-3: #2d3239;
+    --border-subtle: #2d3239;
+    --border-medium: #3a3f48;
+    --border-strong: #4a505a;
+
+    --text-primary: #d4d4d4;
+    --text-secondary: #8b939d;
+    --text-muted: #5d6470;
+    --text-dim: #424954;
+
+    --status-planfound: #3fb950;
+    --status-planning: #58a6ff;
+    --status-planfailed: #f85149;
+    --status-idle: #6e7681;
+
+    --selected: #d29922;
+    --inplan: #3b82f6;
+    --composite: #a855f7;
+    --failure: #f85149;
+    --warn: #d29922;
+    --tree-edge: #6a4a8e;
+
+    --ws-true: #3fb950;
+    --ws-false: #f85149;
+    --ws-recent: #d29922;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+    background: var(--bg-app);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+}
+
+button { font-family: inherit; cursor: pointer; }
+input { font-family: inherit; }
+
+/* =============================================================== */
+/* App shell */
+/* =============================================================== */
+.app {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    height: 100vh;
+}
+
+/* mode bar */
+.modebar {
+    display: flex;
+    gap: 0;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+}
+.modebar-tab {
+    padding: 9px 16px;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border-subtle);
+    background: transparent;
+    border-top: 2px solid transparent;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+}
+.modebar-tab.active {
+    color: var(--text-primary);
+    background: var(--bg-surface-2);
+    border-top: 2px solid var(--inplan);
+}
+.modebar-tab:not(.active):hover { color: var(--text-primary); background: var(--bg-surface-2); }
+
+/* toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+}
+.toolbar-label { color: var(--text-secondary); font-size: 11px; }
+.toolbar-pill {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.toolbar-btn {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+.toolbar-btn:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.toolbar-btn.active { color: var(--text-primary); border-color: var(--status-planfound); background: rgba(63, 185, 80, 0.08); }
+.toolbar-btn.warn { color: var(--warn); border-color: rgba(210, 153, 34, 0.4); background: rgba(210, 153, 34, 0.06); }
+.toolbar-sep { width: 1px; height: 18px; background: var(--border-subtle); }
+.toolbar-stat { color: var(--text-secondary); font-size: 11px; }
+.toolbar-stat strong { color: var(--text-primary); font-weight: 500; }
+
+/* legend */
+.legend {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 10.5px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.legend-swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: -1px;
+}
+
+/* main grid */
+.main {
+    display: grid;
+    grid-template-columns: 270px 1fr 320px;
+    overflow: hidden;
+}
+
+/* sidebar */
+.sidebar {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-subtle);
+    display: grid;
+    grid-template-rows: 1fr 200px;
+    overflow: hidden;
+}
+.sidebar-section { overflow: auto; padding: 10px 0; }
+.sidebar-section-header {
+    padding: 0 14px 8px;
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+.sidebar-section-header span.count { color: var(--text-dim); }
+
+/* planner tree */
+.planner-tree { padding-left: 0; }
+.tree-row {
+    padding: 4px 10px 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    font-size: 11.5px;
+    color: var(--text-primary);
+}
+.tree-row:hover { background: rgba(255, 255, 255, 0.02); }
+.tree-row.selected { background: rgba(210, 153, 34, 0.10); border-left-color: var(--selected); }
+.tree-row.active-chain-member { background: rgba(59, 130, 246, 0.06); }
+.tree-row.selected.active-chain-member { background: rgba(210, 153, 34, 0.15); border-left-color: var(--selected); }
+.tree-indent { color: var(--text-dim); font-family: monospace; flex-shrink: 0; }
+.tree-icon { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.tree-icon.planner { background: var(--composite); }
+.tree-icon.dual { background: linear-gradient(135deg, var(--composite) 50%, var(--inplan) 50%); }
+.tree-icon.action { background: var(--text-muted); }
+.tree-icon.atomic-leaf { background: var(--inplan); }
+.tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-tier-badge {
+    background: var(--bg-surface-3);
+    color: var(--text-muted);
+    padding: 1px 5px;
+    font-size: 9px;
+    border-radius: 2px;
+    font-family: monospace;
+}
+.tree-status { font-size: 9px; padding: 1px 5px; border-radius: 2px; }
+.tree-status.planfound { color: var(--status-planfound); background: rgba(63, 185, 80, 0.10); }
+.tree-status.planning { color: var(--status-planning); background: rgba(88, 166, 255, 0.10); }
+.tree-status.planfailed { color: var(--status-planfailed); background: rgba(248, 81, 73, 0.10); }
+.tree-status.idle { color: var(--status-idle); background: rgba(110, 118, 129, 0.10); }
+
+/* history */
+.history-section { border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; }
+.history-track {
+    height: 24px;
+    margin: 8px 14px;
+    background: var(--bg-surface-3);
+    border-radius: 2px;
+    position: relative;
+}
+.history-mark {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--bg-surface-3);
+}
+.history-mark.chain { background: var(--inplan); }
+.history-mark.fail { background: var(--status-planfailed); }
+.history-now {
+    position: absolute;
+    right: -1px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--status-planfound);
+}
+.history-events { flex: 1; overflow: auto; padding: 0 14px 12px; font-size: 10.5px; }
+.history-event { padding: 4px 0; color: var(--text-secondary); border-bottom: 1px dashed var(--border-subtle); }
+.history-event-title { color: var(--text-primary); }
+.history-event-time { color: var(--text-muted); float: right; font-family: monospace; }
+.history-event-detail { color: var(--text-muted); font-size: 10px; }
+
+/* center column */
+.center {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    overflow: hidden;
+    background: var(--bg-app);
+}
+
+/* breadcrumb */
+.breadcrumb {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 10px 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    overflow: auto;
+    flex-wrap: wrap;
+}
+.breadcrumb-tier-label {
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+}
+.breadcrumb-seg {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    padding: 3px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+.breadcrumb-seg:hover { color: var(--text-primary); }
+.breadcrumb-seg.selected {
+    border-color: var(--selected);
+    color: var(--selected);
+    background: rgba(210, 153, 34, 0.08);
+}
+.breadcrumb-seg .tier-num {
+    background: var(--bg-surface-3);
+    padding: 0 4px;
+    border-radius: 2px;
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+.breadcrumb-sep { color: var(--text-dim); font-size: 13px; }
+
+/* primary pane */
+.primary {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 14px 18px;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 18px;
+}
+.primary-main { min-width: 0; }
+.primary-rail { min-width: 0; border-left: 1px solid var(--border-subtle); padding-left: 18px; }
+
+.primary-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+.primary-title {
+    font-size: 18px;
+    color: var(--selected);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+.primary-roles {
+    display: inline-flex;
+    gap: 4px;
+}
+.primary-role-badge {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+.primary-role-badge.planner { background: rgba(168, 85, 247, 0.15); color: var(--composite); }
+.primary-role-badge.action { background: rgba(59, 130, 246, 0.15); color: var(--inplan); }
+.primary-subhead { color: var(--text-secondary); font-size: 11px; margin-bottom: 14px; }
+.primary-statusrow { display: flex; gap: 16px; margin-bottom: 14px; align-items: center; }
+.primary-stat-pill {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.primary-stat-pill strong { color: var(--text-primary); }
+.status-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+}
+.status-tag.planfound { color: var(--status-planfound); background: rgba(63, 185, 80, 0.12); }
+.status-tag.planning { color: var(--status-planning); background: rgba(88, 166, 255, 0.12); }
+.status-tag.planfailed { color: var(--status-planfailed); background: rgba(248, 81, 73, 0.12); }
+.status-tag.idle { color: var(--status-idle); background: rgba(110, 118, 129, 0.12); }
+
+.primary-section-header {
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin: 16px 0 8px;
+}
+
+/* plan strip */
+.plan-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+.plan-card {
+    background: var(--bg-surface-2);
+    border: 1.5px solid var(--border-medium);
+    border-radius: 4px;
+    padding: 8px 10px;
+    min-width: 110px;
+    position: relative;
+    cursor: pointer;
+}
+.plan-card:hover { border-color: var(--border-strong); }
+.plan-card.atomic { border-color: var(--inplan); border-style: solid; }
+.plan-card.composite { border-color: var(--composite); border-style: solid; }
+.plan-card.active-step {
+    box-shadow: 0 0 0 1px var(--status-planfound);
+    border-color: var(--status-planfound);
+}
+.plan-card-step {
+    position: absolute;
+    top: -7px; left: -7px;
+    background: var(--inplan);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.plan-card.composite .plan-card-step { background: var(--composite); }
+.plan-card.active-step .plan-card-step { background: var(--status-planfound); }
+.plan-card-name { font-size: 11px; color: var(--text-primary); margin-bottom: 4px; }
+.plan-card-meta { font-size: 10px; color: var(--text-muted); }
+.plan-card-active-badge {
+    position: absolute;
+    bottom: -7px; right: 6px;
+    background: var(--status-planfound);
+    color: white;
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+}
+.plan-empty {
+    padding: 12px 14px;
+    border: 1px dashed var(--border-medium);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-style: italic;
+}
+
+/* goal list */
+.goal-list { display: flex; flex-direction: column; gap: 4px; }
+.goal-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 11px;
+    color: var(--text-primary);
+    font-family: monospace;
+}
+.goal-check { color: var(--status-planfound); width: 14px; text-align: center; }
+.goal-check.unmet { color: var(--status-planfailed); }
+.goal-key { color: var(--text-secondary); }
+.goal-eq { color: var(--text-muted); }
+.goal-val { color: var(--text-primary); }
+
+/* drilldown */
+.drilldown {
+    background: var(--bg-surface-2);
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+}
+.drilldown-col { min-width: 0; }
+.drilldown-label {
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.drilldown-row {
+    font-size: 11px;
+    padding: 2px 0;
+    color: var(--text-primary);
+    font-family: monospace;
+}
+.drilldown-row.unmet { color: var(--status-planfailed); opacity: 0.75; }
+.drilldown-row.empty { color: var(--text-muted); font-style: italic; font-family: inherit; }
+
+/* right rail of primary */
+.rail-block { margin-bottom: 14px; }
+.rail-block-label {
+    font-size: 9.5px;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.rail-block-value { font-size: 11px; color: var(--text-primary); }
+.rail-block-sub { font-size: 10.5px; color: var(--text-secondary); font-style: italic; }
+.rail-block-ok { color: var(--status-planfound); font-size: 11px; }
+.rail-block-warn { color: var(--warn); font-size: 11px; }
+
+/* graph pane */
+.graph-pane {
+    background: var(--bg-app);
+    overflow: auto;
+    position: relative;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 36px 36px;
+}
+.graph-header {
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    font-size: 10.5px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+}
+.graph-canvas {
+    position: relative;
+    min-height: 460px;
+    padding: 32px;
+}
+
+.gnode {
+    position: absolute;
+    width: 175px;
+    background: var(--bg-surface-2);
+    border: 1.5px solid var(--border-medium);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 10.5px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.gnode:hover { border-color: var(--border-strong); }
+.gnode.selected {
+    border-color: var(--selected);
+    box-shadow: 0 0 0 1px var(--selected);
+}
+.gnode.in-plan { border-color: var(--inplan); }
+.gnode.composite { border-color: var(--composite); }
+.gnode.composite.in-plan { border-color: var(--composite); box-shadow: 0 0 0 1px var(--inplan); }
+.gnode.failure-blocked { border-color: var(--failure); border-style: dashed; }
+.gnode.selected.in-plan { border-color: var(--selected); box-shadow: 0 0 0 1px var(--inplan); }
+
+.gnode-header {
+    padding: 5px 8px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.gnode-name { color: var(--text-primary); font-weight: 500; font-size: 11px; }
+.gnode-cost { color: var(--text-muted); font-family: monospace; font-size: 10px; }
+.gnode-step {
+    position: absolute;
+    top: -8px; left: -8px;
+    background: var(--inplan);
+    color: white;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+.gnode.composite .gnode-step { background: var(--composite); }
+.gnode-role-dot {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--composite);
+    border: 1.5px solid var(--bg-surface-2);
+}
+
+.gnode-body { padding: 5px 8px; }
+.gnode-pins { display: flex; justify-content: space-between; }
+.gnode-pin-list { display: flex; flex-direction: column; gap: 2px; min-width: 60px; }
+.gnode-pin-list.right { text-align: right; }
+.gnode-pin {
+    font-family: monospace;
+    font-size: 9.5px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.gnode-pin.right { justify-content: flex-end; }
+.gnode-pin-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+}
+.gnode-pin-dot.sat { background: var(--status-planfound); }
+.gnode-pin-dot.unsat { background: var(--status-planfailed); }
+
+.gnode.goal {
+    background: var(--bg-surface);
+    border-color: var(--selected);
+    width: 200px;
+}
+.gnode.goal .gnode-header { color: var(--selected); }
+
+.gedge {
+    position: absolute;
+    pointer-events: none;
+    stroke-linejoin: round;
+}
+
+/* WS rail */
+.ws-rail {
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border-subtle);
+    padding: 12px 14px;
+    overflow: auto;
+}
+.ws-header {
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+.ws-header span.count { color: var(--text-dim); }
+.ws-hint {
+    background: var(--bg-surface-3);
+    border: 1px dashed var(--border-medium);
+    padding: 8px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+.ws-hint b { color: var(--text-primary); }
+.ws-group { margin-bottom: 14px; }
+.ws-group-name {
+    font-size: 9.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.ws-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-family: monospace;
+    font-size: 10.5px;
+    cursor: pointer;
+    border-radius: 2px;
+    padding-left: 4px;
+    margin-left: -4px;
+}
+.ws-row:hover { background: rgba(255, 255, 255, 0.03); }
+.ws-key { color: var(--text-secondary); flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.ws-val {
+    font-weight: 700;
+    padding: 0px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+    min-width: 40px;
+    text-align: center;
+}
+.ws-val.t { background: rgba(63, 185, 80, 0.16); color: var(--ws-true); }
+.ws-val.f { background: rgba(248, 81, 73, 0.16); color: var(--ws-false); }
+.ws-recent {
+    color: var(--ws-recent);
+    margin-left: 2px;
+    font-size: 11px;
+}
+
+footer {
+    color: var(--text-dim);
+    font-size: 10px;
+    padding: 6px 16px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+    <!-- mode bar -->
+    <div class="modebar">
+        <button class="modebar-tab active">Standalone Window</button>
+        <button class="modebar-tab">Open ECS Inspector</button>
+    </div>
+
+    <!-- toolbar -->
+    <div class="toolbar">
+        <span class="toolbar-label">Entity:</span>
+        <span class="toolbar-pill">EnemyBruiser_BP_0 · 259|0(259)</span>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn active">Live</button>
+        <button class="toolbar-btn">Scrub</button>
+        <div class="toolbar-sep"></div>
+        <button class="toolbar-btn">Force replan</button>
+        <button class="toolbar-btn warn">Simulate PlanFailed</button>
+        <div class="legend">
+            <span><span class="legend-swatch" style="background: var(--composite)"></span>Planner role</span>
+            <span><span class="legend-swatch" style="background: var(--inplan)"></span>In-plan</span>
+            <span><span class="legend-swatch" style="background: var(--status-planfound)"></span>Active step</span>
+            <span><span class="legend-swatch" style="background: var(--failure)"></span>Failure-blocked</span>
+        </div>
+    </div>
+
+    <!-- main grid -->
+    <div class="main">
+
+        <!-- sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-section-header">
+                    PLANNER TREE <span class="count" id="planner-count">·</span>
+                </div>
+                <div class="planner-tree" id="planner-tree"></div>
+            </div>
+            <div class="sidebar-section history-section">
+                <div class="sidebar-section-header" style="margin-top: 4px;">
+                    HISTORY · <span class="count">5 events</span>
+                </div>
+                <div class="history-track">
+                    <div class="history-mark chain" style="left: 8%"></div>
+                    <div class="history-mark chain" style="left: 22%"></div>
+                    <div class="history-mark chain" style="left: 41%"></div>
+                    <div class="history-mark fail" style="left: 58%"></div>
+                    <div class="history-mark chain" style="left: 84%"></div>
+                    <div class="history-now"></div>
+                </div>
+                <div class="history-events">
+                    <div class="history-event">
+                        <span class="history-event-time">2.4s</span>
+                        <span class="history-event-title">Activated: Engage</span>
+                        <div class="history-event-detail">plan = [LightAttacks] · cost 2</div>
+                    </div>
+                    <div class="history-event">
+                        <span class="history-event-time">2.1s</span>
+                        <span class="history-event-title">Plan found: Alive</span>
+                        <div class="history-event-detail">[WalkToEnemy, Engage, KillEnemy] · cost 6</div>
+                    </div>
+                    <div class="history-event">
+                        <span class="history-event-time">1.7s</span>
+                        <span class="history-event-title">Plan failed: Engage</span>
+                        <div class="history-event-detail">Combat.InRange = false (replanned)</div>
+                    </div>
+                    <div class="history-event">
+                        <span class="history-event-time">0.2s</span>
+                        <span class="history-event-title">Activated: Alive</span>
+                        <div class="history-event-detail">top-level Planner attached</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- center -->
+        <div class="center">
+
+            <!-- breadcrumb -->
+            <div class="breadcrumb" id="breadcrumb"></div>
+
+            <!-- primary pane -->
+            <div class="primary">
+                <div class="primary-main" id="primary-main"></div>
+                <div class="primary-rail" id="primary-rail"></div>
+            </div>
+
+            <!-- graph pane -->
+            <div class="graph-pane">
+                <div class="graph-header">
+                    <span id="graph-title">Action graph</span>
+                    <span><b>Hint:</b> click any Action node to drill in; click WS entries on the right to toggle.</span>
+                </div>
+                <div class="graph-canvas" id="graph-canvas"></div>
+            </div>
+        </div>
+
+        <!-- right (WS rail) -->
+        <div class="ws-rail">
+            <div class="ws-header">WORLDSTATE — <span class="count" id="ws-count">·</span> keys</div>
+            <div class="ws-hint">
+                <b>Click any key</b> to toggle <span style="color:var(--ws-true)">true</span>/<span style="color:var(--ws-false)">false</span>. All Planner tiers replan automatically.
+                <span class="ws-recent">★</span> = changed in the last toggle.
+            </div>
+            <div id="ws-list"></div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    Mockup G · CkGoap Debugger · Planner/Action Collapse · 2026-05-21
+</footer>
+
+<script>
+// ============================================================
+// DATA: an enemy AI built on the U11 Planner/Action model.
+// One owner entity holds two top-level Planners:
+//   - AliveBrain  (the combat / behavior tree)
+//   - SocialChatter  (a peer planner; demonstrates "multiple
+//                     independent Planners on one entity").
+// AliveBrain has nested Planners several tiers deep.
+//
+// Each entry in `actions` is an entity that may carry the
+// Action role, Planner role, or both. `roles` says which.
+// `parentPlanner` is the Planner that picks this Action as a
+// step (null for top-level Planners).
+// `goal` is the Planner-role goal (null for action-only).
+// `children` is the Planner-role record of registered child
+// Actions (empty for action-only).
+// ============================================================
+
+const data = {
+    actions: {
+        // ====== AliveBrain — TIER 0 ======
+        'AliveBrain': {
+            display: 'AliveBrain',
+            roles: ['planner'],            // top-level → planner-only
+            parentPlanner: null,
+            tier: 0,
+            // The brain's ultimate goal: enemy dead.
+            goal: { 'Combat.EnemyDead': true },
+            children: ['WalkToEnemy', 'Engage', 'KillEnemy', 'Survive', 'Die'],
+            cost: 0,
+            preconditions: {},
+            effects: {},
+            wsSource: 'EnemyWS',
+        },
+
+        // ====== AliveBrain children at TIER 1 ======
+        'WalkToEnemy': {
+            display: 'WalkToEnemy',
+            roles: ['action', 'planner'],
+            parentPlanner: 'AliveBrain',
+            tier: 1,
+            goal: { 'Combat.InRange': true },
+            children: ['Walk', 'Run'],
+            cost: 3,
+            preconditions: { 'Combat.InRange': false, 'Self.Feared': false },
+            effects: { 'Combat.InRange': true },
+        },
+        'Engage': {
+            display: 'Engage',
+            roles: ['action', 'planner'],
+            parentPlanner: 'AliveBrain',
+            tier: 1,
+            goal: { 'Combat.EnemyDamaged': true },
+            children: ['LightAttacks', 'HeavyAttacks', 'Combos'],
+            cost: 2,
+            preconditions: { 'Combat.InRange': true, 'Self.Feared': false },
+            effects: { 'Combat.EnemyDamaged': true },
+        },
+        'KillEnemy': {
+            display: 'KillEnemy',
+            roles: ['action'],            // atomic
+            parentPlanner: 'AliveBrain',
+            tier: 1,
+            goal: null,
+            children: [],
+            cost: 1,
+            preconditions: { 'Combat.EnemyDamaged': true, 'Combat.InRange': true },
+            effects: { 'Combat.EnemyDead': true },
+        },
+        'Survive': {
+            display: 'Survive',
+            roles: ['action', 'planner'],
+            parentPlanner: 'AliveBrain',
+            tier: 1,
+            goal: { 'Self.Safe': true },
+            children: ['RunAway', 'HideInCover'],
+            cost: 8,                       // expensive — only when nothing cheaper
+            preconditions: { 'Self.Feared': true },
+            effects: { 'Combat.EnemyDead': true },   // abstract: ends the engagement
+        },
+        'Die': {
+            display: 'Die',
+            roles: ['action'],            // atomic
+            parentPlanner: 'AliveBrain',
+            tier: 1,
+            goal: null,
+            children: [],
+            cost: 0,
+            preconditions: { 'Self.HP.Dead': true },
+            effects: { 'Combat.EnemyDead': true, 'Self.DeathAnimPlayed': true },
+        },
+
+        // ====== WalkToEnemy children at TIER 2 ======
+        'Walk': {
+            display: 'Walk',
+            roles: ['action'],
+            parentPlanner: 'WalkToEnemy',
+            tier: 2,
+            goal: null,
+            children: [],
+            cost: 1,
+            preconditions: { 'Combat.IsFar': false },
+            effects: { 'Combat.InRange': true },
+        },
+        'Run': {
+            display: 'Run',
+            roles: ['action'],
+            parentPlanner: 'WalkToEnemy',
+            tier: 2,
+            goal: null,
+            children: [],
+            cost: 2,
+            preconditions: { 'Combat.IsFar': true, 'Self.Stamina.High': true },
+            effects: { 'Combat.InRange': true },
+        },
+
+        // ====== Engage children at TIER 2 ======
+        'LightAttacks': {
+            display: 'LightAttacks',
+            roles: ['action', 'planner'],
+            parentPlanner: 'Engage',
+            tier: 2,
+            goal: { 'Combat.EnemyDamaged': true },
+            children: ['Light1', 'Light2', 'Light3'],
+            cost: 2,
+            preconditions: { 'Combat.LastAttack.WasLight': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.LastAttack.WasLight': true },
+        },
+        'HeavyAttacks': {
+            display: 'HeavyAttacks',
+            roles: ['action', 'planner'],
+            parentPlanner: 'Engage',
+            tier: 2,
+            goal: { 'Combat.EnemyDamaged': true },
+            children: ['Heavy1', 'Heavy2'],
+            cost: 3,
+            preconditions: { 'Cooldown.Heavy.Ready': true, 'Combat.LastAttack.WasHeavy': false, 'Self.Stamina.High': true },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.LastAttack.WasHeavy': true },
+        },
+        'Combos': {
+            display: 'Combos',
+            roles: ['action', 'planner'],
+            parentPlanner: 'Engage',
+            tier: 2,
+            goal: { 'Combat.EnemyDamaged': true },
+            children: ['Combo1', 'Combo2'],
+            cost: 2,
+            preconditions: { 'Cooldown.Combo.Ready': true, 'Combat.LastAttack.WasCombo': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.LastAttack.WasCombo': true },
+        },
+
+        // ====== LightAttacks children at TIER 3 ======
+        'Light1': {
+            display: 'Light1',
+            roles: ['action'], parentPlanner: 'LightAttacks', tier: 3, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Combat.Hit.WasLight1': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Hit.WasLight1': true },
+        },
+        'Light2': {
+            display: 'Light2',
+            roles: ['action'], parentPlanner: 'LightAttacks', tier: 3, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Combat.Hit.WasLight2': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Hit.WasLight2': true },
+        },
+        'Light3': {
+            display: 'Light3',
+            roles: ['action'], parentPlanner: 'LightAttacks', tier: 3, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Combat.Hit.WasLight3': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Hit.WasLight3': true },
+        },
+
+        // ====== HeavyAttacks children at TIER 3 ======
+        'Heavy1': {
+            display: 'Heavy1',
+            roles: ['action'], parentPlanner: 'HeavyAttacks', tier: 3, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Combat.Hit.WasHeavy1': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Hit.WasHeavy1': true },
+        },
+        'Heavy2': {
+            display: 'Heavy2',
+            roles: ['action'], parentPlanner: 'HeavyAttacks', tier: 3, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Combat.Hit.WasHeavy2': false },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Hit.WasHeavy2': true },
+        },
+
+        // ====== Combos children at TIER 3 ======
+        'Combo1': {
+            display: 'Combo1',
+            roles: ['action'], parentPlanner: 'Combos', tier: 3, goal: null, children: [],
+            cost: 2,
+            preconditions: { 'Combat.Combo.Step.Idle': true },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Combo.Step.Idle': false },
+        },
+        'Combo2': {
+            display: 'Combo2',
+            roles: ['action'], parentPlanner: 'Combos', tier: 3, goal: null, children: [],
+            cost: 2,
+            preconditions: { 'Combat.Combo.Step.Idle': true },
+            effects: { 'Combat.EnemyDamaged': true, 'Combat.Combo.Step.Idle': false },
+        },
+
+        // ====== Survive children at TIER 2 ======
+        'RunAway': {
+            display: 'RunAway',
+            roles: ['action'], parentPlanner: 'Survive', tier: 2, goal: null, children: [],
+            cost: 1,
+            preconditions: {},
+            effects: { 'Self.Safe': true, 'Self.Feared': false },
+        },
+        'HideInCover': {
+            display: 'HideInCover',
+            roles: ['action'], parentPlanner: 'Survive', tier: 2, goal: null, children: [],
+            cost: 1,
+            preconditions: { 'Env.HasCover': true },
+            effects: { 'Self.Safe': true, 'Self.Feared': false },
+        },
+
+        // ====== Peer top-level Planner ======
+        'SocialChatter': {
+            display: 'SocialChatter',
+            roles: ['planner'],
+            parentPlanner: null,
+            tier: 0,
+            goal: { 'Social.MumbleSaid': true },
+            children: ['MumbleTaunt', 'MumbleSneer'],
+            cost: 0,
+            preconditions: {},
+            effects: {},
+            wsSource: 'EnemyWS',
+        },
+        'MumbleTaunt': {
+            display: 'MumbleTaunt',
+            roles: ['action'], parentPlanner: 'SocialChatter', tier: 1, goal: null, children: [],
+            cost: 1, preconditions: { 'Social.LastWas.Taunt': false },
+            effects: { 'Social.MumbleSaid': true, 'Social.LastWas.Taunt': true },
+        },
+        'MumbleSneer': {
+            display: 'MumbleSneer',
+            roles: ['action'], parentPlanner: 'SocialChatter', tier: 1, goal: null, children: [],
+            cost: 1, preconditions: { 'Social.LastWas.Sneer': false },
+            effects: { 'Social.MumbleSaid': true, 'Social.LastWas.Sneer': true },
+        },
+    },
+
+    // Initial WorldState. Scenario: enemy is alive, close to but not in
+    // melee range yet, not feared, healthy. Plan should resolve to
+    // [WalkToEnemy, Engage, KillEnemy] at Tier 0.
+    worldState: {
+        // Combat
+        'Combat.InRange': false,
+        'Combat.EnemyDamaged': false,
+        'Combat.EnemyDead': false,
+        'Combat.IsFar': true,
+        'Combat.LastAttack.WasLight': false,
+        'Combat.LastAttack.WasHeavy': false,
+        'Combat.LastAttack.WasCombo': false,
+        'Combat.Hit.WasLight1': false,
+        'Combat.Hit.WasLight2': false,
+        'Combat.Hit.WasLight3': false,
+        'Combat.Hit.WasHeavy1': false,
+        'Combat.Hit.WasHeavy2': false,
+        'Combat.Combo.Step.Idle': true,
+        // Self
+        'Self.Feared': false,
+        'Self.HP.Dead': false,
+        'Self.Safe': false,
+        'Self.Stamina.High': true,
+        'Self.DeathAnimPlayed': false,
+        // Cooldowns
+        'Cooldown.Heavy.Ready': true,
+        'Cooldown.Combo.Ready': true,
+        // Env
+        'Env.HasCover': false,
+        // Social (for the peer Planner)
+        'Social.MumbleSaid': false,
+        'Social.LastWas.Taunt': false,
+        'Social.LastWas.Sneer': false,
+    },
+
+    // Top-level Planners on this entity. The user-visible "what's active"
+    // emerges from each Planner's Plan[0] chain at runtime.
+    topLevelPlanners: ['AliveBrain', 'SocialChatter'],
+};
+
+// ============================================================
+// PLANNER (regressive backward chaining, depth-limited)
+// ============================================================
+
+function preconditionsSatisfied(action, ws) {
+    for (const [k, v] of Object.entries(action.preconditions || {})) {
+        if (ws[k] !== v) return false;
+    }
+    return true;
+}
+
+function planFor(plannerId, ws) {
+    const planner = data.actions[plannerId];
+    if (!planner || !planner.children || planner.children.length === 0) {
+        return { plan: [], status: 'Idle', cost: 0 };
+    }
+    if (!planner.goal || Object.keys(planner.goal).length === 0) {
+        return { plan: [], status: 'PlanFound', cost: 0 };
+    }
+    // If goal already satisfied → empty plan, PlanFound.
+    const goalAlreadyMet = Object.entries(planner.goal).every(([k, v]) => ws[k] === v);
+    if (goalAlreadyMet) {
+        return { plan: [], status: 'PlanFound', cost: 0 };
+    }
+    const candidates = planner.children
+        .map(name => ({ name, def: data.actions[name] }))
+        .filter(c => !!c.def);
+
+    // Bounded backward search
+    function tryPath(remaining, simulatedWS, used, depth) {
+        if (depth > 8) return null;
+        const remainingKeys = Object.keys(remaining);
+        if (remainingKeys.length === 0) return [];
+        const [k] = remainingKeys;
+        const v = remaining[k];
+        if (simulatedWS[k] === v) {
+            const next = { ...remaining };
+            delete next[k];
+            return tryPath(next, simulatedWS, used, depth);
+        }
+        const producers = candidates
+            .filter(c => !used.has(c.name) && c.def.effects && c.def.effects[k] === v)
+            .sort((a, b) => a.def.cost - b.def.cost);
+        for (const op of producers) {
+            const newRemaining = { ...remaining };
+            delete newRemaining[k];
+            for (const [pk, pv] of Object.entries(op.def.preconditions || {})) {
+                if (simulatedWS[pk] !== pv) newRemaining[pk] = pv;
+            }
+            const newSim = { ...simulatedWS, ...op.def.effects };
+            const newUsed = new Set(used);
+            newUsed.add(op.name);
+            const sub = tryPath(newRemaining, newSim, newUsed, depth + 1);
+            if (sub !== null) {
+                return [...sub, op.name];
+            }
+        }
+        return null;
+    }
+
+    const path = tryPath({ ...planner.goal }, { ...ws }, new Set(), 0);
+    if (!path) {
+        return { plan: [], status: 'PlanFailed', cost: 0 };
+    }
+    return {
+        plan: path,
+        status: 'PlanFound',
+        cost: path.reduce((sum, n) => sum + (data.actions[n]?.cost || 0), 0),
+    };
+}
+
+// Plan every Planner in the entity (recursively for nested Planners).
+function computeAllPlans(ws) {
+    const plans = {};
+    const planners = Object.entries(data.actions).filter(([, a]) => a.roles.includes('planner'));
+    for (const [id] of planners) {
+        plans[id] = planFor(id, ws);
+    }
+    return plans;
+}
+
+// Active chain for a top-level Planner: walk Plan[0] of each Planner downward
+// while Plan[0] is itself a Planner. Stop on leaf or empty.
+function activeChainFor(topPlannerId, plans) {
+    const chain = [topPlannerId];
+    let cursor = topPlannerId;
+    while (true) {
+        const planEntry = plans[cursor];
+        if (!planEntry || planEntry.plan.length === 0) break;
+        const step0 = planEntry.plan[0];
+        const step0Def = data.actions[step0];
+        chain.push(step0);                  // record the action itself
+        if (!step0Def || !step0Def.roles.includes('planner')) break;  // leaf-of-chain
+        cursor = step0;                     // recurse into the next Planner
+    }
+    return chain;
+}
+
+// Determine "is this action's class currently in some plan that's relevant
+// to the selected Planner" — used for graph node IsInPlan tinting.
+function inPlanClasses(selectedPlannerId, plans) {
+    const ids = plans[selectedPlannerId]?.plan || [];
+    const set = new Set(ids);
+    return set;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+
+const state = {
+    selectedActionId: 'AliveBrain',
+    activeTopPlanner: 'AliveBrain',
+    plans: {},
+    chains: {},                              // top-planner-id → chain[]
+    recentlyChangedWS: new Set(),
+};
+
+function recompute() {
+    state.plans = computeAllPlans(data.worldState);
+    state.chains = {};
+    for (const topId of data.topLevelPlanners) {
+        state.chains[topId] = activeChainFor(topId, state.plans);
+    }
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+
+function renderPlannerTree() {
+    const root = document.getElementById('planner-tree');
+    root.innerHTML = '';
+
+    let totalPlanners = 0;
+
+    // Render each top-level Planner and its tree
+    for (const topId of data.topLevelPlanners) {
+        const chain = state.chains[topId] || [];
+        const inChain = new Set(chain);
+        const renderNode = (id, indent) => {
+            const a = data.actions[id];
+            if (!a) return;
+            if (a.roles.includes('planner')) totalPlanners++;
+            const row = document.createElement('div');
+            row.className = 'tree-row';
+            if (id === state.selectedActionId) row.classList.add('selected');
+            if (inChain.has(id)) row.classList.add('active-chain-member');
+            row.onclick = () => { selectAction(id); };
+
+            const indentSpan = document.createElement('span');
+            indentSpan.className = 'tree-indent';
+            indentSpan.textContent = '  '.repeat(indent) + (indent > 0 ? '└─ ' : '');
+            row.appendChild(indentSpan);
+
+            const icon = document.createElement('span');
+            icon.className = 'tree-icon ' +
+                (a.roles.includes('planner') && a.roles.includes('action') ? 'dual'
+                 : a.roles.includes('planner') ? 'planner'
+                 : a.children.length === 0 ? 'atomic-leaf' : 'action');
+            row.appendChild(icon);
+
+            const name = document.createElement('span');
+            name.className = 'tree-name';
+            name.textContent = a.display;
+            row.appendChild(name);
+
+            const tier = document.createElement('span');
+            tier.className = 'tree-tier-badge';
+            tier.textContent = 'T' + a.tier;
+            row.appendChild(tier);
+
+            if (a.roles.includes('planner')) {
+                const status = state.plans[id]?.status || 'Idle';
+                const stat = document.createElement('span');
+                stat.className = 'tree-status ' + status.toLowerCase();
+                stat.textContent = status;
+                row.appendChild(stat);
+            }
+            root.appendChild(row);
+            // Recurse children
+            for (const child of (a.children || [])) {
+                renderNode(child, indent + 1);
+            }
+        };
+        renderNode(topId, 0);
+    }
+
+    document.getElementById('planner-count').textContent = data.topLevelPlanners.length + ' top-level · ' + totalPlanners + ' total Planners';
+}
+
+function renderBreadcrumb() {
+    const root = document.getElementById('breadcrumb');
+    root.innerHTML = '';
+    const tierLabel = document.createElement('span');
+    tierLabel.className = 'breadcrumb-tier-label';
+    tierLabel.textContent = 'ACTIVE CHAIN ·';
+    root.appendChild(tierLabel);
+
+    const topPickerWrap = document.createElement('span');
+    topPickerWrap.style.cssText = 'display:flex; gap:6px; align-items:center; flex-wrap:wrap;';
+
+    // Each top-level Planner gets its own row of breadcrumbs in the same line
+    for (const topId of data.topLevelPlanners) {
+        const chain = state.chains[topId] || [];
+        const wrap = document.createElement('span');
+        wrap.style.cssText = 'display:flex; gap:6px; align-items:center;';
+        chain.forEach((id, idx) => {
+            const a = data.actions[id];
+            if (!a) return;
+            const seg = document.createElement('span');
+            seg.className = 'breadcrumb-seg';
+            if (id === state.selectedActionId) seg.classList.add('selected');
+            seg.onclick = () => selectAction(id);
+            const tierNum = document.createElement('span');
+            tierNum.className = 'tier-num';
+            tierNum.textContent = 'T' + a.tier;
+            seg.appendChild(tierNum);
+            const t = document.createElement('span');
+            t.textContent = a.display;
+            seg.appendChild(t);
+            wrap.appendChild(seg);
+            if (idx < chain.length - 1) {
+                const sep = document.createElement('span');
+                sep.className = 'breadcrumb-sep';
+                sep.textContent = '▸';
+                wrap.appendChild(sep);
+            }
+        });
+        topPickerWrap.appendChild(wrap);
+
+        if (topId !== data.topLevelPlanners[data.topLevelPlanners.length - 1]) {
+            const div = document.createElement('span');
+            div.style.cssText = 'color:var(--border-strong); margin: 0 6px;';
+            div.textContent = '/';
+            topPickerWrap.appendChild(div);
+        }
+    }
+    root.appendChild(topPickerWrap);
+}
+
+function renderPrimaryPane() {
+    const main = document.getElementById('primary-main');
+    const rail = document.getElementById('primary-rail');
+    main.innerHTML = '';
+    rail.innerHTML = '';
+
+    const a = data.actions[state.selectedActionId];
+    if (!a) return;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'primary-header';
+    const title = document.createElement('div');
+    title.className = 'primary-title';
+    title.textContent = a.display;
+    header.appendChild(title);
+    const roles = document.createElement('div');
+    roles.className = 'primary-roles';
+    if (a.roles.includes('planner')) {
+        const r = document.createElement('span');
+        r.className = 'primary-role-badge planner';
+        r.textContent = 'PLANNER';
+        roles.appendChild(r);
+    }
+    if (a.roles.includes('action')) {
+        const r = document.createElement('span');
+        r.className = 'primary-role-badge action';
+        r.textContent = 'ACTION';
+        roles.appendChild(r);
+    }
+    header.appendChild(roles);
+    main.appendChild(header);
+
+    const sub = document.createElement('div');
+    sub.className = 'primary-subhead';
+    sub.textContent = `Tier T${a.tier} · parent: ${a.parentPlanner || '(none — top-level)'}`;
+    main.appendChild(sub);
+
+    // Status row (only for Planner role)
+    if (a.roles.includes('planner')) {
+        const planEntry = state.plans[state.selectedActionId];
+        const statusRow = document.createElement('div');
+        statusRow.className = 'primary-statusrow';
+
+        const tag = document.createElement('span');
+        tag.className = 'status-tag ' + (planEntry?.status || 'idle').toLowerCase();
+        tag.textContent = planEntry?.status || 'Idle';
+        statusRow.appendChild(tag);
+
+        const cost = document.createElement('span');
+        cost.className = 'primary-stat-pill';
+        cost.innerHTML = 'Cost: <strong>' + (planEntry?.cost.toFixed(1) || '0') + '</strong>';
+        statusRow.appendChild(cost);
+
+        const attempts = document.createElement('span');
+        attempts.className = 'primary-stat-pill';
+        attempts.innerHTML = 'Attempts: <strong>1</strong>';
+        statusRow.appendChild(attempts);
+
+        const lr = document.createElement('span');
+        lr.className = 'primary-stat-pill';
+        lr.innerHTML = 'Last replan: <strong>0.0s ago</strong>';
+        statusRow.appendChild(lr);
+
+        main.appendChild(statusRow);
+
+        // Plan strip
+        const phLabel = document.createElement('div');
+        phLabel.className = 'primary-section-header';
+        phLabel.textContent = 'PLAN (multi-step possible; Plan[0] is the active step)';
+        main.appendChild(phLabel);
+
+        const strip = document.createElement('div');
+        strip.className = 'plan-strip';
+        if (!planEntry || planEntry.plan.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'plan-empty';
+            if (planEntry?.status === 'PlanFailed') {
+                empty.textContent = '✗ No path to goal from current WorldState.';
+                empty.style.color = 'var(--status-planfailed)';
+            } else {
+                empty.textContent = '✓ Goal already satisfied; plan empty.';
+                empty.style.color = 'var(--status-planfound)';
+            }
+            strip.appendChild(empty);
+        } else {
+            planEntry.plan.forEach((id, idx) => {
+                const def = data.actions[id];
+                if (!def) return;
+                const card = document.createElement('div');
+                card.className = 'plan-card';
+                if (def.roles.includes('planner')) card.classList.add('composite');
+                else card.classList.add('atomic');
+                if (idx === 0) card.classList.add('active-step');
+                card.onclick = () => selectAction(id);
+                const step = document.createElement('div');
+                step.className = 'plan-card-step';
+                step.textContent = String(idx + 1);
+                card.appendChild(step);
+                const name = document.createElement('div');
+                name.className = 'plan-card-name';
+                name.textContent = def.display;
+                card.appendChild(name);
+                const meta = document.createElement('div');
+                meta.className = 'plan-card-meta';
+                const kind = def.roles.includes('planner') ? 'composite · sub-planner' : 'atomic';
+                meta.textContent = `${kind} · cost $${def.cost}`;
+                card.appendChild(meta);
+                if (idx === 0) {
+                    const active = document.createElement('div');
+                    active.className = 'plan-card-active-badge';
+                    active.textContent = 'ACTIVE';
+                    card.appendChild(active);
+                }
+                strip.appendChild(card);
+            });
+        }
+        main.appendChild(strip);
+
+        // Goal
+        const gh = document.createElement('div');
+        gh.className = 'primary-section-header';
+        gh.textContent = 'GOAL (this tier — independent from any other tier)';
+        main.appendChild(gh);
+        const gList = document.createElement('div');
+        gList.className = 'goal-list';
+        for (const [k, v] of Object.entries(a.goal || {})) {
+            const row = document.createElement('div');
+            row.className = 'goal-row';
+            const check = document.createElement('span');
+            const met = data.worldState[k] === v;
+            check.className = 'goal-check' + (met ? '' : ' unmet');
+            check.textContent = met ? '✓' : '✗';
+            row.appendChild(check);
+            const key = document.createElement('span');
+            key.className = 'goal-key';
+            key.textContent = k;
+            row.appendChild(key);
+            const eq = document.createElement('span');
+            eq.className = 'goal-eq';
+            eq.textContent = '=';
+            row.appendChild(eq);
+            const val = document.createElement('span');
+            val.className = 'goal-val';
+            val.textContent = String(v);
+            row.appendChild(val);
+            gList.appendChild(row);
+        }
+        if (Object.keys(a.goal || {}).length === 0) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'font-size:11px; color:var(--text-muted); font-style:italic;';
+            empty.textContent = '(no goal set — Planner stays Idle)';
+            gList.appendChild(empty);
+        }
+        main.appendChild(gList);
+
+        // Drilldown
+        const dh = document.createElement('div');
+        dh.className = 'primary-section-header';
+        dh.textContent = 'DRILLDOWN (Plan[0] step interpretation)';
+        main.appendChild(dh);
+        const dl = document.createElement('div');
+        dl.className = 'drilldown';
+
+        const step0 = planEntry?.plan[0] ? data.actions[planEntry.plan[0]] : null;
+        const renderCol = (label, content) => {
+            const col = document.createElement('div');
+            col.className = 'drilldown-col';
+            const lab = document.createElement('div');
+            lab.className = 'drilldown-label';
+            lab.textContent = label;
+            col.appendChild(lab);
+            const body = document.createElement('div');
+            if (typeof content === 'string') {
+                body.className = 'drilldown-row empty';
+                body.textContent = content;
+                col.appendChild(body);
+            } else {
+                content.forEach(([txt, unmet]) => {
+                    const r = document.createElement('div');
+                    r.className = 'drilldown-row' + (unmet ? ' unmet' : '');
+                    r.textContent = txt;
+                    col.appendChild(r);
+                });
+            }
+            return col;
+        };
+
+        if (step0) {
+            const preRows = Object.entries(step0.preconditions || {});
+            const effRows = Object.entries(step0.effects || {});
+            dl.appendChild(renderCol('PRE',
+                preRows.length === 0 ? '(none)' :
+                preRows.map(([k, v]) => [`${k} = ${v}`, data.worldState[k] !== v])
+            ));
+            dl.appendChild(renderCol('EFF',
+                effRows.length === 0 ? '(none)' :
+                effRows.map(([k, v]) => [`${k} = ${v}`, false])
+            ));
+            const costCol = document.createElement('div');
+            costCol.className = 'drilldown-col';
+            const costLabel = document.createElement('div');
+            costLabel.className = 'drilldown-label';
+            costLabel.textContent = 'COST · ACTIVATION';
+            costCol.appendChild(costLabel);
+            const costRow = document.createElement('div');
+            costRow.className = 'drilldown-row';
+            costRow.textContent = `$${step0.cost.toFixed(1)} (this step)`;
+            costCol.appendChild(costRow);
+            const dual = document.createElement('div');
+            dual.className = 'drilldown-row';
+            dual.textContent = step0.roles.includes('planner') ? 'Activates sub-Planner ↘' : 'Atomic — runner executes';
+            dual.style.color = step0.roles.includes('planner') ? 'var(--composite)' : 'var(--inplan)';
+            costCol.appendChild(dual);
+            dl.appendChild(costCol);
+        } else {
+            dl.appendChild(renderCol('STEP 0', planEntry?.status === 'PlanFailed' ? 'plan unsatisfiable' : 'plan empty'));
+            dl.appendChild(renderCol('PRE', '—'));
+            dl.appendChild(renderCol('EFF', '—'));
+        }
+        main.appendChild(dl);
+    } else {
+        // Action-only view: show pre/eff/cost cleanly
+        const ph = document.createElement('div');
+        ph.className = 'primary-section-header';
+        ph.textContent = 'ATOMIC ACTION · executed directly by the runner';
+        main.appendChild(ph);
+
+        const dl = document.createElement('div');
+        dl.className = 'drilldown';
+        const renderCol = (label, content) => {
+            const col = document.createElement('div');
+            col.className = 'drilldown-col';
+            const lab = document.createElement('div');
+            lab.className = 'drilldown-label';
+            lab.textContent = label;
+            col.appendChild(lab);
+            (content.length === 0 ? [['(none)', false]] : content).forEach(([txt, unmet]) => {
+                const r = document.createElement('div');
+                r.className = 'drilldown-row' + (unmet ? ' unmet' : '');
+                if (content.length === 0) r.classList.add('empty');
+                r.textContent = txt;
+                col.appendChild(r);
+            });
+            return col;
+        };
+        dl.appendChild(renderCol('PRE',
+            Object.entries(a.preconditions || {}).map(([k, v]) => [`${k} = ${v}`, data.worldState[k] !== v])));
+        dl.appendChild(renderCol('EFF',
+            Object.entries(a.effects || {}).map(([k, v]) => [`${k} = ${v}`, false])));
+        const costCol = document.createElement('div');
+        costCol.className = 'drilldown-col';
+        const costLabel = document.createElement('div');
+        costLabel.className = 'drilldown-label';
+        costLabel.textContent = 'COST';
+        costCol.appendChild(costLabel);
+        const costRow = document.createElement('div');
+        costRow.className = 'drilldown-row';
+        costRow.textContent = `$${a.cost.toFixed(1)}`;
+        costCol.appendChild(costRow);
+        dl.appendChild(costCol);
+        main.appendChild(dl);
+    }
+
+    // Right rail
+    const ws = a.wsSource || (a.parentPlanner ? '(inherited)' : '(none)');
+    const wsBlock = document.createElement('div');
+    wsBlock.className = 'rail-block';
+    wsBlock.innerHTML = `<div class="rail-block-label">WORLDSTATE SOURCE</div>
+                        <div class="rail-block-value">${ws}</div>`;
+    rail.appendChild(wsBlock);
+
+    if (a.parentPlanner) {
+        const pb = document.createElement('div');
+        pb.className = 'rail-block';
+        pb.innerHTML = `<div class="rail-block-label">PARENT PLANNER</div>
+                       <div class="rail-block-value"><a style="color:var(--inplan); cursor:pointer; text-decoration:none;" onclick="window._select('${a.parentPlanner}')">${a.parentPlanner}</a></div>`;
+        rail.appendChild(pb);
+    }
+
+    if (a.roles.includes('action')) {
+        const ab = document.createElement('div');
+        ab.className = 'rail-block';
+        ab.innerHTML = `<div class="rail-block-label">ACTION ROLE</div>
+                       <div class="rail-block-sub">Picked by parent Planner when its plan includes this Action.</div>
+                       <div class="rail-block-sub" style="margin-top:4px;">Effects (above) are the interface the parent sees.</div>`;
+        rail.appendChild(ab);
+    }
+
+    if (a.roles.includes('planner')) {
+        const pb = document.createElement('div');
+        pb.className = 'rail-block';
+        pb.innerHTML = `<div class="rail-block-label">PLANNER ROLE</div>
+                       <div class="rail-block-sub">${a.children.length} child Action${a.children.length === 1 ? '' : 's'} registered.</div>
+                       <div class="rail-block-sub" style="margin-top:4px;">Goal (above) is independent from effects.</div>`;
+        rail.appendChild(pb);
+
+        const inv = document.createElement('div');
+        inv.className = 'rail-block';
+        inv.innerHTML = `<div class="rail-block-label">INVALID GOAL KEYS</div>
+                       <div class="rail-block-ok">None ✓</div>`;
+        rail.appendChild(inv);
+
+        const cyc = document.createElement('div');
+        cyc.className = 'rail-block';
+        cyc.innerHTML = `<div class="rail-block-label">DEPENDENCY CYCLES</div>
+                        <div class="rail-block-ok">None ✓</div>`;
+        rail.appendChild(cyc);
+    }
+}
+
+function renderGraph() {
+    const canvas = document.getElementById('graph-canvas');
+    canvas.innerHTML = '';
+    const a = data.actions[state.selectedActionId];
+    document.getElementById('graph-title').textContent = `Action graph — viewing ${a?.display} · ${a?.children.length || 0} child Action${a?.children.length === 1 ? '' : 's'}`;
+
+    if (!a || !a.roles.includes('planner') || a.children.length === 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'padding:36px; color:var(--text-muted); font-size:12px; font-style:italic; text-align:center;';
+        msg.textContent = 'Selected Action is a leaf (atomic) — no sub-graph to draw.';
+        canvas.appendChild(msg);
+        return;
+    }
+
+    // Layered DAG: parent on the left, children laid out by dependency layer,
+    // goal anchor on the right.
+    const parentX = 20;
+    const childStartX = 240;
+    const childYStep = 90;
+    const goalX = childStartX + 290;
+    const planEntry = state.plans[state.selectedActionId];
+    const inPlanSet = inPlanClasses(state.selectedActionId, state.plans);
+    const planList = planEntry?.plan || [];
+    const planStepByName = new Map(planList.map((n, i) => [n, i + 1]));
+
+    // Parent node
+    const parentNode = makeGraphNode({
+        id: state.selectedActionId,
+        x: parentX,
+        y: 20,
+        isParent: true,
+        a,
+        isSelected: true,
+        inPlanStep: 0,
+    });
+    canvas.appendChild(parentNode);
+
+    // Child nodes
+    const childNodes = {};
+    a.children.forEach((cid, idx) => {
+        const cdef = data.actions[cid];
+        if (!cdef) return;
+        const y = 20 + idx * childYStep;
+        const planStep = planStepByName.get(cid) || 0;
+        const isInPlan = inPlanSet.has(cid);
+        const node = makeGraphNode({
+            id: cid,
+            x: childStartX,
+            y,
+            a: cdef,
+            isInPlan,
+            inPlanStep: planStep,
+            isFailureBlocked: planEntry?.status === 'PlanFailed' && !preconditionsSatisfied(cdef, data.worldState),
+        });
+        canvas.appendChild(node);
+        childNodes[cid] = { x: childStartX, y, w: 175, h: node.offsetHeight };
+    });
+
+    // Goal anchor
+    const goalNode = document.createElement('div');
+    goalNode.className = 'gnode goal';
+    goalNode.style.left = goalX + 'px';
+    goalNode.style.top = '20px';
+    const gh = document.createElement('div');
+    gh.className = 'gnode-header';
+    gh.innerHTML = '<span class="gnode-name">★ Goal</span>';
+    goalNode.appendChild(gh);
+    const gb = document.createElement('div');
+    gb.className = 'gnode-body';
+    for (const [k, v] of Object.entries(a.goal || {})) {
+        const r = document.createElement('div');
+        r.className = 'gnode-pin';
+        const dot = document.createElement('div');
+        dot.className = 'gnode-pin-dot ' + (data.worldState[k] === v ? 'sat' : 'unsat');
+        r.appendChild(dot);
+        const t = document.createElement('span');
+        t.textContent = `${k} = ${v}`;
+        r.appendChild(t);
+        gb.appendChild(r);
+    }
+    goalNode.appendChild(gb);
+    canvas.appendChild(goalNode);
+
+    // Tree edges (parent → child) — dashed, with in-plan highlight
+    requestAnimationFrame(() => {
+        const treeSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        treeSvg.setAttribute('width', '100%');
+        treeSvg.setAttribute('height', '100%');
+        treeSvg.style.position = 'absolute';
+        treeSvg.style.left = 0;
+        treeSvg.style.top = 0;
+        treeSvg.style.pointerEvents = 'none';
+        treeSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+        const parentRect = parentNode.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+
+        // Tree edges
+        a.children.forEach(cid => {
+            const cdef = data.actions[cid];
+            if (!cdef) return;
+            const cn = canvas.querySelector(`[data-id="${cid}"]`);
+            if (!cn) return;
+            const cr = cn.getBoundingClientRect();
+            const x1 = parentRect.right - canvasRect.left;
+            const y1 = parentRect.top + parentRect.height / 2 - canvasRect.top;
+            const x2 = cr.left - canvasRect.left;
+            const y2 = cr.top + cr.height / 2 - canvasRect.top;
+            const midX = (x1 + x2) / 2;
+            const path = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+            const isInPlan = inPlanSet.has(cid);
+            const edge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            edge.setAttribute('d', path);
+            edge.setAttribute('fill', 'none');
+            edge.setAttribute('stroke', isInPlan ? 'var(--status-planfound)' : 'var(--tree-edge)');
+            edge.setAttribute('stroke-width', isInPlan ? 2.5 : 1.5);
+            edge.setAttribute('stroke-dasharray', '6 4');
+            edge.setAttribute('opacity', isInPlan ? 1 : 0.5);
+            treeSvg.appendChild(edge);
+        });
+
+        // Dependency edges (effect-of-A produces precondition-of-B)
+        // and edges to goal anchor
+        const childList = a.children;
+        const goalRect = goalNode.getBoundingClientRect();
+        // child → child (effect satisfies another child's precondition)
+        for (const ai of childList) {
+            const adef = data.actions[ai];
+            if (!adef) continue;
+            for (const [ek, ev] of Object.entries(adef.effects || {})) {
+                for (const bi of childList) {
+                    if (ai === bi) continue;
+                    const bdef = data.actions[bi];
+                    if (!bdef) continue;
+                    if ((bdef.preconditions || {})[ek] === ev) {
+                        const an = canvas.querySelector(`[data-id="${ai}"]`).getBoundingClientRect();
+                        const bn = canvas.querySelector(`[data-id="${bi}"]`).getBoundingClientRect();
+                        const x1 = an.right - canvasRect.left;
+                        const y1 = an.top + an.height / 2 - canvasRect.top;
+                        const x2 = bn.left - canvasRect.left;
+                        const y2 = bn.top + bn.height / 2 - canvasRect.top;
+                        const midX = (x1 + x2) / 2;
+                        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        p.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+                        p.setAttribute('fill', 'none');
+                        const both = inPlanSet.has(ai) && inPlanSet.has(bi);
+                        p.setAttribute('stroke', both ? 'var(--status-planfound)' : 'var(--border-medium)');
+                        p.setAttribute('stroke-width', both ? 2 : 1);
+                        p.setAttribute('opacity', both ? 1 : 0.45);
+                        treeSvg.appendChild(p);
+                    }
+                }
+            }
+        }
+        // child → goal
+        for (const ci of childList) {
+            const cdef = data.actions[ci];
+            if (!cdef) continue;
+            for (const [gk, gv] of Object.entries(a.goal || {})) {
+                if ((cdef.effects || {})[gk] === gv) {
+                    const cn = canvas.querySelector(`[data-id="${ci}"]`).getBoundingClientRect();
+                    const x1 = cn.right - canvasRect.left;
+                    const y1 = cn.top + cn.height / 2 - canvasRect.top;
+                    const x2 = goalRect.left - canvasRect.left;
+                    const y2 = goalRect.top + 24 - canvasRect.top;
+                    const midX = (x1 + x2) / 2;
+                    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    p.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+                    p.setAttribute('fill', 'none');
+                    const isIn = inPlanSet.has(ci);
+                    p.setAttribute('stroke', isIn ? 'var(--status-planfound)' : 'var(--border-medium)');
+                    p.setAttribute('stroke-width', isIn ? 2 : 1);
+                    p.setAttribute('opacity', isIn ? 1 : 0.4);
+                    treeSvg.appendChild(p);
+                }
+            }
+        }
+        canvas.insertBefore(treeSvg, canvas.firstChild);
+    });
+}
+
+function makeGraphNode({ id, x, y, a, isInPlan = false, isSelected = false, inPlanStep = 0, isFailureBlocked = false, isParent = false }) {
+    const node = document.createElement('div');
+    node.className = 'gnode';
+    node.dataset.id = id;
+    if (isInPlan) node.classList.add('in-plan');
+    if (a.roles.includes('planner') && a.children.length > 0) node.classList.add('composite');
+    if (isSelected) node.classList.add('selected');
+    if (isFailureBlocked) node.classList.add('failure-blocked');
+    node.style.left = x + 'px';
+    node.style.top = y + 'px';
+    node.onclick = () => selectAction(id);
+
+    if (inPlanStep > 0) {
+        const step = document.createElement('div');
+        step.className = 'gnode-step';
+        step.textContent = inPlanStep;
+        node.appendChild(step);
+    }
+
+    // role dot
+    if (a.roles.includes('planner') && a.roles.includes('action')) {
+        const dot = document.createElement('div');
+        dot.className = 'gnode-role-dot';
+        node.appendChild(dot);
+    }
+
+    const head = document.createElement('div');
+    head.className = 'gnode-header';
+    head.innerHTML = `<span class="gnode-name">${a.display}</span><span class="gnode-cost">$${a.cost}</span>`;
+    node.appendChild(head);
+    const body = document.createElement('div');
+    body.className = 'gnode-body';
+
+    if (isParent) {
+        body.innerHTML = `<div style="font-size:10px; color:var(--text-muted);">
+            ${a.roles.includes('planner') ? `Goal: ${Object.entries(a.goal || {}).map(([k,v]) => `${k}=${v}`).join(', ') || '(none)'}` : ''}
+        </div>`;
+    } else {
+        const pins = document.createElement('div');
+        pins.className = 'gnode-pins';
+        const left = document.createElement('div');
+        left.className = 'gnode-pin-list';
+        for (const [k, v] of Object.entries(a.preconditions || {})) {
+            const r = document.createElement('div');
+            r.className = 'gnode-pin';
+            const dot = document.createElement('div');
+            dot.className = 'gnode-pin-dot ' + (data.worldState[k] === v ? 'sat' : 'unsat');
+            r.appendChild(dot);
+            const t = document.createElement('span');
+            t.textContent = shortKey(k);
+            r.appendChild(t);
+            left.appendChild(r);
+        }
+        if (Object.keys(a.preconditions || {}).length === 0) {
+            const r = document.createElement('div');
+            r.className = 'gnode-pin';
+            r.innerHTML = '<span style="color:var(--text-dim); font-style:italic;">(no pre)</span>';
+            left.appendChild(r);
+        }
+        const right = document.createElement('div');
+        right.className = 'gnode-pin-list right';
+        for (const [k, v] of Object.entries(a.effects || {})) {
+            const r = document.createElement('div');
+            r.className = 'gnode-pin right';
+            const t = document.createElement('span');
+            t.textContent = shortKey(k);
+            r.appendChild(t);
+            const dot = document.createElement('div');
+            dot.className = 'gnode-pin-dot';
+            r.appendChild(dot);
+            right.appendChild(r);
+        }
+        if (Object.keys(a.effects || {}).length === 0) {
+            const r = document.createElement('div');
+            r.className = 'gnode-pin right';
+            r.innerHTML = '<span style="color:var(--text-dim); font-style:italic;">(no eff)</span>';
+            right.appendChild(r);
+        }
+        pins.appendChild(left);
+        pins.appendChild(right);
+        body.appendChild(pins);
+    }
+    node.appendChild(body);
+    return node;
+}
+
+function shortKey(k) {
+    const parts = k.split('.');
+    return parts[parts.length - 1];
+}
+
+function renderWS() {
+    const list = document.getElementById('ws-list');
+    list.innerHTML = '';
+
+    const groups = {};
+    for (const [k, v] of Object.entries(data.worldState)) {
+        const grp = k.split('.')[0];
+        if (!groups[grp]) groups[grp] = [];
+        groups[grp].push([k, v]);
+    }
+
+    let total = 0;
+    for (const grp of Object.keys(groups)) {
+        const sec = document.createElement('div');
+        sec.className = 'ws-group';
+        const gn = document.createElement('div');
+        gn.className = 'ws-group-name';
+        gn.textContent = grp;
+        sec.appendChild(gn);
+        groups[grp].forEach(([k, v]) => {
+            total++;
+            const row = document.createElement('div');
+            row.className = 'ws-row';
+            row.onclick = () => toggleWS(k);
+            const key = document.createElement('span');
+            key.className = 'ws-key';
+            key.textContent = k;
+            row.appendChild(key);
+            const val = document.createElement('span');
+            val.className = 'ws-val ' + (v ? 't' : 'f');
+            val.textContent = v ? 'TRUE' : 'FALSE';
+            row.appendChild(val);
+            if (state.recentlyChangedWS.has(k)) {
+                const star = document.createElement('span');
+                star.className = 'ws-recent';
+                star.textContent = '★';
+                row.appendChild(star);
+            }
+            sec.appendChild(row);
+        });
+        list.appendChild(sec);
+    }
+    document.getElementById('ws-count').textContent = total;
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+
+function selectAction(id) {
+    state.selectedActionId = id;
+    // Track which top-level Planner this Action lives under.
+    let cursor = data.actions[id];
+    while (cursor && cursor.parentPlanner) {
+        cursor = data.actions[cursor.parentPlanner];
+    }
+    if (cursor) state.activeTopPlanner = cursor.display;
+    renderPlannerTree();
+    renderBreadcrumb();
+    renderPrimaryPane();
+    renderGraph();
+}
+window._select = selectAction;
+
+function toggleWS(k) {
+    data.worldState[k] = !data.worldState[k];
+    state.recentlyChangedWS = new Set([k]);
+    recompute();
+    renderPlannerTree();
+    renderBreadcrumb();
+    renderPrimaryPane();
+    renderGraph();
+    renderWS();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+recompute();
+renderPlannerTree();
+renderBreadcrumb();
+renderPrimaryPane();
+renderGraph();
+renderWS();
+</script>
+</body>
+</html>
