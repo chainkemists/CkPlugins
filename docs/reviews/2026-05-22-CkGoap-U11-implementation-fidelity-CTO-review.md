@@ -267,7 +267,120 @@ N/A — green-light.
 
 ---
 
+### Architecture observations (deeper pass)
+
+> Added after the user pushed back on the fidelity-only framing. The notes below evaluate the design itself, not whether the implementation matches it. Backward compatibility is explicitly off the table, so the recommendations assume mechanical churn across consumers is acceptable.
+
+#### A1. Signal source-handle type contradicts the spec — bigger than the shim ensure-fail
+
+This is the most consequential new finding. Spec §3.5 mandated four per-Planner signals with **`FCk_Handle_Goap_Planner`** as the source type:
+
+```cpp
+CK_DEFINE_SIGNAL_AND_UTILS_WITH_DELEGATE(CKGOAP_API,
+    Goap_OnPlanComplete, ..., FCk_Handle_Goap_Planner, ...);
+```
+
+The implementation declares them with **`FCk_Handle_Goap_Action`** ([CkGoap_Action_Fragment.h:257-287](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Action/CkGoap_Action_Fragment.h)):
+
+```cpp
+CK_DEFINE_SIGNAL_AND_UTILS_WITH_DELEGATE(CKGOAP_API,
+    OnGoap_Action_PlanComplete, ..., FCk_Handle_Goap_Action, ...);
+```
+
+This affects **all four** of the per-Planner signals the spec named (`OnPlanComplete`, `OnPlanFailed`, `OnPlannerActivated`, `OnPlannerDeactivated`). Only `OnGoap_Planner_ActiveChainChanged` carries the spec's intended Planner source ([CkGoap_Planner_Fragment.h:289](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Fragment.h)).
+
+This is not a shim issue you can fix from the outside — the **signal type itself** is wrong. A delegate signature like `void OnPlan(FCk_Handle_Goap_Planner& InPlanner, ...)` cannot bind to the existing signal. Every consumer that wants the spec's mental model has to instead receive an `FCk_Handle_Goap_Action` and (if they care about the Planner identity) cast it back. The CombatBrain gym already does this. The DeepNesting test does this. Every future consumer will.
+
+Concrete blast radius if the signal types are changed:
+- Every `BindTo_OnPlanComplete` / `BindTo_OnPlanFailed` / `BindTo_OnPlannerActivated` / `BindTo_OnPlannerDeactivated` delegate signature in `.cpp`, `.as`, `.bp` flips.
+- The `UCk_Utils_Goap_Action_UE::BindTo_*` / `UnbindFrom_*` UFUNCTIONs that exist today either get retyped or get a Planner-side counterpart added (with Action-side ones removed). The CLAUDE.md API table currently lists the Action-side binds — the spec wanted them on the Planner-side utility.
+
+**Recommendation:** retype the four signals to `FCk_Handle_Goap_Planner` source and move the BindTo_*/UnbindFrom_* UFUNCTIONs from `UCk_Utils_Goap_Action_UE` to `UCk_Utils_Goap_Planner_UE`. Land it together with PR-B.1b — the same mechanical churn touches the same consumers. Doing this in two passes doubles the migration cost on every downstream caller.
+
+#### A2. Path A leaks into the processor scheduling itself, not just storage
+
+`FProcessor_Goap_Planner_UpdateActivation` is declared with `HandleType = FCk_Handle_Goap_Action` ([CkGoap_Planner_Processor.h:59](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Processor.h)). Spec §4.1 said "All processors run per-Planner (per entity with `FFragment_Goap_RecordOfActions`)." Today every A*-pipeline processor (`Action_Setup`, `Action_AutoReplan`, `Action_HandleRequests`, `Action_Execute`, `Action_HandleResult`) plus `Planner_UpdateActivation` keys on `FCk_Handle_Goap_Action`. Only `Planner_Setup` (cycle detection) keys on `FCk_Handle_Goap_Planner`.
+
+This means the spec's clean per-Planner processor stack is actually a per-Action processor stack with cycle detection bolted onto the Planner. The CLAUDE.md is upfront about it ("In the U11.2 transitional model, sub-Planners ARE Action entities"), but the spec's mental model is dead. Future readers reaching for "where does the Planner's A* run?" will not find it on the Planner.
+
+**Recommendation:** if PR-B.1b lands, all processors should re-home to `FCk_Handle_Goap_Planner` (the entities with `FFragment_Goap_RecordOfActions`). If PR-B.1b is abandoned, the spec text needs to be updated to declare that the canonical "thing that plans" is the Action entity with children, and Planner is a thin metadata wrapper.
+
+#### A3. Multi-tier activation propagation is K frames for K tiers — undocumented
+
+Tier-N's `UpdateActivation` activates tier-(N+1) **this frame** (sets `RequiresInitialPlan`, broadcasts `OnPlannerActivated`). Tier-(N+1)'s own A* pipeline runs in the same `FGroup_Gameplay_AI`, but RunAfter chains put `Setup → AutoReplan → HandleRequests → Execute → HandleResult` BEFORE `UpdateActivation`. So tier-(N+1)'s first plan resolves on **next frame**. A 4-tier tree takes ~4 frames to settle from a top-level replan.
+
+The DeepNesting test allots 20 seconds and the CombatBrain gym uses a tick timer to display, so this is silently the expected behaviour. But it's not documented anywhere I could find — not in the spec, not in the post-U11 `CkGoap/CLAUDE.md`, not in anti-patterns. Consumers writing time-critical AI ("re-decide combat tactics within one frame") will be surprised.
+
+**Recommendation:** add a paragraph to `CkGoap/CLAUDE.md` under "Lifecycle invariants" or "Multi-step plans at every tier" stating "A K-tier tree takes K frames to fully propagate activation after a top-level replan, because tier-(N+1)'s A* pipeline does not re-enter the AI group within a single tick." Optional: expose a same-frame multi-pass via repeated `Force_RunGroup<FGroup_Gameplay_AI>()` for tests / one-off catch-up cases.
+
+#### A4. Disable toggle gates UpdateActivation but not the A* pipeline
+
+`FProcessor_Goap_Planner_UpdateActivation::ForEachEntity` checks the enable toggle at [CkGoap_Planner_Processor.cpp:597-604](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Processor.cpp) and returns early if disabled. Good — sub-Planner activation stops.
+
+But the A* pipeline (`Action_Setup`, `Action_AutoReplan`, `Action_HandleRequests`, `Action_Execute`, `Action_HandleResult`) **does not check the owner's enable toggle**. If a disabled Planner's root Action already had `FTag_Goap_Action_RequiresInitialPlan` set, or if a `Request_Plan` was enqueued before the disable, the entire A* pipeline still runs on that root + all its child Actions consume CPU + the plan still resolves, even though `UpdateActivation` will then refuse to act on the result.
+
+Spec §3.3 said: "Disabled Planners don't replan and don't activate their children." Today they don't activate but they may still replan. CPU burn but not correctness-burn — the disabled Planner's plan changes are silently ignored by UpdateActivation.
+
+**Recommendation:** add an owner-disable check to `FProcessor_Goap_Action_AutoReplan` and `FProcessor_Goap_Action_HandleRequests` (probe the lifetime-owner's `FFragment_Goap_Planner_Current.Get_EnableToggle()`). Cheaper than the disabled-tree's idle search work.
+
+#### A5. The implicit-root indirection has zero conceptual payoff
+
+A top-level Planner is **two entities**: the Planner entity (which carries `_RecordOfActions`, `_Goal`, `_Params`, `_Current`, `_WorldStateSource`, `_Activation`, `_PlanState`, `_ActionCatalogIndex`) and the implicit-root Action (which carries the same `_Goal`, `_PlanState`, `_WorldStateSource`, `_Activation`, plus the Action-role fragments and the A* fragments, and is *the entity that actually runs A*\*).
+
+The Planner entity's `_Goal`, `_PlanState`, `_WorldStateSource`, `_Activation` fragments exist but are **not the ones the planning pipeline reads or writes**. The implicit-root Action's copies are authoritative. The Planner's copies are propagated *from* PlannerParams *to* the root Action on first `AddAction`, then become stale-but-not-read for the rest of the entity's life.
+
+This is the worst kind of duplication: two storage sites for one piece of data, only one of which is authoritative, with no compiler-enforced way to know which is which. Future maintenance hazard.
+
+**Recommendation:** PR-B.1b's actual goal — single fragment cluster on the Planner entity — is the right model. Either land it, or remove the duplicated fragments from the Planner entity in `Add()` (don't stamp `_Goal`, `_PlanState`, `_WorldStateSource`, `_Activation` on the Planner — keep them only on the implicit-root Action). The latter is a 5-line revert of [CkGoap_Planner_Utils.cpp:172-191](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Utils.cpp) and makes Path A self-consistent. Today Path A is half-half.
+
+#### A6. WS-source fallback depends on `Get_LifetimeOwner` matching tree-parent semantics
+
+`DoResolveAndAssignWorldStateSource` ([CkGoap_Planner_Processor.cpp:431-436](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Processor.cpp)) falls back to `Get_LifetimeOwner(InChild)` for the WS source when override and parent-resolved are unset. By construction this is the top-level Planner entity (`AddAction` creates child Actions via `Request_CreateEntity_AsTypeSafe<...>(InPlanner)`). But "lifetime owner == top-level Planner" is **not an invariant the type system enforces** — it's a property of how `AddAction` happens to call the entity-creation API. Any future reparenting (e.g., for pooling, transfer between owners) would silently break WS resolution.
+
+**Recommendation:** read the WS source from a stored field instead of walking lifetime owners. Either (a) the Action stores a `_TopLevelPlanner` ref in addition to `_ParentAction`, or (b) `_RootAction`'s entity carries the canonical WS and children walk `_ParentAction` chain to the root rather than to the lifetime owner. (a) is one field; (b) requires walking. Either beats the lifetime-owner coupling.
+
+#### A7. `OnGoap_Planner_ActiveChainChanged` payload is asymmetric
+
+The signal broadcast at [CkGoap_Planner_Processor.cpp:663-666](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Processor.cpp) carries `OldChainSnapshot` in the payload but expects the consumer to call `Get_ActiveChain(Planner)` for the new chain. Cheap; not wrong; but worth either documenting ("payload carries old; new is queryable") or making symmetric (carry both, or carry just the new and let `_ActiveChainBefore` be a separate accessor on the Planner). Asymmetric payloads tend to grow surprise bugs when consumers read the old and assume it's the new.
+
+**Recommendation:** carry both old + new in the payload, or — given the active chain is already cheaply derivable — carry neither, and document "query both via Get_ActiveChain across handler boundaries if you need the diff."
+
+#### A8. Determinism is "deterministic given same construction order"
+
+`FFragment_Goap_WorldState_KeyRegistry` uses `TArray<FGameplayTag> _TagByIndex` + `TMap<FGameplayTag, FCk_GoapKey> _IndexByTag`. Keys are assigned by insertion order; `FindOrRegister` produces stable indices. `FProcessor_Goap_Planner_Setup` iterates `FFragment_Goap_Planner_ActionCatalogIndex._TagToAction` (a `TMap`). `TMap` iteration in Unreal is insertion-order-stable, so given the same `AddAction` call order the cycle-detection and key-index outputs are reproducible.
+
+GOAP planning is deterministic *if* the priority queue tie-break in CkAStar is deterministic. I didn't audit CkAStar for this. If the priority queue uses `FScore` only and ties resolve by insertion order, GOAP is deterministic; if ties resolve by node-id (where node ids come from `_StateLookup` keyed on `uint32` state hashes), then collisions could swap plan ordering across runs. Worth checking once.
+
+**Recommendation:** add a one-paragraph "determinism contract" to `CkGoap/CLAUDE.md` stating "GOAP planning is deterministic given identical AddAction call order, identical CDO contents, and identical WorldState mutation order." If you ever want save/load or replay (§10 out-of-scope today), this contract becomes load-bearing.
+
+#### A9. CkAStar layering is the cleanest part of the design
+
+`TProcessor_AStar_Execute<DerivedProcessor, HandleType, SearchStateFragment, ResultFragment>` ([CkAStar_Processor.h:44](../../Plugins/CkFoundation/Source/CkAStar/Public/CkAStar/CkAStar_Processor.h)) is parametric and composes via inheritance. `FProcessor_Goap_Action_Execute` adds scheduling (`Group = FGroup_Gameplay_AI; RunAfter = HandleRequests`) and nothing else. `TParallelProcessor` base means the GOAP A* runs in parallel across entities, each entity reading/writing only its own SearchState/Result/Params. Per-entity locality is preserved. This is genuinely good architecture and shouldn't change.
+
+Nit: every Action entity stamps `FFragment_Goap_Action_SearchState` + `_Result` + `_PlanContext` + `FFragment_AStar_Params` (see [CkGoap_Planner_Utils.cpp:86-95](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Utils.cpp)), but only Actions that actually plan (implicit-roots + promoted Planners) ever see those fragments used. Atomic leaves carry the A* fragment cluster dead-weight. If Path A is the permanent layout, gate the AStar fragment stamping on "this is a planning Action" (track at `PromoteActionToPlanner` time, or just check Tree.ChildActions.IsEmpty() at Setup). Minor memory win.
+
+---
+
+### Architecture verdict
+
+Path A is a *partially-realized* Path B with an indirection layer (`_RootAction`) compensating for the missing relocation. The four-subagent BLOCK history the brief mentions tells me the relocation is genuinely hard, but the cost of stopping halfway is:
+
+- **Duplicate fragment storage** on Planner + implicit-root Action (A5).
+- **Spec-violating signal types** (A1).
+- **Processor stack keyed on Action, not Planner** (A2).
+- **`_RootAction` field that spec §2.5 said wouldn't exist** (suggestion #10 in the original pass).
+- **Promoted-mid-tier query ensure-fails** (suggestion #1 in the original pass).
+
+Each of those is independently defensible as transitional. Together they make me change my verdict's emphasis: **the code is shippable, but PR-B.1b should land before the first external consumer wires up signal bindings**, because the signal-type retype is a far cheaper change before consumers exist than after. The user said no backward compat — so the cost-effective sequencing is: land PR-B.1b + the signal-type retype + the disable-toggle pipeline gate **as one breaking change**, NOW, while consumer code is still inside CkPlugins.
+
+If PR-B.1b is genuinely too big for the current implementation budget, the disciplined fallback is to **revert the PR-B.1b alias breadcrumbs** ([CkGoap_Planner_Fragment.h:311-322](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Fragment.h)) and **strip the duplicate Planner-entity fragments** from `Add()` ([CkGoap_Planner_Utils.cpp:172-191](../../Plugins/CkFoundation/Source/CkGoap/Public/CkGoap/Planner/CkGoap_Planner_Utils.cpp)), making Path A self-consistent rather than half-Path-A-half-Path-B. The current state is the worst of both worlds.
+
+The original fidelity verdict (GREEN-LIGHT WITH NON-BLOCKING NOTES) stands at the API surface level, but my architectural recommendation is: **do not let the first external consumer ship before either (a) PR-B.1b lands and signals retype, or (b) Path A is made self-consistent by reverting the breadcrumbs and the duplicate-stamp.** The cost of "wait" goes up linearly in number of consumers; the cost of "decide now" is finite.
+
+---
+
 ### Reviewer
 
 - **Name:** Claude (Opus 4.7, 1M context) acting as senior reviewer/architect
 - **Date:** 2026-05-22
+- **Architecture pass:** appended 2026-05-22 after user requested deeper-than-fidelity review
