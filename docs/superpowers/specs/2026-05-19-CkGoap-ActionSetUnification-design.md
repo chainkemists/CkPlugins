@@ -1,3 +1,8 @@
+> ⚠️ **SUPERSEDED** — This spec described the U0–U10 ActionSetUnification model, which has been replaced by the U11 Planner/Action Collapse model. The U11 spec is at
+> [`2026-05-21-CkGoap-PlannerActionCollapse-design.md`](2026-05-21-CkGoap-PlannerActionCollapse-design.md)
+> (with summary [`2026-05-21-CkGoap-PlannerActionCollapse-summary.md`](2026-05-21-CkGoap-PlannerActionCollapse-summary.md)).
+> Historical reference only — do not implement against this spec.
+
 # CkGoap ActionSet / Action Unification — Design Spec
 
 **Date:** 2026-05-19
