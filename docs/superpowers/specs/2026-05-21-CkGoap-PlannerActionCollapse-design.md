@@ -536,6 +536,14 @@ Unchanged in shape. A Planner subscribes to its resolved WS at activation time. 
 
 Same per-Planner: `Explicit` / `OnWorldStateDirty` / `OnCostDirty` / `OnEitherDirty`. Throttle (`_MinReplanIntervalSeconds`) coalesces multiple dirty events. Same shape as today; per-Planner instead of per-Action.
 
+### 5.4 Override stack
+
+A WS entity carries a stack of named override layers (`FFragment_Goap_WorldState_OverrideStack`). Reads walk the stack top-down, falling through to the base store. Writes via `Set_Value` always mutate the base. Push/pop fire dirty signals only for keys whose effective value changed. A* snapshots the flattened view at seed time so the inner loop stays single-indirection.
+
+Layers are named. The same name can be pushed multiple times — re-push replaces the layer's contents idempotently (same effective view = no dirty fire). The debugger UI uses a fixed layer named `"DebugUI"`; AI deliberation code typically uses anonymous ad-hoc names.
+
+Override layers reset on PIE start. Persisting them across sessions is out of scope.
+
 ---
 
 ## 6. Lifecycle invariants
