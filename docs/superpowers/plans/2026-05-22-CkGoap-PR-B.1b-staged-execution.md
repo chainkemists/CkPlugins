@@ -2,7 +2,7 @@
 
 **Supersedes:** `CONTINUATION_PROMPT_CkGoap_U11_PRB_1b.md` and `CONTINUATION_PROMPT_CkGoap_U11_PRB_1b_commit2_recovery.md`. Those captured useful survey work but bundled too much per dispatch and triggered 4 BLOCKs.
 
-**Status:** EXECUTING. Stage 0 starts after this commit.
+**Status:** COMPLETE. All six stages (0–5 implementation + 6 docs cleanup) landed.
 
 ## Why this plan exists
 
