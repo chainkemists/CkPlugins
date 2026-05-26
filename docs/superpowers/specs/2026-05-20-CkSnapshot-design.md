@@ -528,35 +528,21 @@ struct FCk_InventoryItem_Spatial_ReplicatedEntry
 
 ### On-disk format
 
-Unchanged from v1 conceptually: `UCk_Snapshot_SaveGame : USaveGame` holds `FCk_Snapshot_Header _Header` (always readable) + `TArray<uint8> _SnapshotBytes` (the EnTT-driven proxy-archive output produced by the dispatch chain above). Header field list is now committed in Section 5.
-
-### Why two layers (USaveGame around byte buffer)
-
-USaveGame requires fixed UPROPERTY layout; the savable-fragment set is dynamic. Byte-buffer-inside-USaveGame lets the savable set be a runtime decision while keeping the wrapper USaveGame schema stable. Cost: we own our own header version check (no UE auto-versioning of the buffer contents). Migration mechanism in Section 5.
-
-### UObject reference handling
-
-`FObjectAndNameAsStringProxyArchive` serializes UObject refs by full path name. Works for asset refs and world-stable refs. Does NOT round-trip transient runtime UObjects. Rule for snapshotable fragments: any `UObject*` UPROPERTY tagged `meta=(SaveGame)` must point to an asset or stable-path object. Transient cached refs leave the meta off — re-derived on load. Documented in `CkSnapshot/CLAUDE.md` anti-patterns.
-
-### On-disk format
-
 ```cpp
 UCLASS()
 class CKSNAPSHOT_API UCk_Snapshot_SaveGame : public USaveGame
 {
     GENERATED_BODY()
-    UPROPERTY() FCk_Snapshot_Header _Header;       // version, build hash, timestamp, world name, manifest
-    UPROPERTY() TArray<uint8> _SnapshotBytes;      // EnTT-driven proxy-archive output
+    UPROPERTY() FCk_Snapshot_Header _Header;       // see Section 5 for committed field list
+    UPROPERTY() TArray<uint8> _SnapshotBytes;      // EnTT-driven proxy-archive output (entity topology + payloads)
 };
 ```
 
-The header USTRUCT is always readable (even if `_SnapshotBytes` is from an incompatible build). The buffer holds the entity topology + every snapshotable fragment's payload.
+The header USTRUCT is always readable — even if `_SnapshotBytes` is from an incompatible build, the header still parses, so version checks and LoadReport diagnostics work. The buffer holds the entity topology + every snapshotable fragment's payload via the three-tier dispatch above. Header field list is committed in Section 5.
 
 ### Why two layers (USaveGame wrapping byte buffer)
 
-USaveGame requires fixed UPROPERTY layout, but the savable-fragment set is dynamic (47+ types in V1, growing per feature module). The byte-buffer-inside-USaveGame approach lets the savable set be a runtime decision while keeping the wrapper schema stable.
-
-Cost: we own the version check against the header (no UE auto-versioning of the buffer contents). Mitigation: Section 5 migration policy.
+USaveGame requires fixed UPROPERTY layout, but the savable-fragment set is dynamic (~47+ types in V1, growing per feature module). The byte-buffer-inside-USaveGame approach lets the savable set be a runtime decision while keeping the wrapper schema stable. Cost: we own our own version check against the header (no UE auto-versioning of the buffer contents). Migration mechanism in Section 5.
 
 ### UObject reference handling
 
