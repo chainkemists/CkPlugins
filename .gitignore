@@ -351,3 +351,6 @@ compile_commands.json
 
 # Local Claude workspace artifacts (per-machine, not source)
 Plugins/.claude/
+docs/
+.superpowers/
+.utoolbox/
