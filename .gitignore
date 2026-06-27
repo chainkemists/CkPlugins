@@ -354,3 +354,5 @@ Plugins/.claude/
 docs/
 .superpowers/
 .utoolbox/
+Config/DynamicHandleTypes.json
+Config/_StubRecovery_DynamicHandleTypes.json
