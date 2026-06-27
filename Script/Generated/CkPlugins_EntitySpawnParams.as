@@ -12,15 +12,77 @@
 // an initializer — set them on the instance before calling Request_SpawnEntity.
 
 USTRUCT()
-struct FGridSystem_C_SpawnParams
+struct FCk_PlaceableTest_Cube_EntityScript_SpawnParams
 {
+    UPROPERTY()
+    FTransform SpawnTransform = FTransform::Identity;
+
+    FCk_PlaceableTest_Cube_EntityScript_SpawnParams(FTransform InSpawnTransform)
+    {
+        SpawnTransform = InSpawnTransform;
+    }
 }
 
-namespace UGridSystem_C
+namespace UCk_PlaceableTest_Cube_EntityScript
 {
-    FGridSystem_C_SpawnParams Params()
+    FCk_PlaceableTest_Cube_EntityScript_SpawnParams Params()
     {
-        return FGridSystem_C_SpawnParams();
+        return FCk_PlaceableTest_Cube_EntityScript_SpawnParams();
+    }
+
+    FCk_PlaceableTest_Cube_EntityScript_SpawnParams Params(FTransform InSpawnTransform)
+    {
+        return FCk_PlaceableTest_Cube_EntityScript_SpawnParams(InSpawnTransform);
+    }
+}
+
+USTRUCT()
+struct FCk_PlaceableTest_Marker_EntityScript_SpawnParams
+{
+    UPROPERTY()
+    FTransform SpawnTransform = FTransform::Identity;
+
+    FCk_PlaceableTest_Marker_EntityScript_SpawnParams(FTransform InSpawnTransform)
+    {
+        SpawnTransform = InSpawnTransform;
+    }
+}
+
+namespace UCk_PlaceableTest_Marker_EntityScript
+{
+    FCk_PlaceableTest_Marker_EntityScript_SpawnParams Params()
+    {
+        return FCk_PlaceableTest_Marker_EntityScript_SpawnParams();
+    }
+
+    FCk_PlaceableTest_Marker_EntityScript_SpawnParams Params(FTransform InSpawnTransform)
+    {
+        return FCk_PlaceableTest_Marker_EntityScript_SpawnParams(InSpawnTransform);
+    }
+}
+
+USTRUCT()
+struct FCk_PlaceableTest_Sphere_EntityScript_SpawnParams
+{
+    UPROPERTY()
+    FTransform SpawnTransform = FTransform::Identity;
+
+    FCk_PlaceableTest_Sphere_EntityScript_SpawnParams(FTransform InSpawnTransform)
+    {
+        SpawnTransform = InSpawnTransform;
+    }
+}
+
+namespace UCk_PlaceableTest_Sphere_EntityScript
+{
+    FCk_PlaceableTest_Sphere_EntityScript_SpawnParams Params()
+    {
+        return FCk_PlaceableTest_Sphere_EntityScript_SpawnParams();
+    }
+
+    FCk_PlaceableTest_Sphere_EntityScript_SpawnParams Params(FTransform InSpawnTransform)
+    {
+        return FCk_PlaceableTest_Sphere_EntityScript_SpawnParams(InSpawnTransform);
     }
 }
 
