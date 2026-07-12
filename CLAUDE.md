@@ -41,6 +41,14 @@ Other plugins under `Plugins/` may adopt the same pattern over time; check their
 
 The project uses the **runreal** build system. The engine source comes from `https://github.com/Chainkemists/UnrealEngine-Internal` (configured in `runreal.config.json`).
 
+**Build + run automation/Gauntlet tests via the Unreal Toolbox** — use the
+`/build-test` skill (canonical doc: [CkAuto/.claude/skills/build-test/SKILL.md](CkAuto/.claude/skills/build-test/SKILL.md);
+the project-root `.claude/skills/build-test/` is a thin wrapper over it, needed
+because skills inside submodules aren't auto-discovered). Never invoke
+`Build.bat`, UnrealBuildTool, or `UnrealEditor-Cmd.exe -ExecCmds="Automation ..."`
+directly for build/test automation — the toolbox owns engine resolution, the
+machine-wide build lock, watchdogs, and structured results.
+
 ### Setup and building
 
 ```bash
