@@ -348,6 +348,7 @@ compile_commands.json
 .code-review-graph/
 .claude/*
 !.claude/settings.json
+!.claude/skills/
 
 # Local Claude workspace artifacts (per-machine, not source)
 Plugins/.claude/
