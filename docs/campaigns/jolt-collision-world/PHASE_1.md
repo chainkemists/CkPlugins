@@ -1,7 +1,13 @@
 # PHASE 1 — Static world baking + cooked data + streaming
 
-**Status:** PENDING (blocked by Phase 0 gate)
-**Gate:** green compile + Phase-1 tests + Phase-0 regression suite + gym station.
+**Status:** DONE (2026-07-16 — CkFoundation `ca08d8b46`, CkTests `68ac401`; gate: Jolt 6/6,
+Probe 16/16, Crowd 16/16). Deviations from this doc, decided autonomously and logged in
+PROGRESS.md: tests use runtime-spawnable content (no authored .umap/.uasset — impossible
+headlessly), so landscape/brush/sublevel-streaming/cooked-load/spline-parity coverage moved to
+`[EDITOR-VERIFY]`; the heightfield axis math is pinned in C++ on synthetic data instead; the
+add/remove lifecycle proxies streaming lockstep; gym station deferred to Phase 5's gym pass.
+Bonus fix: pre-split BPLayerInterfaceImpl assert used the broadphase count to bound object
+layers — corrected in the Phase-1 commit.
 
 ## Work items (ordered)
 

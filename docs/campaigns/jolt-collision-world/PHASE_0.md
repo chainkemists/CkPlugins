@@ -1,6 +1,8 @@
 # PHASE 0 — Extract CkJolt module, zero behavior change
 
-**Status:** IN PROGRESS (started 2026-07-16)
+**Status:** DONE (2026-07-16 — CkFoundation `74c33059e`, host `32a28d6` + `5806b80`; gate: 783/783
+full suite, Probe 16/16 + Crowd 16/16 + Eqs 10/10 on final binary, JobSystemSingleThreaded tripwire
+confirmed in editor log)
 **Gate:** existing full AS+C++ suite green vs pre-campaign baseline; JobSystem log tripwire; static greps.
 
 ## Entry criteria

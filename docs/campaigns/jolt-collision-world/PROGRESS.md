@@ -42,8 +42,53 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
 - Learned: toolbox `--output` mirror filters sub-Display verbosity — tripwire greps must target
   `Saved/Logs/CkPlugins.log`. PHASE_0.md updated.
 
+- **PHASE 0 COMPLETE + COMMITTED.** CkFoundation dev `74c33059e` (29 files; settings files detected
+  as renames). Host dev: `32a28d6` (campaign docs) + `5806b80` (pointer bump + host ini rename,
+  coupled deliberately). Crowd 16/16 + Eqs 10/10 confirmed post-deletion. PHASE_0.md → DONE.
+- Phase 1 (static world baking) started.
+- Phase 1 authored (build iterating): extraction library (`CkJoltBakeExtraction`), collision
+  signature + cooked data types, `UCk_JoltStaticWorld_Subsystem_UE` (level-streaming lockstep,
+  live/cooked, batch add, OptimizeBroadPhase policy), `UCk_Utils_JoltStaticWorld_UE` (AS surface),
+  `CkJoltEditor` module (WorldCooker + EditorSubsystem + Commandlet + Tools menu), settings
+  additions, `Static_World` object layer (pairs with nothing — keeps probes untouched pre-Phase-2),
+  ref-counted `Request_GlobalJoltInit/Shutdown` helpers, extraction policy
+  (LevelSweep skips Movable; ExplicitActor bakes it — runtime-spawn + test path).
+- **Phase-1 test-scoping decisions** (autonomous):
+  - Tests use RUNTIME-SPAWNABLE content only (engine cube, runtime HISM/spline components) —
+    .umap/.uasset authoring isn't possible headlessly. 5 AS autotests + 2 C++ tests
+    (heightfield known-heights axis pin, shape-blob roundtrip).
+  - Landscape end-to-end, brush volumes, real sublevel streaming, cooked-data load path, and the
+    cook commandlet → `[EDITOR-VERIFY]` items (code paths ship; heightfield math is C++-pinned;
+    add/remove lifecycle proxied by the RemoveActor AS test).
+  - Complex-trimesh (CTF_UseComplexAsSimple) extraction ships; automated coverage deferred
+    (needs authored asset or transient-mesh cook harness) — coverage gap logged.
+  - Gym station deferred until after Phase-1 tests are green.
+
+- **PHASE 1 COMPLETE + COMMITTED.** CkFoundation `ca08d8b46` (30 files, +3744), CkTests `68ac401`
+  (12 files). Gate: Jolt 6/6 (2 C++ pins + 4 AS), Probe 16/16, Crowd 16/16. Debug loop findings:
+  toolbox caches its test list (`--discover-fresh` needed after adding tests); AS binding
+  auto-injects WorldContext params (drop them at AS call sites); `Assert_False` doesn't exist in
+  the AutoTest base; plain-AActor spawns have no root so ::Create'd components need explicit
+  SetWorldLocation; the shape cache is PIE-session-lived so cross-test asserts need unique cache
+  keys; Jolt heightfields are half-open at the local-origin edge (seams covered by neighbor
+  components in real landscapes).
+- Phase 2 (layer mapping + scene queries) started.
+
 ### [EDITOR-VERIFY] items (accumulating; for the user when back)
 
 - `ck.SpatialQuery.PreviewAllProbesUsingJolt 1` in PIE still draws probe wireframes (debug-draw gate
   now flows CkSpatialQuery settings → CkJolt subsystem).
 - Watermark panel "Jolt" row shows "ST" (single-threaded) in test/PIE config.
+- **Phase 1**: on a map with a landscape — Tools → "Cook Jolt Static World (Current Map)" produces
+  `/Game/CkJoltData/...` assets; then set project setting `PIE Static World Mode = Cooked` and PIE:
+  `ck.SpatialQuery.PreviewAllProbesUsingJolt 1` shows the landscape/static wireframes; stale-data
+  test: move a static mesh, PIE again → loud ensure naming the actor, its bodies skipped.
+- **Phase 1**: a map with a BlockingVolume — bake (live PIE) and verify probe raycast vs volume.
+- **Phase 1**: SPLINE MESH parity — an editor-authored spline mesh (deformed collision only cooks
+  with editor machinery; runtime-spawned spline meshes never created collision headlessly — Chaos
+  itself had nothing to hit, 2 attempts). Verify: bake, then compare a Chaos trace vs
+  `Get_RayCastStaticWorld` along the deformed span (≤2uu). The AS test was removed — the
+  extraction path (per-instance BodySetup dispatch) is code-shipped but its deformed-content
+  correctness is editor-verified only. COVERAGE GAP logged.
+- **Phase 1**: real sublevel/World Partition streaming — bodies appear/disappear with cell loads
+  (`ck.Jolt` Verbose logging shows per-level add/remove counts).
