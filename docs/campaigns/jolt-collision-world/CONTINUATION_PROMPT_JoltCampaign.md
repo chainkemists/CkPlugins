@@ -10,8 +10,12 @@ Read these IN ORDER before touching anything:
 3. `docs/campaigns/jolt-collision-world/PHASE_3.md`, `PHASE_4.md`, `PHASE_5.md` — the remaining work,
    including a load-bearing **design revision inside PHASE_3.md item 3** (scheduler placement).
 4. `Plugins/CkFoundation/Source/CkJolt/Claude.md` — the module you're extending.
-5. The original requirements: `D:\Users\neilj\Downloads\jolt-prompt-corrected.md` (reference copy of
-   UnrealJolt at `D:\Repos\UnrealJolt\UnrealJolt-master` — study-only).
+5. The original requirements: `docs/campaigns/jolt-collision-world/REQUIREMENTS.md` (committed
+   verbatim — travels with this branch). The UnrealJolt reference project it mentions is OPTIONAL:
+   every load-bearing finding from it is already distilled into PROMPT.md and the phase docs
+   (extraction recipes, layer-table shape, its known gaps we deliberately fixed). If you want the
+   raw source anyway, ask Neil for `UnrealJolt-master.zip` and extract it anywhere — nothing in
+   the campaign depends on its location.
 
 ---
 
@@ -90,9 +94,16 @@ re-runs). Diff all "no regressions" claims against this.
 
 ## Build/test invocation (the toolbox owns everything)
 
+**Machine prerequisite:** the project builds against the Chainkemists UnrealEngine-Angelscript fork
+(5.7.x; source per `runreal.config.json`), registered so the `.uproject`'s EngineAssociation
+resolves. The toolbox resolves the engine per-machine — never hardcode engine paths. If the
+workspace isn't set up yet, the `ck-build-and-env` skill (in CkFoundation's `.claude/skills/`)
+covers it.
+
 ```powershell
-Set-Location "D:\Repos\CkPlugins"
-./CkAuto/UnrealToolbox.exe --build --config=Development --target=Editor --test --test-pattern Jolt --discover-fresh --output=Saved/Logs/X.log --project="D:\Repos\CkPlugins"
+# <repo-root> = wherever CkPlugins is cloned on YOUR machine — all paths below are relative to it.
+Set-Location "<repo-root>"
+./CkAuto/UnrealToolbox.exe --build --config=Development --target=Editor --test --test-pattern Jolt --discover-fresh --output=Saved/Logs/X.log --project="<repo-root>"
 ```
 - Pre-flight EVERY spawn: probe the editor lock on `Saved/Logs/CkPlugins.log` (see
   `CkAuto/.claude/skills/build-test/SKILL.md`). Run in background, await notification, never poll.

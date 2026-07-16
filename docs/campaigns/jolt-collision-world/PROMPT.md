@@ -1,8 +1,8 @@
 # Campaign: Jolt Collision World (CkJolt)
 
 **Status:** ACTIVE — started 2026-07-16
-**Requirements source:** `D:\Users\neilj\Downloads\jolt-prompt-corrected.md` (user-authored, decisions delegated)
-**Reference implementation:** `D:\Repos\UnrealJolt\UnrealJolt-master` (study-only; do not copy its Y-up world flip, PIE-once cook, or UE-thread-pool stub)
+**Requirements source:** `REQUIREMENTS.md` in this folder (user-authored, committed verbatim, decisions delegated)
+**Reference implementation:** UnrealJolt (`UnrealJolt-master.zip` — ask Neil for a copy; OPTIONAL, findings distilled below; study-only — do not copy its Y-up world flip, PIE-once cook, or UE-thread-pool stub)
 
 ## Mission
 
