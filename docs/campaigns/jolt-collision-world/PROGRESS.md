@@ -73,6 +73,21 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
   keys; Jolt heightfields are half-open at the local-origin edge (seams covered by neighbor
   components in real landscapes).
 - Phase 2 (layer mapping + scene queries) started.
+- Phase 2 authored (build iterating): `FCk_Jolt_CollisionLayerTable` (one ObjectLayer per unique
+  signature, seeded from UCollisionProfile, fixed-capacity lock-free reads, atomic count publish),
+  3 table-driven filters replace the hardcoded world, probe layer = fixed signature (WorldDynamic,
+  Overlap→WorldDynamic only) + broadphase guard (probe never tests the Static tree), layer context
+  published to the registry (`FCk_Jolt_LayerContext`), probe setup reads it (was `ObjectLayer{1}`),
+  static bodies resolve captured signatures at load (indices never serialized),
+  `CkJoltShapeFactory` (shared with Phase-3 bodies), `UCk_Utils_JoltQuery_UE`
+  (Get_RayCast/ShapeCast/Overlap w/ channel+min-response filters, entity + actor-name hit
+  attribution). Tests: C++ table-matrix pin + 3 AS (Block/Overlap/Ignore semantics, sweep parity
+  vs Chaos, probe-ignores-static-world). Decision: AS profile-matrix test skipped — the C++ test
+  covers the matrix without expanding the BP surface for test-only introspection.
+
+- **PHASE 2 COMPLETE + COMMITTED.** CkFoundation `4b73f9f80` (12 files, +1016), CkTests `f594983`.
+  Gate: Jolt 10/10 (all Phase-2 tests green on FIRST run), Probe 17/17, Crowd 16/16, Eqs 10/10.
+- Phase 3 (step relocation + JoltBody dynamics) started.
 
 ### [EDITOR-VERIFY] items (accumulating; for the user when back)
 

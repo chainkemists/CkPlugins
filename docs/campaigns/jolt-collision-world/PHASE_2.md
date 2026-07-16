@@ -1,7 +1,9 @@
 # PHASE 2 — Collision layer mapping + scene-query extensions
 
-**Status:** PENDING (blocked by Phase 1 gate)
-**Gate:** Phase-1 tests + all 8 CkProbe autotests + crowd isotropy green; Phase-2 tests green.
+**Status:** DONE (2026-07-16 — CkFoundation `4b73f9f80`, CkTests `f594983`; gate: Jolt 10/10,
+Probe 17/17, Crowd 16/16, Eqs 10/10). Deviations: the AS profile-matrix test is covered by the
+C++ table test instead (no BP surface expansion for test-only introspection); CkEqs untouched
+(its JPH-typed overload usage keeps working — optional migration remains optional).
 
 ## Work items
 
