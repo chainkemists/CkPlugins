@@ -88,6 +88,16 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
 - **PHASE 2 COMPLETE + COMMITTED.** CkFoundation `4b73f9f80` (12 files, +1016), CkTests `f594983`.
   Gate: Jolt 10/10 (all Phase-2 tests green on FIRST run), Probe 17/17, Crowd 16/16, Eqs 10/10.
 - Phase 3 (step relocation + JoltBody dynamics) started.
+- **Phase 3 slices 1+2 COMMITTED**: enum migration `9f250bc59` (ECk_MotionType/Quality/BackFaceMode →
+  CkJolt_Common.h + Conv moves + 3 EnumRedirects), physics ownership `abf1b6cbe`
+  (CkEcsExt/PhysicsOwnership counted tags + TryClaim_* retrofitted into Probe/Sensor/Marker/RaySense
+  Adds). Gate: Jolt 10/10, Probe 17/17, Overlap 73/73 (no existing content violates the rule),
+  RaySense 4/4, Crowd 16/16. (Gate was interrupted by a session limit mid-run and finished on resume.)
+- **SESSION HANDOFF POINT (2026-07-16)**: 5-hour session limit reached mid-Phase-3. Remaining work
+  (Phase 3 step relocation + JoltBody quartet, Phases 4-5) handed off via
+  `CONTINUATION_PROMPT_JoltCampaign.md` in this folder. PHASE_3.md carries the load-bearing
+  scheduler-placement revision (step processors in FGroup_Transform w/ RunAfter
+  Transform_HandleRequests — NOT the originally-designed group re-parenting).
 
 ### [EDITOR-VERIFY] items (accumulating; for the user when back)
 

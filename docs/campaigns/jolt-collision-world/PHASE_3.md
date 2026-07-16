@@ -17,11 +17,15 @@ LinearCastPerf, Crowd_Separation_ProbeIsotropy); (b) phase end: dynamics tests g
    opposing-tag-absent → false; AddOrGet own tag). Retrofit: Marker/Sensor (CkOverlapBody), RaySense
    Adds claim Chaos; Probe Add claims Jolt. Test: Test_JoltBody_OwnershipExclusivity.spec.cpp
    (AddExpectedError; expected-ensure tests live in C++ — AS harness escalates warnings).
-3. **Scheduler group**: `CkProcessorGroups.h` — add `FGroup_Physics_Jolt { RunAfter FGroup_Transform }`;
-   re-parent `FGroup_Transform_Finalize::RunAfter` onto it; pipeline comment update.
-   FIRST verify `FProcessor_Transform_Cleanup`'s actual execution point (its
-   `RunAfter TDepList<ck::FGroup_Physics>` at CkTransform_Processor.h:194 must not clear
-   `FTag_Transform_Updated` before our writeback's consumers run).
+3. **Scheduler placement (REVISED during execution)**: NO group-graph surgery. The Jolt world-step
+   processors live INSIDE `FGroup_Transform` with `RunAfter = TDepList<FProcessor_Transform_HandleRequests>`
+   — same ordering guarantees as the planned `FGroup_Physics_Jolt` (kinematic pushes see same-frame
+   transform requests; writeback precedes `FGroup_Transform_Finalize`'s SyncToActor) without
+   re-parenting `FGroup_Transform_Finalize` in CkEcs (which every module in the codebase orders
+   against). `FProcessor_Transform_Cleanup` concern resolved by symmetry: our writeback adds
+   `FTag_Transform_Updated` in FGroup_Transform exactly like every existing producer; cleanup
+   already runs after all of them today. Exemplar for the non-entity-iterating step processor:
+   `FProcessor_Transform_Cleanup` (TProcessorBase + DoTick + registry ctor).
 4. **Step relocation (gated commit)**: `Public/CkJolt/World/CkJoltWorld_Processor.h/.cpp` —
    `FProcessor_JoltWorld_WaitForAsync` (async mode only), `FProcessor_JoltWorld_Step` (fixed-timestep
    pump: Accumulator += dt, clamp at MaxSteps*FixedDt (drop time, Verbose log + stat, NO ensure),
