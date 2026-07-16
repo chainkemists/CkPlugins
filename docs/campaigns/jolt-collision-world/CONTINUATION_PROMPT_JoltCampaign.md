@@ -17,13 +17,16 @@ Read these IN ORDER before touching anything:
 
 ## Repo state (as of 2026-07-16, this session's end)
 
-All work is on `dev` branches, committed locally, **NOT pushed** (house default: push only when asked).
+**ALL campaign work lives on branch `feature/jolt-collision-world` in all THREE repos** (host +
+both submodules — check it out everywhere; the host branch's gitlinks reference the submodule
+branch tips). Local `dev` in each repo was restored to `origin/dev` (pre-campaign). Nothing is
+pushed (house default: push only when asked). Continue committing on the feature branches.
 
-| Repo | Tip | Contents |
+| Repo | feature/jolt-collision-world tip | Contents |
 |---|---|---|
-| CkPlugins (host) | `80460ae` + campaign-doc commits after | Campaign docs, pointer bumps, host ini rename |
-| Plugins/CkFoundation | Phase-0 `74c33059e` → Phase-1 `ca08d8b46` → Phase-2 `4b73f9f80` → Phase-3 slices 1+2 (see PROGRESS.md for final hashes) | CkJolt + CkJoltEditor modules, all campaign code |
-| Plugins/CkTests | `68ac401` → `f594983` → (Phase-3 pointer as committed) | 3 C++ test files, 7 AS autotests, regenerated wrapper artifacts |
+| CkPlugins (host) | `28b9ba3` | Campaign docs, pointer bumps, host ini rename, this handoff |
+| Plugins/CkFoundation | `abf1b6cbe` (Phase-0 `74c33059e` → P1 `ca08d8b46` → P2 `4b73f9f80` → P3 slices `9f250bc59`, `abf1b6cbe`) | CkJolt + CkJoltEditor modules, all campaign code |
+| Plugins/CkTests | `f594983` (P1 `68ac401` → P2 `f594983`) | 3 C++ test files, 7 AS autotests, regenerated wrapper artifacts |
 
 **Scope warning:** the host repo has OTHER sessions' dirty submodule pointers (`CkAuto`,
 `Plugins/CkGameplayDebugger`, `Plugins/GitLink`) and untracked root files (`HOMING_INTEGRATION_PLAN.md`,
@@ -151,10 +154,10 @@ Set-Location "D:\Repos\CkPlugins"
 
 ## Recommended flow for the new session
 
-1. `git log --oneline -6` in CkPlugins + both submodules; read PROGRESS.md bottom-up. Confirm the
-   Phase-3 slices 1+2 commits exist (if the tree is instead dirty with them, the interrupted gate is
-   yours to finish: run Overlap/RaySense/Crowd patterns, then commit as two commits — enum migration,
-   ownership exclusivity — messages sketched in PROGRESS.md).
+1. Confirm all three repos are on `feature/jolt-collision-world` (`git branch --show-current` in
+   CkPlugins, Plugins/CkFoundation, Plugins/CkTests) and `git log --oneline -6` matches the table
+   above; read PROGRESS.md bottom-up. Phase-3 slices 1+2 are already committed AND gated
+   (Jolt 10/10, Probe 17/17, Overlap 73/73, RaySense 4/4, Crowd 16/16).
 2. Re-run the Jolt pattern once (`--discover-fresh`) to confirm your local binaries match HEAD
    (stale-green discipline: never trust a green run that predates your checkout).
 3. Execute Phase 3 step-relocation as its own commit with the probe/crowd/EQS gate BEFORE any
@@ -165,9 +168,9 @@ Set-Location "D:\Repos\CkPlugins"
 
 ## Suggested first message
 
-> I'm continuing the jolt-collision-world campaign. Read
+> I'm continuing the jolt-collision-world campaign, which lives on branch
+> `feature/jolt-collision-world` in CkPlugins AND both submodules (CkFoundation, CkTests). Read
 > `docs/campaigns/jolt-collision-world/CONTINUATION_PROMPT_JoltCampaign.md` fully, then PROMPT.md and
-> PROGRESS.md in the same folder. Phases 0–2 are committed and gated; verify the Phase-3
-> enum-migration + ownership commits landed, then execute the rest of Phase 3 (step relocation gated
-> first, then the JoltBody quartet), then Phases 4–5, following the phase docs and committing at each
-> gate. Don't push anything.
+> PROGRESS.md in the same folder. Phases 0–2 plus Phase-3 slices 1–2 are committed and gated; execute
+> the rest of Phase 3 (step relocation gated first, then the JoltBody quartet), then Phases 4–5,
+> following the phase docs and committing at each gate on the feature branches. Don't push anything.
