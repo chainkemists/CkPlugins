@@ -62,6 +62,31 @@ namespace UCk_PlaceableTest_Marker_EntityScript
 }
 
 USTRUCT()
+struct FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams
+{
+    UPROPERTY()
+    FTransform SpawnTransform = FTransform::Identity;
+
+    FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams(FTransform InSpawnTransform)
+    {
+        SpawnTransform = InSpawnTransform;
+    }
+}
+
+namespace UCk_PlaceableTest_MeshComponent_EntityScript
+{
+    FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams Params()
+    {
+        return FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams();
+    }
+
+    FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams Params(FTransform InSpawnTransform)
+    {
+        return FCk_PlaceableTest_MeshComponent_EntityScript_SpawnParams(InSpawnTransform);
+    }
+}
+
+USTRUCT()
 struct FCk_PlaceableTest_Sphere_EntityScript_SpawnParams
 {
     UPROPERTY()

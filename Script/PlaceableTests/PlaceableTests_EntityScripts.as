@@ -11,9 +11,11 @@
 // script's `SpawnTransform` property (the default transform-injection target),
 // which DoConstruct then applies to the entity.
 //
-// All three are non-replicated so they spawn immediately (no ActorRelay
+// All of these are non-replicated so they spawn immediately (no ActorRelay
 // channel needed). The Cube/Sphere variants render an ISM mesh at the placed
-// transform; the Marker is the minimal, dependency-free validator.
+// transform; MeshComponent renders a real UStaticMeshComponent through
+// CkUnrealComponent (the other editor-preview visual path); the Marker is the
+// minimal, dependency-free validator.
 //============================================================================
 
 // ---------------------------------------------------------------------------
@@ -85,5 +87,48 @@ class UCk_PlaceableTest_Sphere_EntityScript : UCk_GenericEntityScript_UE
         utils_ism_proxy::Add(IsmProxyTransform, IsmProxyParams);
 
         return ECk_EntityScript_ConstructionFlow::Finished;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// MeshComponent — visible placeable entity. Renders a real UStaticMeshComponent
+// (cylinder) through CkUnrealComponent at the placed transform — the OTHER
+// editor-preview visual path next to Cube/Sphere's shared-ISM rendering.
+// Component setup is async: the mesh asset is assigned in the OnAdded handler.
+// ---------------------------------------------------------------------------
+class UCk_PlaceableTest_MeshComponent_EntityScript : UCk_GenericEntityScript_UE
+{
+    default _ShowInPlaceActors = true;
+    default _Replication = ECk_Replication::DoesNotReplicate;
+
+    UPROPERTY(ExposeOnSpawn)
+    FTransform SpawnTransform = FTransform::Identity;
+
+    UFUNCTION(BlueprintOverride)
+    ECk_EntityScript_ConstructionFlow DoConstruct(FCk_Handle& InHandle)
+    {
+        utils_transform::Add(InHandle, SpawnTransform, ECk_Replication::DoesNotReplicate);
+        utils_entity_tag::Add(InHandle, n"TAG_PlaceableTest_MeshComponent");
+
+        const auto Params = utils_unreal_component::Make_Params(UStaticMeshComponent, ECk_UnrealComponent_TickPolicy::DoNotTick, n"PlaceableTest_MeshComponent");
+        auto ComponentHandle = utils_unreal_component::Add(InHandle, Params);
+
+        utils_unreal_component::BindTo_OnAdded(
+            ComponentHandle,
+            FCk_Delegate_UnrealComponent_OnAdded(this, n"OnMeshComponentAdded"));
+
+        return ECk_EntityScript_ConstructionFlow::Finished;
+    }
+
+    UFUNCTION()
+    private void OnMeshComponentAdded(FCk_Handle_UnrealComponent InHandle)
+    {
+        auto Mesh = Cast<UStaticMeshComponent>(utils_unreal_component::Get_Component(InHandle));
+        if (Mesh == nullptr) { return; }
+
+        auto Cylinder = Cast<UStaticMesh>(LoadObject(this, "/Engine/BasicShapes/Cylinder.Cylinder"));
+        if (Cylinder != nullptr) { Mesh.SetStaticMesh(Cylinder); }
+
+        Mesh.SetCollisionEnabled(ECollisionEnabled::NoCollision);
     }
 }
