@@ -92,8 +92,12 @@ class UCk_PlaceableTest_Sphere_EntityScript : UCk_GenericEntityScript_UE
 
 // ---------------------------------------------------------------------------
 // MeshComponent — visible placeable entity. Renders a real UStaticMeshComponent
-// (cylinder) through CkUnrealComponent at the placed transform — the OTHER
-// editor-preview visual path next to Cube/Sphere's shared-ISM rendering.
+// (cylinder) through CkUnrealComponent — the OTHER editor-preview visual path
+// next to Cube/Sphere's shared-ISM rendering. The component is deliberately
+// mounted on a SCENE-NODE CHILD (offset 1m up) rather than the script entity:
+// scene nodes are lifetime children of their anchor, so editor-selection-owner
+// resolution must walk through them — clicking the floating cylinder selects
+// the spawner below it.
 // Component setup is async: the mesh asset is assigned in the OnAdded handler.
 // ---------------------------------------------------------------------------
 class UCk_PlaceableTest_MeshComponent_EntityScript : UCk_GenericEntityScript_UE
@@ -110,8 +114,13 @@ class UCk_PlaceableTest_MeshComponent_EntityScript : UCk_GenericEntityScript_UE
         utils_transform::Add(InHandle, SpawnTransform, ECk_Replication::DoesNotReplicate);
         utils_entity_tag::Add(InHandle, n"TAG_PlaceableTest_MeshComponent");
 
+        auto TransformHandle = InHandle.As_Transform();
+        auto MountLocalTransform = FTransform(FRotator::ZeroRotator, FVector(0.0, 0.0, 100.0), FVector::OneVector);
+        auto MountSceneNode = utils_scene_node::Create(TransformHandle, MountLocalTransform);
+        auto MountEntity = FCk_Handle(MountSceneNode);
+
         const auto Params = utils_unreal_component::Make_Params(UStaticMeshComponent, ECk_UnrealComponent_TickPolicy::DoNotTick, n"PlaceableTest_MeshComponent");
-        auto ComponentHandle = utils_unreal_component::Add(InHandle, Params);
+        auto ComponentHandle = utils_unreal_component::Add(MountEntity, Params);
 
         utils_unreal_component::BindTo_OnAdded(
             ComponentHandle,
