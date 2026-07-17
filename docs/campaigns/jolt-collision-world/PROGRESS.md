@@ -198,6 +198,115 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
   `b23f1bddd` (14 files, +874/-102). PHASE_3.md items 3+4 DONE. Next: JoltBody quartet
   (dispatch spec ready; includes the pre-ruled PlanStep extraction).
 
+- **JoltBody quartet IMPLEMENTED (opus executor), build green; fresh Fable review in flight.**
+  8 new files (Fragment_Data pair, Fragment.cpp, Processor pair, Utils pair, CkJolt_ActivationEvent.h)
+  + 7 modified (+262/-22): PlanStep extracted from Step per the pre-ruled split, activation queue on
+  the subsystem listener, FJoltWorld activation-drain + Remove_PoseBufferEntry. Executor deviations
+  accepted after scrutiny: FCk_Jolt_LayerContext::_Table const→non-const (Setup needs the sanctioned
+  game-thread Get_OrRegisterLayer; probe reads only _ProbeLayer), Step keeps its own paused guard
+  (behavior-identical split), forward-declared KinematicPush in Step's RunAfter (breaks include cycle;
+  scheduler resolves by type name), sibling CkJolt_ActivationEvent.h with forward-declared enum,
+  GetProfileTemplate-by-name derivation (~18 lines, under the STOP threshold).
+- **[P3-RULING] Initial-Asleep gap** (executor-flagged, correctly not improvised): a body with
+  `_InitialSleepState = Asleep` is batch-added DontActivate but got no `FTag_JoltBody_Sleeping`
+  (Jolt never fires OnBodyDeactivated for a never-activated body → Get_SleepState would lie
+  "Awake" until first activate+sleep). RULED: `Add()` also adds FTag_JoltBody_Sleeping when
+  InitialSleepState==Asleep — the tag mirrors intended state from composition. Orchestrator
+  applies the fix after the review returns (single rebuild with any review fixes).
+- **Fresh-Fable adversarial review of the quartet: 2 BLOCKER + 4 MAJOR + 1 MINOR, ALL CONFIRMED
+  and fixed by the orchestrator** (review earned its cost — both blockers trace to a design defect
+  in PHASE_3.md item 5 itself):
+  - [P3-FIX] **KinematicPush redesign** (both BLOCKERs): the phase doc's FTag_Transform_Updated-gated
+    view (a) dropped one-shot moves landing on zero-step frames (tag cleared by Transform_Cleanup
+    before the next stepping frame), and (b) left Jolt's PERSISTENT MoveKinematic velocity un-zeroed
+    → a once-moved kinematic body sails away forever. Fix: view no longer gated on the tag; every
+    added KinematicFromECS body is MoveKinematic'd to its CURRENT ECS transform each stepping frame
+    (target==current ⇒ velocity zero — Jolt-idiomatic). PHASE_3.md's design is superseded on this point.
+  - [P3-FIX] Get_OrRegisterLayer result guarded against cObjectLayerInvalid (mirrors StaticWorld).
+  - [P3-FIX] Probe+JoltBody coexistence made CORRECT (not forbidden): pose apply and SleepStateMirror
+    now require the buffer key / event body-id to match the entity's Current._BodyId — another Jolt
+    body sharing the entity's UserData (its Probe) can no longer clobber StepPose or the Sleeping tag.
+    (Phase-4 note: JoltCharacter's shared-StepPose plan must revisit this body-id check.)
+  - [P3-FIX] Mass>0 ensures on Explicit and FromStaticMesh (ClampMin only guards the editor UI;
+    zero mass → JPH_ASSERT/NaN) — fall back to shape-calculated mass, loudly.
+  - [P3-FIX] EndPlay: WorldTypeRequirement RuntimeOnly added (probe parity) + Release_Jolt moved
+    unconditional + invalid-BodyId early-out BEFORE the PhysicsSystem ensure (a Setup-skipped body
+    is legal, not an ensure).
+  - [P3-FIX] CreateBody failure re-arms FTag_JoltBody_NeedsSetup (transient slot exhaustion retries;
+    other ensure-skips stay permanent).
+  Review also cleared: chain ordering (incl. forward-declared RunAfter edge), PlanStep/Step split
+  behavior-identity, batch add, trimesh walk, const→non-const table thread-soundness, activation
+  queue contract, Fragment/Utils doctrine compliance.
+- **Orchestrator additions with the fixes**: `ck::jolt::ComputeStepPlan` extracted from PlanStep
+  (pure, CKJOLT_API — the fixed-timestep test pins it without a physics world; PlanStep rewired,
+  behavior-identical) + the [P3-RULING] Initial-Asleep fix (Add mirrors InitialSleepState==Asleep
+  onto FTag_JoltBody_Sleeping). Rebuild in flight: Saved/Logs/P3Quartet-ReviewFixes-Build.log.
+- **[P3-FIX] PRODUCT DEFECT found by the test executor (STOP honored — tests were not bent):
+  the Jolt world never called SetGravity.** Jolt's default is (0, -9.81, 0) — Y-down in METERS —
+  while CkJolt is Z-up passthrough in UE centimeters: dynamic bodies drifted -Y at 9.81uu/s²
+  instead of falling -Z (all 4 AS dynamics tests red on it; the box-stack even false-passed its
+  spacing asserts because nothing moved). Latent since Phase 0 — probes are gravity-less kinematic
+  sensors, so nothing ever fell. PHASE_3.md never specified gravity; genuine design omission.
+  Fix (orchestrator): `_PhysicsSystem->SetGravity(Conv({0,0,GetWorld()->GetGravityZ()}))` after
+  Init — UE world gravity for Chaos parity, per-world overrides respected (CkJolt_Subsystem.cpp).
+  Executor interim results: FixedTimestep 5/5 green (ComputeStepPlan pinned), OwnershipExclusivity
+  3/3 green; lifecycle specs blocked only by an environmental BrushComponent ensure from
+  /Engine/Maps/Entry's default brush (whitelisted; gravity-independent re-run pending).
+- **Phase-3 test suite GREEN on gravity-fixed binaries (orchestrator-verified from logs, not the
+  executor's word):** post-gravity Jolt pattern 24/25 (P3Tests-PostGravity.log) with the single red
+  — KinematicPlatformCarriesDynamicBox "box 38.1 vs platform 200" — being PHYSICS-CORRECT sliding
+  (Jolt-default friction, fast platform), not a product bug; the executor re-tuned the test to
+  assert friction-carry under carry-valid conditions (friction 1.0 both surfaces, gentler motion)
+  → re-run PASSED 1/1 (P3Tests-Kinematic.log). Net: all 8 world-less C++ tests (ComputeStepPlan 5,
+  OwnershipExclusivity 3), 3 lifecycle specs (churn-1000 baseline, batch-500, destroy-while-
+  sleeping), 4 AS dynamics tests (RestsOnFloor, BoxStackOfFive, KinematicCarry, SleepsAndWakes) +
+  all pre-existing Jolt-pattern tests green. **GATE (b) full-suite regression IN FLIGHT**
+  (GateB-FullSuite.log; diff vs 783/782+1-flaky baseline).
+- **Test-executor final report received (all claims log-verified): 15/15 authored tests green.**
+  7 new files (3 .spec.cpp + 4 .as) + regenerated `Script/Generated/CkTests_AutoTestActors.as`
+  + 4 External-Actor uassets auto-staged by the editor's GitSourceControl on map-save (the placed
+  wrapper actors — Phase-1 committed equivalents; they ship with the CkTests commit). Notable
+  test-design hardening: BoxStack spawn spacing widened to 200uu so the settle assertion can
+  never false-pass again if simulation silently stops (it false-passed under the gravity bug at
+  105uu). Ownership tests use the hermetic TryClaim primitives (the exact internal call Marker/
+  Sensor/RaySense make) instead of a UWorld-dependent Marker — refusal path identical, no PIE.
+  FOLLOW-UP (one line, not chased): Phase-1 static-world bake fires a loud ensure on
+  /Engine/Maps/Entry's stock default brush (BrushComponent with collision but no BrushBodySetup)
+  — bake robustness smell; tests whitelist it as environmental.
+- **GATE (b) run 1: 793 total / 792 passed / 1 failed — root-caused to a PHASE-1 TEST BUG, not a
+  Phase-3 regression.** The red (`Ck_AutoTest_RaySense_LineTrace_HitFiresSignal`, impact (0,0,300)
+  at step=1) was session contamination: the committed Phase-1 test
+  `CkAutoTest_CkJolt_StaticBake_SimpleBox_RaycastMatchesChaos.as` spawned its BlockAll engine cube
+  at (0,0,300) — exactly the RaySense test's trace origin — and NEVER destroyed it, so the leaked
+  Chaos cube blocked the trace at its start. Latent since Phase 1: this was the first full
+  shared-session suite run since the Jolt content tests exist (Phases 1-3 gated via per-pattern
+  runs, each its own editor session; Phase 0's full run predates the tests). Evidence: mechanism
+  explains hit-at-start + signal-fired + step=1; RaySense isolated re-run 4/4 green
+  (GateB-RaySense-Isolated.log); no ensures in the failure window; every other campaign test parks
+  content at a unique Y offset — only this one squatted on the origin. Fix (test-side, in the
+  committed Phase-1 file): relocated to the unique parking spot (0,9000,300) + un-bake
+  (Request_RemoveActor) + DestroyActor before FinishSuccess. **GATE (b) run 2 IN FLIGHT**
+  (GateB-FullSuite-Run2.log; AS-only fix, binaries unchanged).
+- **[P3-RULING] Gyms deferred to Phase 5** — PHASE_3.md item 6 lists BoxStack/KinematicPlatform
+  gyms in gate (b), but the (fresher) continuation prompt moved ALL gym stations to Phase 5's
+  deferred bucket, consistent with the Phase-1 precedent. Gate (b) = dynamics tests green + full
+  regression; gyms accumulate in Phase 5. Executor-flagged Phase-4 items for later ruling:
+  probe+JoltBody on one entity shares the UserData id space (SleepStateMirror can't attribute
+  activation source — exotic composition, out of v1).
+
+- **GATE (b) PASSED: full suite 793/793 (zero failed, zero skipped)** on run 2 after the
+  contamination fix — strictly better than the 783-baseline (782 pass + 1 flaky; the flaky Crowd
+  red passed here too). Log: GateB-FullSuite-Run2.log.
+- **PHASE 3 COMPLETE + COMMITTED.** CkFoundation `b23f1bddd` (step relocation, 14 files) +
+  `5f5128c48` (quartet + review fixes + gravity fix, 15 files, +1832); CkTests `4a2c4df`
+  (13 files, +1183: 3 spec.cpp + 4 AS + wrapper artifacts + 4 placed wrapper actors + the
+  Phase-1 SimpleBox leak fix). PHASE_3.md → DONE with design supersessions noted.
+  Session log: 2026-07-16/17, Fable orchestrator; routing — opus executors for step relocation,
+  quartet, and tests (each from a written dispatch spec); fresh-Fable adversarial reviewer for
+  the quartet (found 2 blockers + 4 majors, all fixed); explore agent for exemplar extraction;
+  judgment work (design, rulings, review-fix implementation, gates, commits) inline at Fable tier.
+- Next: **Phase 4** per PHASE_4.md (requests + events/signals + JoltCharacter + query extensions).
+
 ### [EDITOR-VERIFY] items (accumulating; for the user when back)
 
 - `ck.SpatialQuery.PreviewAllProbesUsingJolt 1` in PIE still draws probe wireframes (debug-draw gate

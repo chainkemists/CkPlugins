@@ -1,6 +1,13 @@
 # PHASE 3 — Step relocation + JoltBody dynamics + ECS sync
 
-**Status:** PENDING (blocked by Phase 2 gate)
+**Status:** DONE (2026-07-16/17). Slices 1-2 `9f250bc59`/`abf1b6cbe`; step relocation `b23f1bddd`
+(gate (a): Jolt 10/10, Probe 17/17, Crowd 16/16, Eqs 10/10, Overlap 73/73, RaySense 4/4);
+quartet `5f5128c48` + tests (CkTests `4a2c4df`) (gate (b): full suite 793/793 vs 783 baseline).
+**Design supersessions during execution (see PROGRESS.md for full rationale):** item 5's
+KinematicPush view is NOT gated on FTag_Transform_Updated (persistent MoveKinematic velocity +
+zero-step-frame move drops — every added kinematic body pushes to its current transform each
+stepping frame); PlanStep split out of Step (KinematicPush reads PendingSimTime); gravity was
+never specified — SetGravity(UE world gravity) added; gyms deferred to Phase 5.
 **Gates:** TWO — (a) step-relocation commit: entire existing probe/crowd/EQS suite green (canaries:
 LinearCastPerf, Crowd_Separation_ProbeIsotropy); (b) phase end: dynamics tests green + regression.
 
