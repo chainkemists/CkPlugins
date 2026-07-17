@@ -1,7 +1,16 @@
 # PHASE 4 — Requests + events/signals + JoltCharacter + query extensions
 
-**Status:** PENDING (blocked by Phase 3 gates)
-**Gate:** phase tests green + full regression.
+**Status:** DONE — CkFoundation `e2687e2e1` / CkTests `fb6a727` (2026-07-17).
+**Gate:** phase tests green + full regression — PASSED: CkJolt pattern 34/34 after the
+PushPolicy test-defect fix (P4Tests-Run2.log + P4Tests-PushPolicy-Fix1.log), full suite
+**802/802** vs the 793/793 Phase-4 entry baseline (+9 new rows, delta-zero elsewhere;
+GateP4-FullSuite.log).
+Design supersessions vs the items below (rulings in PROGRESS.md): MoveKinematic request
+dropped (KinematicPush drives kinematic bodies from the ECS transform each stepping frame);
+PushPolicy maps to CharacterContactSettings {mCanPushCharacter, mCanReceiveImpulses} in
+OnContactAdded (not an OnContactValidate filter); characters step in
+DoStepCharacters_AnyThread before each PhysicsSystem::Update substep; gyms deferred to
+Phase 5.
 
 ## Work items
 

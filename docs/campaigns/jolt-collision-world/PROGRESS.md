@@ -306,6 +306,134 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
   the quartet (found 2 blockers + 4 majors, all fixed); explore agent for exemplar extraction;
   judgment work (design, rulings, review-fix implementation, gates, commits) inline at Fable tier.
 - Next: **Phase 4** per PHASE_4.md (requests + events/signals + JoltCharacter + query extensions).
+- **Phase-4 ENTRY BASELINE: full suite 793/793** @ CkFoundation `5f5128c48` / CkTests `4a2c4df` /
+  host `4d6c936` (GateB-FullSuite-Run2.log). Every Phase-4 "no regressions" claim diffs against this.
+  Phase-4 threading note carried from P3 design: JoltCharacter ExtendedUpdate runs inside the
+  (possibly async) step batch — move/jump intents must be captured to plain data on the game thread
+  BEFORE the kick, ground-state results buffered back like poses; pose-apply's body-id check needs a
+  Character branch when characters join the shared StepPose path.
+
+- **Phase 4 STARTED. Rulings (from the exemplar research; do not re-derive):**
+  - [P4-RULING] **MoveKinematic request DROPPED from the request family** (supersedes PHASE_4.md
+    item 1): the P3 review's KinematicPush redesign makes the per-stepping-frame push-to-ECS-
+    transform the single source of kinematic targets — a competing one-shot MoveKinematic request
+    would be yanked back by the next push. Kinematic movement = move the entity's Transform
+    (proven by the carry autotest). Teleport (both motion types) stays.
+  - [P4-RULING] **CharacterVirtual must be Z-up-corrected explicitly**: Jolt defaults mUp=+Y,
+    mSupportingVolume and every ExtendedUpdateSettings vector (StickToFloorStepDown,
+    WalkStairsStepUp, ...) are Y-up — same trap class as the gravity bug; PHASE_4.md is silent.
+    All must be built Z-up at character creation.
+  - [P4-RULING] **Characters bypass _PoseBuffer**: CharacterVirtual has NO broadphase BodyID
+    (never in GetActiveBodies; optional inner body deferred, v1 = purely virtual). FJoltWorld
+    gains a separate _CharacterPoseBuffer keyed by entity id, captured after each ExtendedUpdate
+    inside the step loop, applied in the same game-thread apply pass onto the shared StepPose +
+    TransformDirty (WritebackInterpolated unchanged). The P3 body-id check in the body pose-apply
+    stays as-is (it requires FFragment_JoltBody_Current, which character entities don't have).
+  - [P4-RULING] **Character intents cross the async boundary as plain data**: a game-thread
+    PreStep processor snapshots Move/Jump intents + push-policy into FJoltWorld's character
+    registry BEFORE the async kick; the step loop touches only Jolt objects + that registry;
+    ground-state/pose results buffer back like poses.
+  - [P4-RULING] Contact→signal router: registered by the subsystem at Initialize (CkJolt-internal,
+    name "JoltBody.Signals"), resolves entities with the SAME body-id disambiguation as pose/sleep
+    (a probe's contacts on a shared entity never fire JoltBody signals). RelativeNormalVelocity
+    computed in-callback via Body::GetPointVelocity at the first manifold point, dotted with the
+    world-space normal. IsSensor via Body::IsSensor(); PenetrationDepth via
+    ContactManifold::mPenetrationDepth.
+  - Query gaps confirmed for item 4: raycast-multi, shape-cast-multi, entity-resolving overlap —
+    all absent from UCk_Utils_JoltQuery_UE.
+  - Execution split: slice A = requests + contact/activation signals + query extensions (one
+    executor); slice B = JoltCharacter quartet (second executor, sequential — overlapping files);
+    then tests + gate. Same orchestration pattern as Phase 3 (dispatch → fresh review → gate).
+
+- **Phase-4 slice A IMPLEMENTED (opus executor), build green (P4SliceA-Build.log); fresh-Fable
+  review in flight.** ~1297 insertions across 10 modified files + 2 new
+  (Body/CkJoltBody_ContactRouter.h/.cpp): 9 new requests (variant now 10 — SetSleepState +
+  AddForce/AddForceAtLocation/AddTorque/AddImpulse/AddImpulseAtLocation/AddAngularImpulse/
+  SetLinearVelocity/SetAngularVelocity/Teleport w/ ECk_Jolt_TeleportVelocityPolicy; MoveKinematic
+  ruled out stays out), contact-event extensions (IsSensor1/2, PenetrationDepth,
+  RelativeNormalVelocity), 4 signals w/ BindTo_/UnbindFrom_ (ContactAdded/Persisted/Removed +
+  SleepStateChanged; Persisted gated on FTag_JoltBody_PersistContacts; sleep-snap on Asleep),
+  "JoltBody.Signals" router registered at subsystem Initialize w/ body-id disambiguation,
+  query extensions (Get_RayCastMulti, Get_ShapeCastMulti, Get_OverlapEntities).
+  Executor deviations accepted: Persisted events now carry BodyIndexAndSeq (required for
+  disambiguation); ONE shared OnContact delegate for Added+Persisted (4 signal pairs — the
+  dispatch checklist's "six" was an orchestrator arithmetic slip, 4 is complete);
+  RelativeNormalVelocity computed post-Conv in UE space (numerically identical).
+  Slice B (JoltCharacter) dispatch staged at $CLAUDE_JOB_DIR/tmp/dispatch-phase4-sliceB.md —
+  launches after slice-A review fixes land.
+
+- **Slice-A fresh-Fable review: 1 BLOCKER + 3 MAJOR + 3 MINOR, all confirmed; orchestrator fixed
+  all 7** (rebuild in flight, P4SliceA-ReviewFixes-Build.log):
+  - [P4-FIX] **UserData==0 resolves to the transient root** (BLOCKER + the Get_OverlapEntities
+    MAJOR): baked static-world bodies never SetUserData (Jolt default 0) and raw entity id 0 IS
+    the registry's transient entity (first create()) → contact payloads/_OtherEntity and overlap
+    results delivered a live transient-root handle for every dynamic-vs-baked-floor interaction.
+    Fixed with a UserData==0 → no-entity guard at BOTH consumer-visible resolve sites (contact
+    router + query attribution), invariant documented. The feature-gated resolve sites
+    (SleepStateMirror, pose apply, SpatialQuery bridge) are provably safe (transient root has no
+    JoltBody/Probe fragments) and left unchanged.
+  - [P4-FIX] **Async race via lexical tie-break** (MAJOR): the scheduler breaks dependency ties
+    lexically, so FProcessor_JoltBody_HandleRequests (and Setup — pre-existing P3 gap) ran BEFORE
+    FProcessor_JoltWorld_WaitForAsync consumed the in-flight async step; body mutations then raced
+    PhysicsSystem::Update on the task graph. Fixed: explicit WaitForAsync RunAfter edges on both.
+  - [P4-FIX] **Teleport snap clobbered by the pose buffer** (MAJOR): the handler snapped the
+    fragment but the FJoltWorld pose-buffer entry still held the pre-teleport Curr → next
+    capture/apply overwrote the snap (one-frame sweep across the map; async mode even reverted the
+    teleport for a frame). Fixed: the handler also reaps the pose-buffer entry (next capture
+    re-seeds prev==curr at the target, the freshly-added-body path).
+  - [P4-FIX] MINORs: payload _RelativeNormalSpeed now POSITIVE-when-closing (router negates
+    Jolt's convention; both docs updated); DrainEventsAndRoute iterates a routers COPY (user code
+    inline may register/unregister mid-broadcast); two stale comments fixed (SleepStateMirror doc,
+    ContactEvent IndexAndSeq now populated for all event types).
+  Review cleared everything else (lifetime across PIE cycles, all 9 request guards, vendored
+  BodyInterface semantics incl. forces-silently-ignored-on-non-dynamic, scale-preserving teleport,
+  disambiguation consistency, UFUNCTION/AS surfaces).
+
+- **Phase-4 slice B (JoltCharacter quartet) IMPLEMENTED, build green — but DEBUGGAME config**
+  (P4SliceB-Build.log; the slice-B dispatch abbreviated the build command and omitted
+  --config=Development — orchestrator process slip; Development rebuild required before any gate).
+  9 new Character/ files (quartet + shared CkJoltCharacterContactListener) + shared
+  CollisionLayer_Utils (signature derivation moved out of the body processor, call re-pointed) +
+  FJoltWorld character registry (in-field/out-field threading split, HasJump armed/consumed,
+  DoStepCharacters_AnyThread before DoPhysicsUpdate per fixed step, DoApplyCharacterPoses_
+  GameThread w/ ground-state signal broadcast, Snap_CharacterOutPose for Teleport anti-revert).
+  Z-up-cm conversions present at both load-bearing sites; gravity read from
+  PhysicsSystem::GetGravity. Executor deviations all reasonable (ground normal/velocity mirrored
+  onto Current for BP; World header now includes CharacterBase.h — intra-module only;
+  out-of-line ~FJoltWorld for the incomplete-type TUniquePtr). NOTE: the overnight stall was a
+  lost agent wake-up — the build had succeeded at 23:52; recovered next morning.
+  **Fresh-Fable review IN FLIGHT**, aimed at: (a) async EndPlay vs in-flight step loop — the
+  executor's own parity argument exposes that the BODY EndPlay's Remove_PoseBufferEntry has the
+  same race (P3 audit gap): FGroup_EndPlay runs while the CURRENT frame's async step (kicked in
+  Step, after WaitForAsync) may still be executing — registry/posebuffer mutation + CharacterVirtual
+  Ref release vs the task-graph loop; (b) mSupportingVolume plane constant vs the CENTERED capsule
+  (the -radius sample convention assumes bottom-at-position — side contacts at waist height may
+  register as "supporting"); (c) the full Z-up/units matrix.
+
+- **Slice-B fresh-Fable review: 2 BLOCKER + 2 MAJOR + 1 MINOR, all confirmed; orchestrator fixed
+  the four correctness findings** (Development rebuild in flight, P4SliceB-ReviewFixes-Build.log):
+  - [P4-FIX] **Async EndPlay race/use-after-free** (BLOCKER): FGroup_EndPlay runs in the same tick
+    that kicked the async step (future consumed only NEXT frame) — character Unregister + Ref
+    release destroyed a CharacterVirtual the task-graph loop holds. Fixed with an async guard at
+    the top of BOTH EndPlay ForEachEntity bodies (character AND body — the body's
+    Remove_PoseBufferEntry had the same race, a P3 audit gap): wait the in-flight step iff a
+    future is pending; free in sync mode, fires only when entities actually die.
+  - [P4-FIX] **Three more Y-up-meter scalars** (BLOCKER — the dispatch's Z-UP block missed them):
+    mPredictiveContactDistance 0.1→10uu, mCharacterPadding 0.02→2uu, mCollisionTolerance
+    0.001→0.1uu. Unconverted = 1mm predictive contact: jitter, wall-sticking, ground-state flicker.
+  - [P4-FIX] **mSupportingVolume for the CENTERED capsule** (MAJOR): sample's -radius constant
+    assumes base-at-origin; ours accepted "support" up to +radius above center (waist-height
+    ledges read as ground, jumps consumed against low walls). Now Plane(sAxisZ(), +HalfHeight) —
+    bottom-sphere support only.
+  - [P4-FIX] **mMaxStrength N → kg·uu/s² (×100)** (MAJOR): unconverted, character pushes capped at
+    1% of authored strength — PushPolicy functionally inert against massed bodies.
+  - [P4-DEFERRED] O(N²) PreStep intent push (linear registry find per character per frame; ~17k
+    predicate calls at the 130-NPC target) — correctness-clean, deferred to Phase-5 benchmarking;
+    fix shape recorded: key registry lookups by UserData or cache entry index on Current.
+  Review cleared: the full Z-up/units matrix otherwise, ExtendedUpdate/ctor/filter APIs vs
+  vendored 5.2.1, push-policy mapping, HasJump serialization on all non-EndPlay paths, Teleport
+  out-pose snap, game-thread-only broadcasts, ~CharacterVirtual-after-PhysicsSystem-death safety,
+  helper move integrity, UFUNCTION/signal surfaces.
 
 ### [EDITOR-VERIFY] items (accumulating; for the user when back)
 
@@ -325,3 +453,45 @@ Append-only, dated. Newest entries at the bottom of each day. The ONLY home for 
   correctness is editor-verified only. COVERAGE GAP logged.
 - **Phase 1**: real sublevel/World Partition streaming — bodies appear/disappear with cell loads
   (`ck.Jolt` Verbose logging shows per-level add/remove counts).
+  (file truncated mid-entry on the prior checkpoint — the cleared-list sentence ends here.)
+
+- **Phase-4 test executor ran both runs, then its wake-up was lost AGAIN (3rd occurrence);
+  orchestrator took over from the logs** (2026-07-17). P4Tests-Run2.log (authoritative):
+  **34 tests, 33 passed, 1 failed**, all ten new Phase-4 scenarios present and executed.
+  Run1 (28KB) was an aborted earlier attempt; Run2's editor exited 255 by design (failures
+  present) with results kept. Recovery pattern for the record: check Saved/Logs mtimes +
+  editor lock; if the run is done and the agent silent, read the toolbox summary block
+  directly and proceed — do not wait on the agent.
+
+- **The single red — JoltCharacter_PushPolicyGovernsBoxDisplacement — ruled a TEST DEFECT,
+  not product** (evidence-based; no product code changed):
+  - Vendored ground truth (CharacterVirtual.cpp HandleContact:622-688 + BodyInterface.cpp
+    AddImpulse:780-794): with mCanReceiveImpulses the character applies a per-contact impulse
+    through AddImpulse, which ACTIVATES sleeping bodies — a touched 1kg box cannot stay at
+    exactly 0.0uu. Listener policy mapping, registry resolution (raw-pointer match), and
+    Setup wiring (SetListener + Entry.PushPolicy) all verified correct by read.
+  - Actual cause: the test's phases counted FRAMES (30 settle + 180 walk) assuming 60fps;
+    the automation PIE ran ~170fps (whole test = 1.23s in the log), so the walk window was
+    ~1.06s → ~159uu of travel vs a 210uu capsule-front-to-box-face gap. NEITHER character
+    ever reached its box: box A 0.0uu (the red), box B <5uu and char B "stalled" at X≈-41
+    — both B assertions passed VACUOUSLY.
+  - [P4-FIX] Test rewritten time-based (accumulate InDeltaT; 0.5s settle, 3.0s walk — the
+    idiom MoveRequestDrivesCapsule already used) + characters start at X=-120 (130uu gap)
+    so the window has margin even if the fixed-step pump lags real time. Isolated re-run
+    in flight (P4Tests-PushPolicy-Fix1.log).
+  - [FOLLOW-UP] All 13 CkJolt AS tests use frame-count timing; the other 12 pass because
+    their windows gate already-converged conditions (settles/signals), but the pattern is
+    latent flakiness on slow/fast machines. Convert to time-based opportunistically in
+    Phase 5 — do not churn 12 passing tests mid-gate.
+
+- **PHASE 4 GATE PASSED + COMMITTED** (2026-07-17): isolated re-run of the fixed PushPolicy
+  test 1/1 (P4Tests-PushPolicy-Fix1.log, exit 0); full-suite gate **802/802, 0 failed,
+  6m50s** (GateP4-FullSuite.log) vs the 793/793 entry baseline — +9 new CkJolt rows,
+  delta-zero on every pre-existing test. Commits (all on feature/jolt-collision-world,
+  NOT pushed): CkFoundation `e2687e2e1` (25 files: slices A+B + all 11 review fixes),
+  CkTests `fb6a727` (20 files: 9 new AS tests + sleep-signal upgrade + regenerated
+  wrapper + 9 populator External Actor uassets). PHASE_4.md → DONE with supersessions
+  noted. Foreign items still untouched: CkGameplayDebugger pointer, Content/Maps/,
+  CkFoundation stash@{0} (sibling session's — restore via git stash pop).
+  **Phase-4 CLOSE BASELINE for Phase 5: full suite 802/802 @ CkFoundation `e2687e2e1` /
+  CkTests `fb6a727`.** Every Phase-5 "no regressions" claim diffs against this.
