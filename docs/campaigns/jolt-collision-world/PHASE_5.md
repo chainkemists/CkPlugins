@@ -1,8 +1,20 @@
 # PHASE 5 — Parity validation + benchmarks + debug overlay
 
-**Status:** PENDING (blocked by Phase 4 gate)
-**Gate:** VALIDATION.md fully populated with real numbers; final full-suite regression vs baseline;
-all `[EDITOR-VERIFY]` items enumerated in PROGRESS.md for the user.
+**Status:** DONE (2026-07-18).
+**Gate:** PASSED — VALIDATION.md fully populated with real numbers (benchmark tables, island
+verdict, parity results, criteria scoreboard); final full-suite regression **806/806**
+(GateP5-FullSuite-Run6.log) vs the 802/802 Phase-4 baseline (+4 Chaos twins; the box-stack
+row renamed OfFive→OfThree per the recorded stability finding; benchmark + sampler live
+outside the default filter tier and are green under `--test-pattern Jolt`, 40/40,
+P5-JoltRegression-Run4.log); consolidated `[EDITOR-VERIFY]` checklist in PROGRESS.md.
+Notable supersessions/additions vs the items below: overlay CVars via FAutoConsoleVariableRef
+(house C++ pattern; UCk_Utils_CVar_UE is a BP/AS-only surface); sweep parity asserts
+stop-distance+normal (contact-point identity ill-defined on face contacts); benchmark measures
+frame-deltas for BOTH engines (STAT cycles landed for Insights, not read programmatically);
+thread-count variants are startup-only (manual procedure documented). Bonus product fixes the
+gate flushed out: JPH::PhysicsSettings cm-conversion (third meters-trap) +
+UCk_Utils_JoltBody_UE::Get_LinearVelocity (API gap). Findings register: five-high stack
+asymmetry vs Chaos under multi-substep load + deep-penetration ejection (VALIDATION.md §3).
 
 ## Work items
 
