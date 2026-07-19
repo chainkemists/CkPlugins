@@ -626,6 +626,56 @@ Phase-1 legacy items (from earlier entries, still open):
 8. Spline-mesh parity (editor-authored spline mesh; headless cannot create its collision).
 9. Brush-volume parity (runtime harness cannot author brushes).
 
+- **[EV-FINDING 2026-07-18]** First user PIE pass (NewProjectTest.umap, listen server) fired
+  the bake ensure at CkJoltBakeExtraction.cpp:598: the level's default/builder brush passes
+  every skip rule (registered, not editor-only, collision-enabled, Static mobility) but has a
+  null BrushBodySetup. Chaos silently creates NO physics state for exactly this configuration,
+  so the ensure is a parity FALSE-POSITIVE — it will fire once per PIE session in any map
+  carrying a collision-enabled default brush (headless test maps never had one; adjacent to
+  item 9's known gap). Proposed fix (awaiting go-ahead): brush branch only — null
+  BrushBodySetup → Verbose skip (silence IS parity here); ensure retained for
+  mesh/ISM/spline branches where a missing BodySetup is genuinely broken content; update the
+  ExtractActor contract comment in CkJoltBakeExtraction.h accordingly.
+  **FIX APPLIED (2026-07-18, user re-reported the ensure = go-ahead):** brush branch now
+  Verbose-skips a null BrushBodySetup and names the owning actor (so any future occurrence
+  self-identifies); contract comment updated in CkJoltBakeExtraction.h; CkJolt/CLAUDE.md
+  static-world section records the carve-out. **GATE GREEN:** rebuild + full Jolt pattern =
+  40/40, 0 failures, 0 Angelscript errors, on the fresh binary (Saved/Logs/CkPlugins.log
+  opened 2026-07-18 08:19 UTC, last row 08:29) — delta-zero vs the 40/40 campaign baseline.
+  Same run compile-gated the gym's differential-probe edit. All changes remain UNCOMMITTED
+  (CkFoundation: BakeExtraction .cpp/.h + CLAUDE.md; CkTests: gym + registry; host:
+  PROGRESS.md) pending the user's word.
+
+- **[POST-CAMPAIGN 2026-07-18] StaticBake gym authorized + routed** (user request, follow-up to
+  the offer above): new station `CkJoltGym_StaticBake` (Script/CkJolt/, + registry line) —
+  runtime lanes SM / HISM-sparse(5) / HISM-dense(40-compound) baked via Request_BakeActor with
+  Jolt-vs-Chaos witness-ray parity, an experimental SplineMesh lane (Chaos-hit precondition
+  probe gates the bake so the null-BodySetup ensure can't fire; hard gap stays item 8), and
+  scan lanes for level-swept volumes/brushes + landscape (only path a runtime gym can exercise
+  the LEVEL-SWEEP bake with; absent → loud placement hint). Exec:
+  Ck_GymJoltStaticBake_RunWitnesses / _Rebake (remove→miss→re-bake round trip). Routed to an
+  opus executor with exemplar/trap package; Fable reviews the diff; AS compile + PIE
+  verification = [EDITOR-VERIFY] (user's editor session was live at authoring time).
+  Binding risks recorded: USplineMeshComponent / AVolume / ALandscapeProxy have zero AS-corpus
+  precedent — lanes drop-with-note if unresolvable.
+  **OUTCOME (same day):** opus-authored file reviewed (idioms corpus-verified; one naming fix)
+  and compile-gated by Fable — fresh headless editor boot, ZERO `Angelscript: Error` lines
+  (all four unproven bindings resolve), Jolt.Bake pattern 6/6 Success incl. all 4 StaticBake
+  autotests (Saved/Logs/CkPlugins.log, 2026-07-18 08:05 UTC). Uncommitted in Plugins/CkTests
+  (registry M + new gym file) pending user's word. PIE/visual verification = [EDITOR-VERIFY];
+  lane 5 lights up once a BlockingVolume is placed in TestGyms_CkTests_Level.
+  **USER PIE RESULTS (same day):** 9 witnesses — all 7 runtime-lane rows EXACT parity (0.000
+  deltas); NumStaticBodies 7 = runtime lanes only (gym floors are runtime-spawned Movable ⇒
+  LevelSweep skips them, by design). SplineMesh `[GAP]` fired ⇒ **item 8 upgraded from
+  headless-suspected to editor-PIE-confirmed: spline-mesh collision does not cook at runtime
+  even with the editor present.** Both volume rows were scan noise, provable from the logged
+  positions: NavMeshBoundsVolume "PASS" at (0,0,300) = top of our own dense-HISM instance
+  (col1/row2); DefaultPhysicsVolume "FAIL" = the engine's transient bodiless fallback volume,
+  its Chaos hit (0,0,50) = the Movable gym floor Jolt correctly ignores. Fixed by a
+  differential probe in DoAddBoundsWitness (trace twice, second ignoring the scanned actor;
+  no outcome change ⇒ [INERT], no witness) — corpus-proven API only, avoids the unproven
+  FHitResult hit-actor binding.
+
 Benchmarks (optional): threads=1 variant — launch with -jolt.EnableParallelPhysics=0 and
 re-run Ck.Jolt.Body.Benchmark.FrameCostMatrix; compare VALIDATION.md rows.
 
@@ -681,3 +731,171 @@ re-run Ck.Jolt.Body.Benchmark.FrameCostMatrix; compare VALIDATION.md rows.
   the recorded post-campaign items: five-high stack investigation, deep-penetration
   ejection, sampler filter-tier promotion, O(N2) character PreStep (deferred w/ evidence),
   frame-count->time conversions already done this phase.
+
+- **[POST-CAMPAIGN] ECS-first static world — JoltStaticActor attribution entities**
+  (2026-07-18): maintainer RULING overturning the campaign's entity-less baked static
+  world ("all Jolt bodies MUST have an Entity"): ONE attribution entity per source actor
+  contributing >=1 baked body (never per body — HISM-compound trap stays avoided), bodies
+  stamped with the entity id as Jolt user-data so static hits resolve through the SAME
+  TryResolve_Entity rail dynamic JoltBodies use. Every FName attribution surface DELETED
+  (no-backcompat rule): _BodyToActorName, TryGet_ActorNameForBody, _SourceActorName on
+  FCk_Jolt_HitResult + both StaticWorldRayHit structs (replaced by _Entity handles).
+  New quartet-lite in StaticWorld/: CkJoltStaticActor_{Fragment_Data,Fragment,
+  Processor,Utils} — no ParamsData/requests (subsystem-composed attribution feature);
+  EndPlay processor + idempotent Request_RemoveBodiesForEntity funnel make the lifecycle
+  bidirectional (level streaming drives bodies+entities; entity-first destroy frees its
+  bodies; empty fragment body-id array = idempotence guard); subsystem now
+  InitializeDependency's UCk_EcsWorld_Subsystem_UE; pre-BeginPlay level-adds defer to the
+  BeginPlay sweep (never bake bodies without entities); entity DebugName = actor FName.
+  Routing: Fable design (D1-D10) -> opus execution -> Fable audit. Audit found + fixed
+  one real defect: Request_BakeActor double-bake overwrote _ManualActorEntities entry,
+  orphaning the prior bake's bodies (now: replace = free old bodies + destroy old entity
+  first). SEMANTIC CHANGE accepted under the ruling: Get_OverlapEntities and contact
+  payloads now resolve baked statics to their attribution entity (Chaos-parity-consistent
+  — UE overlaps return static actors too); test renamed
+  OverlapEntitiesExcludesBakedStaticWorld -> OverlapEntitiesIncludesBakedStaticActor with
+  the inverted contract (still pins the raw-id-0 transient-root guard). Also this pass:
+  gym entity-naming sweep (debugger name column reads handle DebugName, stamped "NO NAME"
+  at birth — Set_DebugName idiom; 27 call sites across 14 gym files, sonnet sweep +
+  Fable review, 2 derived names corrected). GATE GREEN (run 2,
+  StaticActorRefactor-BuildTest2.log; run 1 failed on one missing include in the new
+  processor header — CkJoltStaticActor_Fragment_Data.h, where the typesafe handle lives;
+  fixed): rebuild + full Jolt pattern = 40/40 Result={Success}, 0 Angelscript errors, on
+  the fresh binary (CkPlugins.log opened 2026-07-18 15:00 local) — delta-zero vs the
+  40/40 baseline; renamed OverlapEntitiesIncludesBakedStaticActor row GREEN = runtime
+  proof of entity-resolved static attribution (overlap returned exactly JoltBody entity +
+  JoltStaticActor entity with correct source-actor name); old row absent (count stays 40).
+  All changes UNCOMMITTED pending the user's word. [EDITOR-VERIFY] for the user: ECS
+  debugger should now show named gym entities (e.g. RampRoll.Floor/Ramp/CatchWall,
+  RampRoll.Sphere0-2) and, in any level with baked statics, one named JoltStaticActor
+  entity per contributing actor.
+
+- **[POST-CAMPAIGN] Jolt debugger integration (CkGameplayDebugger)** (2026-07-18): all
+  three missing surfaces delivered, opus execution vs the launcher-contract docs
+  (newer than the extension skill — contract won on the descriptor/census step) +
+  Fable audit. (1) New Gen-2 module CkJoltDebugger (UncookedOnly, tab + ck.JoltDebugger
+  console toggle, launcher descriptor Systems:30, census spec now 11 tabs): world stats —
+  body counts by motion type, awake/asleep, characters, static actors, static bodies +
+  unique shapes; read-only, TAttribute over a tick-cached stats struct, no stored handles.
+  (2) FCkInspector_Jolt (priority 137) covering JoltBody/JoltCharacter/JoltStaticActor
+  fragments, per-read handle re-validation. (3) FCk_DebugOverlay_Provider_Jolt
+  (priority 62) + provider tag added to the All and Movement overlay layouts (the
+  registered-but-never-renders trap). Dependency direction debugger->CkJolt only
+  (CkEcsDebugger + CkEntityDebugOverlay Build.cs +CkJolt); zero CkJolt edits.
+  GATES GREEN on the final binary: rebuild + Jolt pattern 40/40, 0 AS errors
+  (JoltDebugger-BuildTest.log); Ck.DebuggerLauncher census + registry specs 2/2
+  (JoltDebugger-CensusTest.log). [EDITOR-VERIFY]: Tools menu / debugger rail shows
+  "CK Jolt Physics Debugger"; ECS debugger inspector shows Jolt sections on
+  gym entities; overlay focus card shows Jolt rows under the All/Movement layouts.
+  Follow-up recorded (not done, provenance-dated prose): plugin-root CLAUDE.md module
+  counts stale by one (14->15 modules / 11->12 UncookedOnly). All changes UNCOMMITTED
+  (CkGameplayDebugger working tree was clean before this work) pending the user's word.
+
+- **[POST-CAMPAIGN] StaticBake gym: view-ray + authored landscape/spline coverage**
+  (2026-07-18, follow-up to the user's visual pass): three gym gaps addressed. (1)
+  Continuous player VIEW-RAY in CkJoltGym_StaticBake.as (Fable-direct): per-frame
+  utils_jolt_query::Get_RayCast from the player's view (Visibility/Block), green
+  beam + impact sphere + normal + resolved-entity label on hit, red beam on miss —
+  a rendered mesh the red beam passes through is a visible bake gap; toggle exec
+  Ck_GymJoltStaticBake_ToggleRay. Purpose: user visually confirms the runtime
+  spline-cook gap BEFORE any fix attempt (runtime-cook fix explicitly PARKED —
+  campaign record already logs it editor-PIE-confirmed with 2 attempts, no blind
+  retry). (2) Authored-content path (Fable design + opus execution + Fable audit):
+  new editor console command Ck.Gym.AuthorJoltStaticBakeContent
+  (CkTestsEditor/Private/CkGymJoltStaticBakeAuthoring.cpp; Build.cs +Landscape) —
+  idempotent, guards (TestGyms level only, non-WP world), authors a 1-component
+  63-quad procedural landscape (scale 50/50/100, center -4300/20000, rolling hills
+  +/-250uu, engine Import ritual mirrored from
+  LandscapeEditorDetailCustomization_NewLandscape.cpp:1188-1235 — 5.7 signature
+  read with user permission) + an editor-authored spline-mesh actor (tag
+  CkJoltGym.AuthoredSpline, curve mirrors the runtime lane, BodySetup cook
+  self-check with loud ensure). Does NOT save — user reviews + Ctrl+S. (3) Gym:
+  station PINNED at (500, 20000, 0) facing -X (isolated Y band — permanent
+  authored content cannot collide with the 42 other gyms in the shared level;
+  precedent: crowd/pathnetwork pinned stations), Request_StartGym teleports the
+  player there; new lane 4b scans CkJoltGym.AuthoredSpline actors and fires a
+  parity witness through the S-curve midpoint (local 200/-50/0, keep-in-sync
+  comment both sides) — the lane that actually exercises the spline extraction
+  branch; landscape scan's empty-case trace now points at the authoring command.
+  GATES GREEN on artifacts: Script-only ray gate = Jolt pattern 40/40, 0 AS errors
+  (GymViewRay-Test.log); full gate after C++ = build clean + 40/40, 0 AS errors
+  (AuthoredContent-BuildTest.log). Known accepted risk: authored-content witnesses
+  run one frame after gym start — if level-sweep body adds ever land later, first
+  run could transiently FAIL; Ck_GymJoltStaticBake_RunWitnesses re-runs manually.
+  [EDITOR-VERIFY]: (a) open TestGyms_CkTests_Level, run
+  Ck.Gym.AuthorJoltStaticBakeContent, verify landscape + spline actors appear,
+  SAVE the level; (b) PIE -> Tab -> Jolt Static Bake: player teleports to the
+  pinned station, view-ray green on lanes/landscape/authored spline with entity
+  labels, RED through the runtime spline lane (the visual confirmation requested);
+  (c) witness log: authored-spline + landscape rows PASS. All changes UNCOMMITTED
+  pending the user's word.
+
+- **[POST-CAMPAIGN] Landscape signature fix + witness filter upgrade + spline placement fix**
+  (2026-07-19, from the user's editor pass): (1) REAL BUG in the landscape bake branch —
+  `CkJoltBakeExtraction.cpp` built the collision signature from the landscape RENDER
+  component (no collision config → ignore-everything), so the heightfield body existed
+  (debug draw showed it; unfiltered `Get_RayCastStaticWorld` witness even PASSed) but every
+  CHANNEL query dropped it (user's view-ray red over a perfect wireframe — the report that
+  exposed it). Fix: signature from the paired `GetCollisionComponent()`
+  ULandscapeHeightfieldCollisionComponent (engine-verified `LandscapeComponent.h:1275`),
+  loud ensure+skip when absent. Module CLAUDE.md updated. (2) Gym witness Jolt side
+  upgraded from the unfiltered static-world introspection ray to the channel-filtered
+  `utils_jolt_query::Get_RayCast` (Visibility/Block — the same filter Chaos's line trace
+  uses), so ignore-everything-signature bugs now surface as FAIL rows instead of hiding.
+  (3) Earlier same round: authoring utility's spline actor lost its spawn transform
+  (rootless-AActor trap — the gym's own HISM comment documents it; missed in audit) →
+  explicit `SetWorldLocation` after root promotion; gym teleport made retry+traced; runtime
+  lane hosts' 0,0,0 outliner transform documented as by-design. Log-verified evidence:
+  authoring ran clean (CkPlugins.log 04:17), landscape witness PASS-via-unfiltered while
+  channel ray missed = the signature diagnosis. Gate QUEUED (waits for the user's editor to
+  close): rebuild + Jolt pattern into LandscapeSignatureFix-BuildTest.log. [EDITOR-VERIFY]
+  after gate: re-run Ck.Gym.AuthorJoltStaticBakeContent (replaces the mis-placed spline),
+  save, PIE — view-ray GREEN on the landscape, authored-spline + landscape witness rows
+  PASS under the now-channel-filtered witness. All changes UNCOMMITTED pending the user's
+  word.
+
+- **[POST-CAMPAIGN] Jolt stress-test gym (landscape ball rain)** (2026-07-19, user
+  request): new gym "Jolt Stress" (CkJoltGym_Stress.as + registry row) — CVar-driven
+  Dynamic-sphere rain onto the authored landscape heightfield. CVars registered from C++
+  at module load (house FAutoConsoleVariableRef pattern; NEW CkTests bridge
+  CkJoltStressGym_Utils.h/.cpp with BlueprintPure getters — chosen over CkCVar's
+  BlueprintInternalUseOnly AS surface, which has zero AS-corpus precedent; note: the
+  CkCVar module doc's friendly C++ `Register_*` API does NOT exist, doc drift):
+  ck.JoltStressGym.InitialBalls (50) / .BallsPerWave (10, live) /
+  .WaveIntervalSeconds (10, at start) / .MaxBalls (2000 cap, live). Execs
+  Ck_GymJoltStress_Drop [N] + _Reset. Drop zone derives from the found landscape's
+  bounds (20% inset; fallback static floor + loud trace when unauthored); deterministic
+  co-prime-stride scatter (no AS RNG dependency); varied radii 20-45uu; fallen balls
+  reaped below kill-Z each wave (a fallen ball never sleeps — would poison the numbers);
+  station pinned at (-1800, 20000, 0) facing the landscape, teleport + one-frame retry.
+  All AS bindings corpus-proven (RampRoll ball recipe verbatim; exec-with-arg;
+  Get_EntityCurrentLocation reaper). Gate GREEN (build clean, 40/40, 0 AS errors):
+  StressGym-BuildTest.log. UNCOMMITTED pending the user's word.
+
+- **[POST-CAMPAIGN] Batched Jolt debug renderer** (2026-07-19, user request: debug draw
+  kills editor perf; asked whether CkPmg could replace per-frame drawing): root cause was
+  `DebugRendererSimple` — every body decomposed into per-triangle DrawDebugLine calls,
+  every frame (landscape ~24k line calls/frame for static geometry; each ball hundreds
+  more). CkPmg rejected as the vehicle (its line tier is the same cost model; its filled
+  tier is per-entity procmesh, no instancing, wrong vocabulary for arbitrary triangle
+  batches). Fix: `CkJoltDebugger` reimplemented on full `JPH::DebugRenderer`
+  (CkJolt_DebugRenderer.h/.cpp) — CreateTriangleBatch caches triangle data once per unique
+  geometry (Jolt shapes cache their GeometryRef; verified HeightFieldShape/MeshShape/
+  ConvexHullShape mGeometry members), transient UStaticMesh built lazily via
+  BuildFromMeshDescriptions (runtime fast build; exemplar CkParticles_MeshGenerator), BOTH
+  windings emitted (Conv is a handedness passthrough — single winding renders inside-out),
+  DrawGeometry accumulates (geometry,color) buckets, EndFrame reconciles into one
+  UInstancedStaticMeshComponent per bucket (CkPmg's pooled-standalone-component +
+  M_SimpleUnlitTranslucent MID house patterns; no BeginPlay — protected on
+  UStaticMeshComponent, registration alone provides render state). Unchanged buckets
+  (static + sleeping) upload nothing; movers cost one BatchUpdateInstancesTransforms.
+  Bucket pruned when Jolt releases the batch (refcount 1) — otherwise re-cooked shapes
+  leak meshes across gym restarts. New CVars: ck.Jolt.DebugDraw.Opacity (0.5, live),
+  .Velocity (default on), .WorldTransform (default OFF — per-body axis arrows were the
+  worst remaining line load). Wireframe DrawSettings flag now false (batch path renders
+  solid translucent). Gate GREEN (build clean, 40/40): JoltDebugRenderer-BuildTest.log
+  (first run failed on protected BeginPlay; fixed, re-gated). [EDITOR-VERIFY] visuals:
+  translucent solids replace wireframes; per-instance translucent sort is approximate at
+  2000 balls — lower Opacity if too dense. COMMITTED on the user's word: CkTests 2583e36,
+  CkGameplayDebugger 6d2bbe4 (dev), CkFoundation a62b33d92 + 16e23003a; host bump follows.
+  NOT pushed.
