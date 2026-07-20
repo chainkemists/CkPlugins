@@ -899,3 +899,36 @@ re-run Ck.Jolt.Body.Benchmark.FrameCostMatrix; compare VALIDATION.md rows.
   2000 balls — lower Opacity if too dense. COMMITTED on the user's word: CkTests 2583e36,
   CkGameplayDebugger 6d2bbe4 (dev), CkFoundation a62b33d92 + 16e23003a; host bump follows.
   NOT pushed.
+
+- **[POST-CAMPAIGN] Jolt constraints tier: springs, ropes, doors, hair** (2026-07-19, user
+  goal: "implement other Jolt features sorted by priority that YOU think is best e.g.
+  springs, ropes, hair; each one needs its own gym; complete fully before alerting"):
+  NEW CkJoltConstraint quartet (CkJolt/Constraint/) — Distance (soft-limit SPRING via
+  ECk_JoltConstraint_SpringMode + damping; auto range from creation separation), Point
+  (chain link), Hinge (axis, degree limits, motor Off/Velocity/Position via
+  Request_Hinge_SetMotor, Get_Hinge_CurrentAngleDegrees). World-space anchors at creation;
+  _OtherBody INVALID = world (BodyBIsWorldAnchor flag distinguishes from a dead body).
+  Constraint entity = child of body A (cascade); LIVENESS REAP processor (FGroup_EndPlay,
+  RunBefore JoltBody_EndPlay — RunBefore exists in the scheduler, no body edits needed)
+  removes the JPH constraint the same frame EITHER body entity begins destruction (Jolt
+  UB otherwise). Rope builder UCk_Utils_JoltRope_UE::Create_Rope — N Dynamic sphere
+  segments, Rigid (boundary point constraints) or Springy (auto-distance springs), world
+  or AnchorBody anchoring; hair = many short Springy strands on a kinematic anchor (gym
+  pattern, no extra C++). New CVar ck.Jolt.DebugDraw.Constraints (default on,
+  DrawConstraints through the batched renderer). 4 gyms + registry rows: "Jolt Springs"
+  (1/3/8 Hz plates + bungee, poke exec), "Jolt Ropes" (rigid/stretchy/pendulum,
+  yank/cut/reset — cut destroys a link entity), "Jolt Doors" (free / self-closing
+  position-motor / velocity-motor turnstile, shoot/slam/spin execs), "Jolt Hair"
+  (orbiting kinematic head + 10 strands, toggle-motion exec). 5 autotests (isolated Y
+  75k-87k): SpringSettlesAtRestLength, PointChainHangsBelowAnchor, HingeRespectsLimits,
+  ReapsWhenOtherBodyDies, Rope_BuildsAndHangs. Gate journey: (1) missing
+  CkProcessorRegistration.h include (C4430 on CK_REGISTER_PROCESSOR); (2) AS f-string→
+  FName script-method param mismatch (native calls convert, script overload resolution
+  does NOT); (3) STALE-GREEN 40/40 ×2 — the toolbox CACHES the discovered test list;
+  --discover-fresh required after adding tests without --build; (4) impulses invisible —
+  FromShape masses are ~1e7-1e9 units (cm-scale world), impulses must be e9-e11
+  (exemplar ImpulseChangesVelocity uses 4e11); hinge settling via AngularDamping
+  (unit-free), never friction torque. Gate GREEN: 45/45 (was 40), 0 AS errors
+  (JoltConstraints-Test4.log; C++ build clean in the round-2 log). UNCOMMITTED pending
+  the user's word. [EDITOR-VERIFY]: PIE the four new gyms (Tab menu) with
+  ck.Jolt.DebugDraw.Enabled 1.
