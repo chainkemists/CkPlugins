@@ -3,6 +3,7 @@
 	"EngineAssociation": "{22D2B5AE-4AE5-C485-F291-F79F407369F4}",
 	"Category": "",
 	"Description": "",
+	"DisableEnginePluginsByDefault": true,
 	"Modules": [
 		{
 			"Name": "CkPlugins",
@@ -17,7 +18,7 @@
 		},
 		{
 			"Name": "GitSourceControl",
-			"Enabled": true,
+			"Enabled": false,
 			"TargetAllowList": [
 				"Editor"
 			]
@@ -61,7 +62,7 @@
 		},
 		{
 			"Name": "Paper2D",
-			"Enabled": false
+			"Enabled": true
 		},
 		{
 			"Name": "KDevelopSourceCodeAccess",
@@ -106,6 +107,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "Angelscript",
+			"Enabled": true
+		},
+		{
 			"Name": "GameplayAbilities",
 			"Enabled": true
 		},
@@ -132,6 +137,42 @@
 		},
 		{
 			"Name": "AngelscriptEnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "MeshModelingToolset",
+			"Enabled": true
+		},
+		{
+			"Name": "StructUtils",
+			"Enabled": true
+		},
+		{
+			"Name": "StateTree",
+			"Enabled": true
+		},
+		{
+			"Name": "ControlRig",
+			"Enabled": true
+		},
+		{
+			"Name": "AnimationData",
+			"Enabled": true
+		},
+		{
+			"Name": "ACLPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "Gauntlet",
 			"Enabled": true
 		},
 		{
