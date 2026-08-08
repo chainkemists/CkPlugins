@@ -152,6 +152,14 @@
 			"Enabled": true
 		},
 		{
+			"Name": "PluginBrowser",
+			"Enabled": true
+		},
+		{
+			"Name": "TraceUtilities",
+			"Enabled": true
+		},
+		{
 			"Name": "ProceduralMeshComponent",
 			"Enabled": true
 		},
