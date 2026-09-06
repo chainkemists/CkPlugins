@@ -12,7 +12,7 @@ Use this project when you need to work on a Chainkemists plugin in isolation: yo
 
 Before writing code against CkFoundation, read the appropriate guide in the submodule:
 
-- **AngelScript (.as):** [Plugins/CkFoundation/Script/CLAUDE.md](Plugins/CkFoundation/Script/CLAUDE.md) — language differences from C++, `utils_*` shortcuts, entity script lifecycle, asset definitions, dynamic handle registration gotcha.
+- **AngelScript (.as):** [Plugins/CkFoundation/Script/ARCHITECTURE.md](Plugins/CkFoundation/Script/ARCHITECTURE.md) — language differences from C++, the `utils_*` layer, entity script lifecycle, asset definitions, dynamic handles, generated-script hygiene (there is no `Script/CLAUDE.md`).
 - **C++ framework patterns:** [Plugins/CkFoundation/Source/CLAUDE.md](Plugins/CkFoundation/Source/CLAUDE.md) — full development guidelines: function formatting, ECS patterns, `CK_PROPERTY`, request structs, component lifetimes, module tier table.
 - **C++ quick reference:** [Plugins/CkFoundation/CLAUDE.md](Plugins/CkFoundation/CLAUDE.md) — condensed architecture overview (macros, fragments, processors, naming).
 
