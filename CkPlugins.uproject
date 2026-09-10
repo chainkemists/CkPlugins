@@ -152,6 +152,13 @@
 			"Enabled": true
 		},
 		{
+			"Name": "PythonScriptPlugin",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
 			"Name": "PluginBrowser",
 			"Enabled": true
 		},
