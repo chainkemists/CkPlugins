@@ -19,9 +19,6 @@
 [submodule "Plugins/NodeGraphAssistant"]
 	path = Plugins/NodeGraphAssistant
 	url = https://github.com/chainkemists/NodeGraphAssistant.git
-[submodule "Plugins/CkApplication"]
-	path = Plugins/CkApplication
-	url = https://github.com/chainkemists/CkApplication.git
 [submodule "CkAuto"]
 	path = CkAuto
 	url = https://github.com/chainkemists/CkAuto.git
