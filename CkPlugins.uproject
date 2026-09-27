@@ -208,6 +208,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "AssetManagerEditor",
+			"Enabled": true
+		},
+		{
 			"Name": "AndroidFileServer",
 			"Enabled": false
 		},
