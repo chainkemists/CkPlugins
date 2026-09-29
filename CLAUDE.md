@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CkPlugins is an Unreal Engine 5.5 project that serves as the **development host for the Chainkemists plugin ecosystem**. The host project itself is intentionally minimal — a default `GameModeBase` and a near-empty `Source/CkPlugins/` module. The real content is the plugin submodules under `Plugins/`, which are developed, tested, and iterated on inside this clean project before being consumed by downstream game projects.
+CkPlugins is an Unreal Engine 5.7 project (the `EngineAssociation` fork, currently 5.7.4) that serves as the **development host for the Chainkemists plugin ecosystem**. The host project itself is intentionally minimal — a default `GameModeBase` and a near-empty `Source/CkPlugins/` module. The real content is the plugin submodules under `Plugins/`, which are developed, tested, and iterated on inside this clean project before being consumed by downstream game projects.
 
 Use this project when you need to work on a Chainkemists plugin in isolation: you get a full UE project to compile against, the AngelScript runtime via CkFoundation, and the CkTests harness — without the weight of a full game project on top.
 
@@ -154,7 +154,7 @@ The `CkAuto/UpdateAllSubmodules_PUSH_DEV.bat` helper can automate steps 2–3 ac
 
 Detection is per-project: probes `Saved/Logs/*.log` for an exclusive write lock (UE holds the active log exclusively while running). Other UE instances open for unrelated projects do not trip the guard, and renamed editor binaries don't matter (no process-name scan).
 
-Submodule-aware: commands like `cd Plugins/CkFoundation && git checkout <ref>` are recognised — the script resolves the effective repo root via `git rev-parse --show-toplevel`, enumerates against that repo, and prefixes the resulting paths with the submodule's offset under the project root before classification.
+Submodule-aware: the op's directory is resolved from the shell's cwd, then a leading `cd <path> &&`, then any `git -C <path>` options (Git Bash `/d/...` paths accepted) — so `cd Plugins/CkFoundation && git checkout <ref>` and `git -C Plugins/CkFoundation checkout <ref>` are both recognised. The script resolves the effective repo root via `git rev-parse --show-toplevel`, enumerates against that repo, and prefixes the resulting paths with the submodule's offset under the project root before classification.
 
 **Limitation — submodule-rooted sessions:** the hook is wired through `CkPlugins/.claude/settings.json`, which Claude Code only loads when the session's project root *is* CkPlugins. If you launch Claude Code from inside a submodule, our hook is not active. Workarounds: (a) launch Claude Code from the CkPlugins root for any session that may do git ops, or (b) add a personal `~/.claude/settings.json` invoking a copy of the script kept somewhere stable outside the repo — note this only protects you, not teammates.
 
