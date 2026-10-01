@@ -56,7 +56,7 @@ class UCk_PlaceableTest_Cube_EntityScript : UCk_GenericEntityScript_UE
         utils_transform::Add(InHandle, SpawnTransform, ECk_Replication::DoesNotReplicate);
         utils_entity_tag::Add(InHandle, n"TAG_PlaceableTest_Cube");
 
-        auto IsmProxyParams = FCk_Fragment_IsmProxy_ParamsData(ck::Asset_PlaceableTest_Cube);
+        auto IsmProxyParams = FCk_IsmProxy_Spec(ck::Asset_PlaceableTest_Cube);
         auto IsmProxyTransform = InHandle.As_Transform();
         utils_ism_proxy::Add(IsmProxyTransform, IsmProxyParams);
 
@@ -82,7 +82,7 @@ class UCk_PlaceableTest_Sphere_EntityScript : UCk_GenericEntityScript_UE
         utils_transform::Add(InHandle, SpawnTransform, ECk_Replication::DoesNotReplicate);
         utils_entity_tag::Add(InHandle, n"TAG_PlaceableTest_Sphere");
 
-        auto IsmProxyParams = FCk_Fragment_IsmProxy_ParamsData(ck::Asset_PlaceableTest_Sphere);
+        auto IsmProxyParams = FCk_IsmProxy_Spec(ck::Asset_PlaceableTest_Sphere);
         auto IsmProxyTransform = InHandle.As_Transform();
         utils_ism_proxy::Add(IsmProxyTransform, IsmProxyParams);
 
