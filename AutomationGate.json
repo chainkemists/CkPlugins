@@ -3,7 +3,9 @@
     "The test roots a plain `UnrealToolbox.exe --test` must run (toolbox v1.49+). Functional tests and names of enabled plugins/modules are always included; these are the house-convention roots the toolbox cannot infer.",
     "Every run prints a [population] block: N of M discovered tests, roots included and excluded. A root here that matches no discovered test fails the run with exit 80, so a rename or typo cannot shrink the gate silently.",
     "Add a root when [population] lists one of ours under 'excluded'. Before 2026-10-01 this project had no gate file: Ck had to be passed by hand (--project-prefix), and CkAngelscriptGenerator, CkGrid, CkSubsystemBrowser and CkGoapDebugger (108 tests) were in no gate at all.",
-    "knownReds (toolbox v1.50+): the gate passes when every failure is listed and fails on any NEW failure. Each reason starts with [owner: <repo>] - the repo that defines the test - so the list can later be split into the repo that owns each test. Never add an entry to make your own change's red go away."
+    "knownReds (toolbox v1.50+): the gate passes when every failure is listed and fails on any NEW failure. Since toolbox v1.52 each Ck plugin carries the known reds for its own tests in an AutomationGate.json beside its .uplugin (Plugins/CkFoundation, Plugins/CkTests, Plugins/CkGameplayDebugger): a test that is red in the Ck home project belongs there, changed in that plugin's repo by PR, never from this file.",
+    "This host file keeps only tests that are red in CkPlugins and that their owning plugin does not list. A test listed both here and in a plugin file exits 80, so when a plugin bump starts covering a host entry, drop it here in the same change.",
+    "Each reason starts with [owner: <repo>] - the repo that defines the test - so an entry can move into that repo's list once it is red there. Never add an entry to make your own change's red go away."
   ],
   "roots": [
     "Ck",
@@ -17,13 +19,6 @@
       "test": "Ck.AssetExporter.Dispatch.GraphDumpShape",
       "status": "red",
       "reason": "[owner: CkFoundation] Recorded, not diagnosed. Defined in Plugins/CkFoundation/Source/CkAssetExporter/Tests/Test_AssetExporterDispatch.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Particles.PrewarmTemplates",
-      "status": "red",
-      "reason": "[owner: CkFoundation] Recorded, not diagnosed. Defined in Plugins/CkFoundation/Source/CkParticlesEditor/Tests/Test_CkParticles_PrewarmTemplates.cpp.",
       "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
       "added": "2026-10-01"
     },
@@ -70,37 +65,9 @@
       "added": "2026-10-01"
     },
     {
-      "test": "Ck.TextureDebugger.Ux.TextureHealthContextMenuTarget",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkTextureDebugger/Private/Tests/CkTextureDebugger_Ux.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.AggroDebugger.Authored.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkAggro/Test_AggroDebugger_AuthoredPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.CapabilityGallery.InstalledResources",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkYoga/Test_CapabilityGallery.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
       "test": "Ck.CapabilityGallery.ToolStarter.InstalledContract",
       "status": "red",
       "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkYoga/Test_UiToolStarter.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.DialogDebugger.Authored.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkDialog/Test_DialogDebugger_AuthoredPie.spec.cpp.",
       "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
       "added": "2026-10-01"
     },
@@ -112,100 +79,9 @@
       "added": "2026-10-01"
     },
     {
-      "test": "Ck.Dynamic.Net.AS_DynamicFragment_DriverCarrierOnNotify",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkDynamic/CkAutoTest_Net_DynamicFragment_DriverCarrierOnNotify.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Dynamic.Net.AS_DynamicFragment_DriverCarrierReplicates",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkDynamic/CkAutoTest_Net_DynamicFragment_DriverCarrierReplicates.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.GoapDebugger.AgentColumn.Authored.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkGoap/Test_GoapDebugger_AgentColumnAuthoredPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.GoapDebugger.Squad.Authored.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkGoap/Test_GoapDebugger_SquadAuthoredPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.GoapDebugger.Timeline.Authored.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkGoap/Test_GoapDebugger_TimelineAuthoredPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.LevelRootRemoval.AuthorityBoundary",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_LevelRootRemoval_Contract.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.LevelRootRemoval.CancellationSurvivesSourceTeardown",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_LevelRootRemoval_Contract.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.LevelRootRemoval.DuplicateIdentityFailsClosed",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_LevelRootRemoval_Contract.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.LevelRootRemoval.LevelActorBridgeOrigin",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_LevelRootRemoval_Contract.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
       "test": "Ck.Snapshot.Meta.FragmentPostureCoverage",
       "status": "red",
       "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_FragmentPostureCoverage_MetaTest.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.Meta.NoProcessorBypassesQuarantine",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_NoProcessorBypassesQuarantine_MetaTest.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Snapshot.Meta.WallTimeReadsAreAllowListed",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_WallTimeAllowList_MetaTest.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.UIDebugger.History.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkUI/Test_UIDebugger_HistoryAuthoredPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.UiAuthoring.EcsDebugger.StateMachineInspector.AuthoredVariants",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkUI/Test_StateMachine_AuthoredInspectorComposition.cpp.",
       "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
       "added": "2026-10-01"
     },
@@ -238,41 +114,6 @@
       "added": "2026-10-01"
     },
     {
-      "test": "CkTests.UnitTests.CkUsf.GeneratesUsableMasters",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkUsf/Test_Usf_GeneratesUsableMasters.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_IskmRenderer_BatchedVisual",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkIskmRenderer/CkAutoTest_IskmRenderer_BatchedVisual.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_PaViz_NavigationFocus",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_PaViz_NavigationFocus.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_PaViz_StressVisual",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_PaViz_StressVisual.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_PaViz_Visual",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_PaViz_Visual.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
       "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_BodyPoseSagsTowardLostLegs",
       "status": "red",
       "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_BodyPoseSagsTowardLostLegs.as.",
@@ -280,44 +121,9 @@
       "added": "2026-10-01"
     },
     {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_PillarCrossingRenderedTraversal",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_PillarCrossingRenderedTraversal.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_PillarsEngageSteppedTops",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_PillarsEngageSteppedTops.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_PostsCentipedeReturns",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_PostsCentipedeReturns.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
       "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_SlidePolicyStopsAtLedge",
       "status": "red",
       "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_SlidePolicyStopsAtLedge.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ScriptProcessor_PumpStopsAfterMarkerDrain",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkDynamic/CkAutoTest_ScriptProcessor_PumpStopsAfterMarkerDrain.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_VisualLod_RenderBandProfileLifecycle",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkVisualLod/CkAutoTest_VisualLod_RenderBandProfileLifecycle.as.",
       "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
       "added": "2026-10-01"
     }
