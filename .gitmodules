@@ -1,12 +1,12 @@
 [submodule "Plugins/CkFoundation"]
 	path = Plugins/CkFoundation
-	url = https://github.com/chainkemists/CkFoundation.git
+	url = https://github.com/CommitAndChill/CkFoundation.git
 [submodule "Plugins/CkGameplayDebugger"]
 	path = Plugins/CkGameplayDebugger
-	url = https://github.com/chainkemists/CkGameplayDebugger.git
+	url = https://github.com/CommitAndChill/CkGameplayDebugger.git
 [submodule "Plugins/CkTests"]
 	path = Plugins/CkTests
-	url = https://github.com/chainkemists/CkTests.git
+	url = https://github.com/CommitAndChill/CkTests.git
 [submodule "Plugins/AutoSizeComments"]
 	path = Plugins/AutoSizeComments
 	url = https://github.com/chainkemists/AutoSizeComments.git
@@ -24,7 +24,7 @@
 	url = https://github.com/chainkemists/CkApplication.git
 [submodule "CkAuto"]
 	path = CkAuto
-	url = https://github.com/chainkemists/CkAuto.git
+	url = https://github.com/CommitAndChill/CkAuto.git
 [submodule "Plugins/ZenMode"]
 	path = Plugins/ZenMode
 	url = https://github.com/chainkemists/ZenMode.git
