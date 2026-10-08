@@ -16,69 +16,6 @@
   ],
   "knownReds": [
     {
-      "test": "Ck.AssetExporter.Dispatch.GraphDumpShape",
-      "status": "red",
-      "reason": "[owner: CkFoundation] Recorded, not diagnosed. Defined in Plugins/CkFoundation/Source/CkAssetExporter/Tests/Test_AssetExporterDispatch.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.CrowdDebugger.ProductionLifecycle.Release",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkCrowdDebugger/Private/Tests/CkCrowdDebuggerLifecycle.spec.cpp. The editor died mid-test in the baseline run.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.InsightsDebugger.Capture.RecordingPresentation",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkInsightsDebugger/Private/Tests/CkInsightsRecordingPresentation.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.JoltDebugger.Window.ConstructsWithoutSlotAttributeEnsure",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkJoltDebugger/Private/Tests/CkJoltDebuggerWindow.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.TextureDebugger.LayoutCapture.Surface",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkTextureDebugger/Private/Tests/CkTextureDebugger_LayoutCapture.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.TextureDebugger.Ux.NativeTableEvents",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkTextureDebugger/Private/Tests/CkTextureDebugger_Ux.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.TextureDebugger.Ux.PreviewLifetime",
-      "status": "red",
-      "reason": "[owner: CkGameplayDebugger] Recorded, not diagnosed. Defined in Plugins/CkGameplayDebugger/Source/CkTextureDebugger/Private/Tests/CkTextureDebugger_Ux.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.CapabilityGallery.ToolStarter.InstalledContract",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkYoga/Test_UiToolStarter.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
-      "test": "Ck.Dynamic.Net.AS_DynamicFragment_DriverCarrierChannelOwned",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkDynamic/CkAutoTest_Net_DynamicFragment_DriverCarrierChannelOwned.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
-    },
-    {
       "test": "Ck.Snapshot.Meta.FragmentPostureCoverage",
       "status": "red",
       "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/CkSnapshot/Test_Snapshot_FragmentPostureCoverage_MetaTest.cpp.",
@@ -86,46 +23,81 @@
       "added": "2026-10-01"
     },
     {
-      "test": "Ck.VisualLodDebugger.ArbiterTuners.PIE",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkVisualLod/Test_VisualLod_ArbiterTunersPie.spec.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "test": "Ck.AStarDebugger.AuthoredShell",
+      "status": "flaky",
+      "reason": "[owner: CkGameplayDebugger] renderer-only; failed in the real-renderer pass: Expected 'physical authored stats copy preserves information-copy parity' (spec.cpp:269). Defined in Plugins/CkGameplayDebugger/Source/CkAStarDebugger/Private/Tests/CkAStarDebugger_AuthoredShell.spec.cpp.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-1.log).",
+      "added": "2026-10-08"
     },
     {
-      "test": "CkTests.UnitTests.CkGroundNav.Invalidation.CostOnlyPublishRepathsWhenSavedFilterDeniesCorridor",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkGroundNav/Test_GroundNav_PathInvalidation.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "test": "Ck.Jolt.Cook.Inspector.Authored.Presentation",
+      "status": "flaky",
+      "reason": "[owner: CkGameplayDebugger] renderer-only; failed in the real-renderer pass: Expected 'physical would-fail filter routes its click' (spec.cpp:396). Defined in Plugins/CkGameplayDebugger/Source/CkJoltBakeInspector/Private/Tests/CkJoltBakeInspectorAuthored.spec.cpp.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-2.log).",
+      "added": "2026-10-08"
     },
     {
-      "test": "CkTests.UnitTests.CkIsmRenderer.IsmProxy.AuthoredInspectorComposition",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkIsmRenderer/Test_IsmProxy_AuthoredInspectorComposition.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "test": "Ck.ResourceInspector.ModelView.NativeResources",
+      "status": "flaky",
+      "reason": "[owner: CkTests] renderer-only; failed in the real-renderer pass: Expected 'Narrow capture exposes a scrollable detail pane with retained snapshot cards' (Test_ResourceInspector.cpp:553). Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkYoga/Test_ResourceInspector.cpp.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-3.log).",
+      "added": "2026-10-08"
     },
     {
-      "test": "CkTests.UnitTests.CkUI.PrimaryLayoutTeardown.DeactivatesRootBeforeChildren",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkUI/Test_UI_PrimaryLayoutTeardown.cpp.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "test": "Ck.TextureDebugger.SceneAudit.ContextCommands",
+      "status": "flaky",
+      "reason": "[owner: CkGameplayDebugger] renderer-only; failed in the real-renderer pass: Expected 'Copy audit summary remains targeted at the row that opened the popup; clipboard=[]' (spec.cpp:492). Defined in Plugins/CkGameplayDebugger/Source/CkTextureDebugger/Private/Tests/CkTextureDebugger_SceneAuditAuthored.spec.cpp.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-4.log).",
+      "added": "2026-10-08"
     },
     {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_BodyPoseSagsTowardLostLegs",
-      "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_BodyPoseSagsTowardLostLegs.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "test": "Ck.UiAuthoring.DebuggerMigration.SaveEntityNavigation",
+      "status": "flaky",
+      "reason": "[owner: CkTests] renderer-only; failed in the real-renderer pass: Expected 'Problems-only projection retains the problem child and its ownership ancestor' (spec.cpp:264). Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkSave/Test_SaveDebugger_AuthoredPie.spec.cpp.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-5.log).",
+      "added": "2026-10-08"
     },
     {
-      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_SlidePolicyStopsAtLedge",
+      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_GroundNav_Link_ShovedMidCrossingEndsTheCrossingAndResumes",
+      "status": "flaky",
+      "reason": "[owner: CkTests] failed in a headless lane on a log error from another editor: LogAssetRegistry OpenFile failed for Plugins/CkFoundation/Content/CkUsf/GeneratedLooksTest/P31288/M_CkUsf_Look_GeneratedPackageRootProbe.uasset (a CkUsf test's per-process scratch package). Defined in Plugins/CkTests/Script/CkGroundNav/CkAutoTest_GroundNav_Link_ShovedMidCrossingEndsTheCrossingAndResumes.as.",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-6.log).",
+      "added": "2026-10-08"
+    },
+    {
+      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_SpiderCourseTraversal",
       "status": "red",
-      "reason": "[owner: CkTests] Recorded, not diagnosed. Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_SlidePolicyStopsAtLedge.as.",
-      "evidence": "Failed in the pre-change baseline of 2026-10-01: serial fresh-boot full suite, 3819 run / 44 failed / 0 contaminated, at CkFoundation faa395509, CkTests ac3e2e0a, CkGameplayDebugger 243c0cd4, superproject c14c308 plus the PlaceableTests FCk_IsmProxy_Spec script fix. Single run, so red vs flaky is not established.",
-      "added": "2026-10-01"
+      "reason": "OSCILLATES. [owner: CkTests] Red in gate 1 and red alone twice, green in gate 2 the same morning. Failure: FinishTest Failed at step 2/4 'verify two complete traversals and intact coverage': Ledge completed two route traversals with every leg replanted (1 traversals, 8/8 legs). Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_SpiderCourseTraversal.as. While listed it detects nothing: follow-up is to fix the test, then remove the entry (do not prune it on one pass).",
+      "evidence": "Slice A gate of record, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --build --test --no-live --discover-fresh, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa. Another project's full gate and two engine builds were running on the machine at the same time. Red alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-7.log) and again in Test-Alone-7b.log after gate 2, same assertion. Gate 2 (--test --no-live --known-reds prune, Saved/Logs/Test-Prune.log, same pins) passed it and pruned it; restored by hand.",
+      "added": "2026-10-08"
+    },
+    {
+      "test": "Ck.AudioDebugger.AuthoredShell",
+      "status": "flaky",
+      "reason": "[owner: CkGameplayDebugger] renderer-only; failed in the real-renderer pass: Expected 'physical Tracks group-header navigation resolves its exact director' (spec.cpp:1733). Defined in Plugins/CkGameplayDebugger/Source/CkAudioDebugger/Private/Tests/CkAudioDebugger_AuthoredShell.spec.cpp.",
+      "evidence": "Gate 2, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --test --no-live --known-reds prune, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa; it passed in gate 1 (--build --test --no-live --discover-fresh, same pins). Another project's full gate was running on the machine during gate 1 and at least part of gate 2. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-8.log).",
+      "added": "2026-10-08"
+    },
+    {
+      "test": "Ck.EntityScript.EditorServices.PendingAssetRename",
+      "status": "flaky",
+      "reason": "[owner: CkTests] Expected 'restored editor services replay SpawnParams removal' (Test_EntityScript_EditorServices.cpp:331), with DeleteAsset failed on its own /Game/EntitySpawnParams/EntitySpawnParams_CkEntityScriptEditorServices_<guid>_Final scratch asset. In-suite runs of this test file leave scratch assets under Content/EntitySpawnParams and Content/__CkEntityScriptEditorServices_<guid>/ and, through the editor's source-control provider, staged one in the superproject index. Defined in Plugins/CkTests/Source/CkTests/Private/UnitTests/CkEcs/Test_EntityScript_EditorServices.cpp.",
+      "evidence": "Gate 2, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --test --no-live --known-reds prune, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa; it passed in gate 1 (--build --test --no-live --discover-fresh, same pins). Another project's full gate was running on the machine during gate 1 and at least part of gate 2. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-9.log).",
+      "added": "2026-10-08"
+    },
+    {
+      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_BeamTouchdownStaysInReach",
+      "status": "flaky",
+      "reason": "[owner: CkTests] failed in a headless lane on a log error from another editor: LogAssetRegistry OpenFile failed for Plugins/CkFoundation/Content/CkUsf/GeneratedLooksTest/P43876/M_CkUsf_Look_CelShadeGenerationProbe.uasset (a CkUsf test's per-process scratch package). Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_BeamTouchdownStaysInReach.as.",
+      "evidence": "Gate 2, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --test --no-live --known-reds prune, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa; it passed in gate 1 (--build --test --no-live --discover-fresh, same pins). Another project's full gate was running on the machine during gate 1 and at least part of gate 2. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-10.log).",
+      "added": "2026-10-08"
+    },
+    {
+      "test": "Project.Functional Tests.CkTests.AutoTests.AutoTests_CkTests_Level.Ck_AutoTest_ProceduralAnimation_OccludedPlantSteps",
+      "status": "flaky",
+      "reason": "[owner: CkTests] failed in a headless lane on a log error from another editor: LogAssetRegistry OpenFile failed for Plugins/CkFoundation/Content/CkUsf/GeneratedLooksTest/P43876/M_CkUsf_Look_HandDrawnGenerationProbe.uasset (a CkUsf test's per-process scratch package). Defined in Plugins/CkTests/Script/CkProceduralAnimation/CkAutoTest_ProceduralAnimation_OccludedPlantSteps.as.",
+      "evidence": "Gate 2, 2026-10-08: toolbox v1.56 (CkAuto e0e756ed8) --test --no-live --known-reds prune, 3993 run / 3955 passed / 38 failed / 0 contaminated on 3 auto-sized editors, at CkFoundation cf25641a3, CkTests 17b956d50, CkGameplayDebugger 11d89540a, superproject 33458aa; it passed in gate 1 (--build --test --no-live --discover-fresh, same pins). Another project's full gate was running on the machine during gate 1 and at least part of gate 2. Then green alone (--test --no-live --test-pattern <this path>, Saved/Logs/Test-Alone-11.log).",
+      "added": "2026-10-08"
     }
   ]
 }
