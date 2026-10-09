@@ -49,6 +49,14 @@ because skills inside submodules aren't auto-discovered). Never invoke
 directly for build/test automation — the toolbox owns engine resolution, the
 machine-wide build lock, watchdogs, and structured results.
 
+**Builds on different worktrees no longer wait for each other** (toolbox v1.57, on an engine whose
+UnrealBuildTool has the reader/writer lock: the engine fork's `main-ck` `5f05b0cf` or later): a build waits
+only when another UnrealBuildTool on this engine is writing under `Engine/` (stale engine rules assemblies
+after a UBT change, a ShaderCompileWorker relink after an engine change, `-Rebuild`), and the wait line
+names the holder. Same-project builds still serialize. Read the `=== Build lock: ... ===` line a `--build`
+prints; `--serialize-builds` restores the old behaviour for one run. On an engine without that lock, builds
+on one engine still run one at a time.
+
 ### Setup and building
 
 ```bash
